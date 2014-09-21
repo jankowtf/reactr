@@ -60,7 +60,6 @@ setGeneric(
 #' @template author
 #' @template references
 #' @export
-#' @import rapp.core.condition
 setMethod(
   f = "getValue", 
   signature = signature(
@@ -95,7 +94,6 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import rapp.core.condition
 setMethod(
   f = "getValue", 
   signature = signature(

@@ -2,11 +2,8 @@
 
 export(getBoilerplateCode)
 export(getValue)
-export(processBoilerplateCode)
 export(setValue)
 exportMethods(getBoilerplateCode)
 exportMethods(getValue)
-exportMethods(processBoilerplateCode)
 exportMethods(setValue)
 import(digest)
-import(rapp.core.condition)

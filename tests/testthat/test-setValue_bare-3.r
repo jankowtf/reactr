@@ -1,34 +1,44 @@
-context("setValue-3")
-test_that("setValue", {
+context("setValue_bare-3")
+test_that("setValue_bare", {
   
   .hash_id <- "._HASH"
   where <- new.env()  
-    
+  value <- 10 
+  
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_1", 
-      value = 10, 
+      value = value,
       where = where
     ),
-    10
+    value
   )
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_2", 
       where = where,
       watch = "x_1"
     ),
-    10
+    value
   )
-  ## Values are ignored if variable monitors another //
+  
+  expect_equal(where$x_1, value)
+  expect_equal(where$x_2, value)
+  
+  where$x_1 <- 100
+  expect_equal(where$x_1, 100)
+  expect_equal(where$x_2, 100)
+  
+  ## Values are ignored if variable monitors another
   expect_warning(
-    setValue(
+    setValue_bare(
       id = "x_3", 
       value = 20, 
       where = where,
       watch = "x_1"
     )
   )
+  expect_equal(where$x_3, where$x_1)
   
   ##----------------------------------------------------------------------------
   ## Mutual dependency //
@@ -37,7 +47,7 @@ test_that("setValue", {
   where <- new.env()  
     
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_1", 
       where = where,
       watch = "x_2",
@@ -48,7 +58,7 @@ test_that("setValue", {
   )
   
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_2", 
       where = where,
       watch = "x_1",
@@ -66,7 +76,7 @@ test_that("setValue", {
   expect_equal(where[[.hash_id]]$x_2$x_1, expected)
   expect_equal(where[[.hash_id]]$x_2$x_2, expected)
   
-  ## Initial values //
+  ## Forced initial values //
   expect_equal(where$x_1, NULL)
   expect_equal(where$x_2, NULL)
   

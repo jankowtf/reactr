@@ -1,2 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+inst/examples
+inst/prof
+man-roxygen
+tests

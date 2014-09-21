@@ -28,6 +28,7 @@ setGeneric(
     id,
     watch = character(),
     where,
+    .hash_id = "._HASH",
     ...
   ) {
     standardGeneric("ensureHashRegistryState")       
@@ -65,6 +66,7 @@ setMethod(
     id,
     watch,
     where,
+    .hash_id,
     ...
   ) {
     
@@ -72,6 +74,7 @@ setMethod(
     id = id,
     watch = watch,
     where = where,
+    .hash_id = .hash_id,
     ...
   ))
     
@@ -108,26 +111,35 @@ setMethod(
     id,
     watch,
     where,
+    .hash_id,
     ...
   ) {
 
+  if (!exists(.hash_id, envir = where, inherits = FALSE)) {
+    assign(.hash_id, new.env(), envir = where)
+  }     
+    
+  ## Turn things around when watching another variable //
+  ## This means that the 'id' part is actually the 'watch' part
+  ## and the 'watch' part takes care of assigning the hash value of 'id'
+  ## in the hash environment of 'watch'
   if (length(id) && length(watch)) {
     tmp <- watch
     watch <- id
     id <- tmp
   }    
   if (length(id)) {
-    if (!exists(id, envir = where$.hash, inherits = FALSE)) {
-      assign(id, new.env(), envir = where$.hash)
+    if (!exists(id, envir = where[[.hash_id]], inherits = FALSE)) {
+      assign(id, new.env(), envir = where[[.hash_id]])
     }  
-    if (!exists(id, envir = where$.hash[[id]], inherits = FALSE)) {
-      assign(id, character(), envir = where$.hash[[id]])
+    if (!exists(id, envir = where[[.hash_id]][[id]], inherits = FALSE)) {
+      assign(id, digest::digest(NULL), envir = where[[.hash_id]][[id]])
     }
   }
 
   if (length(watch)) {
-    if (!exists(id, envir = where$.hash[[watch]], inherits = FALSE)) {
-      assign(id, character(), envir = where$.hash[[watch]])
+    if (!exists(watch, envir = where[[.hash_id]][[id]], inherits = FALSE)) {
+      assign(watch, digest::digest(NULL), envir = where[[.hash_id]][[id]])
     }
   }
   

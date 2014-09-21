@@ -1,5 +1,5 @@
-context("setValue-1")
-test_that("setValue", {
+context("setValue_bare-1")
+test_that("setValue_bare", {
   
   .hash_id <- "._HASH"
   where = new.env()  
@@ -7,7 +7,7 @@ test_that("setValue", {
   id <- "x_1"
   value <- Sys.time()
   expect_equal(
-    setValue(id = "x_1", value = value, where = where, binding_type = 2),
+    setValue_bare(id = "x_1", value = value, where = where, binding_type = 2),
     value
   )
   
@@ -26,7 +26,7 @@ test_that("setValue", {
   watch <- "x_1"
   expected <- eval(binding)(x = value)
   expect_equal(
-    setValue(id = id, where = where, binding = binding, watch = watch,
+    setValue_bare(id = id, where = where, binding = binding, watch = watch,
              binding_type = 2),
     expected
   )
@@ -46,7 +46,7 @@ test_that("setValue", {
   ## Change watch value //
   value = Sys.time()
   expect_equal(
-    setValue(id = "x_1", value = value, where = where, binding_type = 2),
+    setValue_bare(id = "x_1", value = value, where = where, binding_type = 2),
     value
   )
   expect_true(where[[.hash_id]]$x_1$x_1 != where[[.hash_id]]$x_1$x_2)
@@ -66,7 +66,7 @@ test_that("setValue", {
   value <- 10
   
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_1", 
       value = value, 
       where = where, 
@@ -86,7 +86,7 @@ test_that("setValue", {
   ## Set again //
   value <- 10
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_1", 
       value = value, 
       where = where, 
@@ -101,7 +101,7 @@ test_that("setValue", {
   binding <- function(x) {x + 100}
   
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_2", 
       where = where, 
       watch = "x_1", 
@@ -134,7 +134,7 @@ test_that("setValue", {
   value <- 500
   expected <- value
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_1", 
       value = value, 
       where = where, 
@@ -148,7 +148,7 @@ test_that("setValue", {
   expected <- binding(x = where$x_1)
 
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_2", 
       where = where, 
       watch = "x_1",
@@ -171,15 +171,15 @@ test_that("setValue", {
     
     where <- new.env()  
     res_1 <- microbenchmark(
-      "1" = setValue(id = "x_1", value = Sys.time(), where = where,
+      "1" = setValue_bare(id = "x_1", value = Sys.time(), where = where,
                      binding_type = 2),
       "2" = getValue(id = "x_1", where = where),
-      "3" = setValue(id = "x_2", where = where,
+      "3" = setValue_bare(id = "x_2", where = where,
         binding = substitute(function(x) {
             x + 60*60*24
           }), watch = "x_1", binding_type = 2),
       "4" = getValue(id = "x_2", where = where),
-      "5" = setValue(id = "x_1", value = Sys.time(), where = where,
+      "5" = setValue_bare(id = "x_1", value = Sys.time(), where = where,
                      binding_type = 2),
       "6" = getValue(id = "x_2", where = where),
       control = list(order = "inorder")
@@ -191,41 +191,17 @@ test_that("setValue", {
     where <- new.env()
     
     res_2 <- microbenchmark(
-      "1" = setValue(id = "x_1", value = 10, where = where),
+      "1" = setValue_bare(id = "x_1", value = 10, where = where),
       "2" = getValue(id = "x_1", where = where),
-      "3" = setValue(id = "x_2", where = where, watch = "x_1",
+      "3" = setValue_bare(id = "x_2", where = where, watch = "x_1",
         binding = function(x) {x + 100}),
       "4" = getValue(id = "x_2", where = where),
-      "5" = setValue(id = "x_1", value = 100, where = where),
+      "5" = setValue_bare(id = "x_1", value = 100, where = where),
       "6" = getValue(id = "x_2", where = where),
       control = list(order = "inorder")
     )
     res_2
-
-     #-----------------
-
-    foo <- function(x) {
-      x + 10
-    }
-    setGeneric(name = "bar", signature=c("x"), 
-               def = function(x) standardGeneric)
-    setMethod(f = "bar", signature = c(x = "ANY"), definition = function(x) {
-      x + 10
-    })
-    
-    require("compiler")
-    setGeneric(name = "foobar", signature=c("x"), 
-               def = cmpfun(function(x) standardGeneric))
-    setMethod(f = "foobar", signature = c(x = "ANY"), 
-              definition = cmpfun(function(x) {
-      x + 10
-    }))
-    res_3 <- microbenchmark(
-      "foo" = foo(x = 10),
-      "bar" = bar(x = 10),
-      "foobar" = foobar(x = 10)
-    )
-    res_3
   }
   
 })
+

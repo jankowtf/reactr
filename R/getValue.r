@@ -1,5 +1,5 @@
 #' @title
-#' Get Value from Environment
+#' Get Value
 #'
 #' @description 
 #' Retrieves value from an environment or any of its sub-environments based
@@ -15,10 +15,14 @@
 #'    Object containing path-like ID information.
 #' @param where \strong{Signature argument}.
 #'    Object containing environment information.
+#' @param .hash_id \code{\link{character}}.
+#'    Name of the auxiliary environment for caching hash values. 
+#'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
+#'    either \code{where} or \code{where_watch}.
 #' @template threedot
 #' @example inst/examples/getValue.r
 #' @seealso \code{
-#'   	\link[rapp.core.environment]{getValue-character-environment-method}
+#'   	\link[reactr]{getValue-character-environment-method}
 #' }
 #' @template author
 #' @template references
@@ -31,7 +35,8 @@ setGeneric(
   ),
   def = function(
     id,
-    where,
+    where = .GlobalEnv,
+    .hash_id = "._HASH",
     ...
   ) {
     standardGeneric("getValue")       
@@ -42,16 +47,50 @@ setGeneric(
 #' Get Value from Environment
 #'
 #' @description 
-#' See generic: \code{\link[rapp.core.environment]{getValue}}
+#' See generic: \code{\link[reactr]{getValue}}
+#'      
+#' @inheritParams getValue
+#' @param id \code{\link{missing}}.
+#' @return See method
+#'    \code{\link[reactr]{getValue-character-environment-method}}
+#' @example inst/examples/getValue.r
+#' @seealso \code{
+#'    \link[reactr]{getValue}
+#' }
+#' @template author
+#' @template references
+#' @export
+#' @import rapp.core.condition
+setMethod(
+  f = "getValue", 
+  signature = signature(
+    id = "character",
+    where = "missing"
+  ), 
+  definition = function(
+    id,
+    where,
+    .hash_id,
+    ...
+  ) {
+
+  return(getValue(id = id, where = where, .hash_id = .hash_id, ...))
+    
+  }
+)
+
+#' @title
+#' Get Value from Environment
+#'
+#' @description 
+#' See generic: \code{\link[reactr]{getValue}}
 #'   	 
 #' @inheritParams getValue
 #' @param id \code{\link{character}}.
-#' @return \code{\link{ANY}}. Option value or for non-existing option 
-#'    (i.e. wrong \code{id}): \code{NULL} if \code{strict = FALSE} and an error
-#'    if \code{strict = TRUE}.
+#' @return \code{\link{ANY}}. Variable value
 #' @example inst/examples/getValue.r
 #' @seealso \code{
-#'    \link[rapp.core.environment]{getValue}
+#'    \link[reactr]{getValue}
 #' }
 #' @template author
 #' @template references
@@ -66,14 +105,15 @@ setMethod(
   definition = function(
     id,
     where,
+    .hash_id,
     ...
   ) {
 
   watch <- where$.watch[[id]]
   if (!is.null(watch)) {
     idx <- sapply(watch, function(ii) {
-      hash_0 <- get(ii, envir = where$.hash[[ii]], inherits = FALSE)
-      hash_1 <- get(id, envir = where$.hash[[ii]], inherits = FALSE)
+      hash_0 <- get(ii, envir = where[[.hash_id]][[ii]], inherits = FALSE)
+      hash_1 <- get(id, envir = where[[.hash_id]][[ii]], inherits = FALSE)
       hash_0 != hash_1
     })
    
@@ -84,8 +124,9 @@ setMethod(
         where = where, 
 #         binding = substitute(BINDING), 
 #           list(BINDING = get(id, where$.bindings, inherits = FALSE)),
-        binding = get(id, envir = where$.bindings, inherits = FALSE),
         watch = watch,
+        where_watch = where,
+        binding = get(id, envir = where$.bindings, inherits = FALSE),
         binding_type = 2
       )
     } else {

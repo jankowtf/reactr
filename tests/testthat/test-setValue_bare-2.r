@@ -1,12 +1,12 @@
-context("setValue-2")
-test_that("setValue", {
+context("setValue_bare-2")
+test_that("setValue_bare", {
   
   where = new.env()  
   id = "x_1"
   value = 10
   
   expect_equal(
-    setValue(
+    setValue_bare(
       id = id, 
       value = value, 
       where = where
@@ -14,7 +14,7 @@ test_that("setValue", {
     value
   )
   expect_equal(
-    setValue(
+    setValue_bare(
       id = id, 
       value = value, 
       where = where
@@ -31,7 +31,7 @@ test_that("setValue", {
 
   expected <- binding(value)
   expect_equal(
-    setValue(
+    setValue_bare(
       id = "x_2", 
       where = where, 
       watch = "x_1", 
@@ -40,9 +40,10 @@ test_that("setValue", {
     ),
     expected
   )
-  where$x_1  
-  where$x_2
+  
+  expect_equal(where$x_1, value)
+  expect_equal(where$x_2, binding(where$x_1))
   where$x_1 <- 100
-  where$x_2
+  expect_equal(where$x_2, binding(where$x_1))
 
 })

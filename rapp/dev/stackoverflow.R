@@ -11,8 +11,8 @@ setValue <- function(
   if (!exists(".bindings", envir, inherits = FALSE)) {
     assign(".bindings", new.env(), envir)
   }    
-  if (!exists(".hash", envir, inherits = FALSE)) {
-    assign(".hash", new.env(), envir)
+  if (!exists("._HASH", envir, inherits = FALSE)) {
+    assign("._HASH", new.env(), envir)
   }
   if (!exists(".observe", envir, inherits = FALSE)) {
     assign(".observe", new.env(), envir)
@@ -262,51 +262,33 @@ fred
 #   }
 # )
 
-
-# #' @title
-# #' Set Value (ANY,ANY,ANY,ANY,ANY)
-# #'
-# #' @description 
-# #' See generic: \code{\link[reactr]{setValue}}
-# #'      
-# #' @inheritParams setValue
-# #' @param id \code{\link{ANY}}.
-# #' @param value \code{\link{ANY}}.
-# #' @param where \code{\link{ANY}}.
-# #' @param watch \code{\link{ANY}}.
-# #' @param binding \code{\link{ANY}}.
-# #' @return \code{\link{ANY}}. Value of \code{value} or the return value 
-# #'    of the function inside \code{binding}.
-# #' @example inst/examples/setValue.r
-# #' @seealso \code{
-# #'    Generic: \link[reactr]{setValue}
-# #' }
-# #' @template author
-# #' @template references
-# #' @export
-# setMethod(
-#   f = "setValue", 
-#   signature = signature(
-#     id = "character",
-#     value = "ANY",
-#     where = "environment",
-#     watch = "missing",
-#     binding = "missing"
-#   ), 
-#   definition = function(
-#     id,
-#     value,
-#     where,
-#     watch,
-#     binding,
-#     binding_type,
-#     ...
-#   ) {
-#   
-#   mc <- match.call()
-#   mc[[1]] <- quote(setValue)
-#   eval(mc)
-#   
-#   }
-# )
+setMethod(
+  f = "setValue", 
+  signature = signature(
+    id = "ANY",
+    value = "ANY",
+    where = "ANY",
+    watch = "ANY",
+    where_watch = "ANY",
+    binding = "ANY"
+  ), 
+  definition = function(
+    id,
+    value,
+    where,
+    watch,
+    where_watch,
+    binding,
+    binding_type,
+    ...
+  ) {
+  
+  mc <- match.call()
+  print(mc)
+  mc[[1]] <- quote(setValue)
+  print(mc)
+  eval(mc)
+  
+  }
+)
 

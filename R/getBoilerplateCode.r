@@ -36,7 +36,7 @@ setGeneric(
 #' See generic: \code{\link[reactr]{getBoilerplateCode}}
 #'   	 
 #' @inheritParams getBoilerplateCode
-#' @param ns \code{\link{Reactr.BindingContractSet.S3}}.
+#' @param ns \code{\link{Reactr.BindingContractMonitored.S3}}.
 #' @return \code{\link{call}}. Implemented binding interface.
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
@@ -45,11 +45,10 @@ setGeneric(
 #' @template author
 #' @template references
 #' @export
-#' @import rapp.core.condition
 setMethod(
   f = "getBoilerplateCode", 
   signature = signature(
-    ns = "Reactr.BindingContractSet.S3"
+    ns = "Reactr.BindingContractMonitored.S3"
   ), 
   definition = function(
     ns,
@@ -60,20 +59,17 @@ setMethod(
     local({
       VALUE <- NULL
       function(v) {
-#         if (!exists(id, where$.hash, inherits = FALSE)) {
-#           assign(id, new.env(), envir = where$.hash)
-#         }
         if (!missing(v)) {
-#           where$.hash[[id]][[id]] <- digest::digest(v)
           VALUE <<- v
+          ## Ensure hash value //
+          assign(id, digest::digest(VALUE), where[[HASH]][[id]])
         }
-        ## Ensure hash value //
-        assign(id, digest::digest(VALUE), where$.hash[[id]])
         VALUE
       }
     }),
     list(
-      VALUE = as.name("value")
+      VALUE = as.name("value"),
+      HASH = as.name(".hash_id")
     )
   )
   
@@ -89,7 +85,7 @@ setMethod(
 #' See generic: \code{\link[reactr]{getBoilerplateCode}}
 #'      
 #' @inheritParams getBoilerplateCode
-#' @param ns \code{\link{Reactr.BindingContractGet.S3}}.
+#' @param ns \code{\link{Reactr.BindingContractMonitoring.S3}}.
 #' @return \code{\link{call}}. Implemented binding interface.
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
@@ -98,11 +94,10 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import rapp.core.condition
 setMethod(
   f = "getBoilerplateCode", 
   signature = signature(
-    ns = "Reactr.BindingContractGet.S3"
+    ns = "Reactr.BindingContractMonitoring.S3"
   ), 
   definition = function(
     ns,
@@ -111,68 +106,97 @@ setMethod(
 
   out <- substitute(
     local({
+      
       ##------------------------------------------------------------------------
       ## Initialization //
       ##------------------------------------------------------------------------
       
-      if (  exists(watch, envir = where, inherits = FALSE) &&
-            !is.null(get(watch, envir = where, inherits = FALSE))
+      if (.tracelevel == 1) {
+        message("----- INIT START -----")
+        message("id:")
+        message(id)
+        message("watch:")
+        message(watch)      
+      }
+      
+#       if (  exists(watch, envir = where, inherits = FALSE) &&
+#             !is.null(get(watch, envir = where, inherits = FALSE))
+#       ) {
+#         VALUE <- BINDING_CONTRACT
+#       } else {
+#         VALUE <- NULL
+#       }
+      if (  exists(watch, envir = where_watch, inherits = FALSE) &&
+            !is.null(get(watch, envir = where_watch, inherits = FALSE))
       ) {
-        VALUE <- BINDING_IFACE
+        VALUE <- BINDING_CONTRACT
       } else {
         VALUE <- NULL
       }
-      
-      ## Ensure hash value transfer //
-      hash_0 <- as.character(where$.hash[[watch]][[watch]])
-      hash_1 <- as.character(where$.hash[[watch]][[id]])
-#       if (  exists(watch, envir = where$.hash[[watch]], inherits = FALSE) &&
-#             !exists(id, envir = where$.hash[[watch]], inherits = FALSE)
-#       ) {
-      if (!length(hash_1)) {
-        assign(
-          id, 
-#           get(watch, envir = where$.hash[[watch]]),
-          hash_0,
-          where$.hash[[watch]]
-        )
-      }
-print("DEBUG")
-print(hash_0)
-print(hash_1)
 
+      if (.tracelevel == 1) {
+        message("----- INIT END -----")
+      }
+      
       function(v) {
-        if (  exists(watch, envir = where, inherits = FALSE) &&
-              !is.null(get(watch, envir = where, inherits = FALSE))
-        ) {
+        
+        if (.tracelevel == 1) {
+          message("----- BINDING CONTRACT START -----")
+          message("id:")
+          message(id)
+          message("watch:")
+          message(watch)
+          message("hash id/id:")
+          print(where[[HASH]][[id]][[id]])   
+          message("hash id/watch:")
+          print(where[[HASH]][[id]][[watch]])   
+          message("hash watch/watch:")
+          print(where_watch[[HASH]][[watch]][[watch]])   
+          message("hash watch/id:")
+          print(where_watch[[HASH]][[watch]][[id]])   
+        }
+        
+        if (exists(watch, envir = where_watch, inherits = FALSE)) {  
           
         ##----------------------------------------------------------------------
         ## Get //
         ##----------------------------------------------------------------------
         
           if (missing(v)) {
-            hash_0 <- where$.hash[[watch]][[watch]]
-            hash_1 <- where$.hash[[watch]][[id]]
-            if (!length(hash_0)) {
-              stop(paste0("[", Sys.getpid(), "] ", gsub("-|:| ", "", Sys.time()), 
-                "/reactr/binding> ID: ", id, " --> empty hash for: ", watch))
+            if (.tracelevel == 1) {
+              message(paste0(">>>>> getting ", id, " watching ", watch))
             }
-            message(hash_0)
-            message(hash_1)
+            hash_0 <- where_watch[[HASH]][[watch]][[watch]]
+            hash_1 <- where_watch[[HASH]][[watch]][[id]]
             if (hash_0 != hash_1) {
-#               message("monitored variable has changed:")
-#               message("updating")
-              VALUE <<- BINDING_IFACE
-              where$.hash[[watch]][[id]] <- hash_0
+              if (.tracelevel == 1) {
+                message(paste0("updating based on contract: ", 
+                  id, " (watching: ", watch, ")"))
+              }
+              VALUE <<- BINDING_CONTRACT
+              where_watch[[HASH]][[watch]][[id]] <- hash_0
+              where[[HASH]][[id]][[id]] <- hash_0
+              where[[HASH]][[id]][[watch]] <- hash_0
+            } else {
+              if (.tracelevel == 1) {
+                message(paste0("in sync: ", 
+                  id, " (watching: ", watch, ")"))
+              }
             }
           }
         }
+
+        if (.tracelevel == 1) {
+          message("----- BINDING CONTRACT END -----")
+        }
+
         VALUE
       }
     }),
     list(
       VALUE = as.name("value"), 
-      BINDING_IFACE = substitute(.binding(x = where[[watch]]))
+      BINDING_CONTRACT = substitute(.binding(x = where_watch[[watch]])),
+      HASH = as.name(".hash_id")
     )
   )    
   
@@ -188,7 +212,7 @@ print(hash_1)
 #' See generic: \code{\link[reactr]{getBoilerplateCode}}
 #'      
 #' @inheritParams getBoilerplateCode
-#' @param ns \code{\link{Reactr.BindingContractCombined.S3}}.
+#' @param ns \code{\link{Reactr.BindingContractMutual.S3}}.
 #' @return \code{\link{call}}. Implemented binding interface.
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
@@ -197,11 +221,11 @@ print(hash_1)
 #' @template author
 #' @template references
 #' @export
-#' @import rapp.core.condition
+#' @import digest
 setMethod(
   f = "getBoilerplateCode", 
   signature = signature(
-    ns = "Reactr.BindingContractCombined.S3"
+    ns = "Reactr.BindingContractMutual.S3"
   ), 
   definition = function(
     ns,
@@ -215,135 +239,110 @@ setMethod(
       ## Initialization //
       ##------------------------------------------------------------------------
       
-message("Force (before):")
-print(FORCE_VALUE)
-# print(VALUE_FORCE)      
+      if (.tracelevel == 1) {
+        message("----- INIT START -----")
+        message("id:")
+        message(id)
+        message("watch:")
+        message(watch)      
+      }
       
-# force_value <- FALSE      
-      if (FORCE_VALUE) {
-        if (FALSE) {
-          VALUE <- VALUE_FORCE
-          
-          ## Try aligning hash values //
-          assign(id, digest::digest(NULL), envir = where$.hash[[watch]])
-          assign(watch, digest::digest(NULL), envir = where$.hash[[watch]])
-#           assign(id, digest::digest(NULL), where$.hash[[id]])
-  #         print("asldkfjasldjkf")
-        }
-        value <- NULL
+      if (  exists(watch, envir = where, inherits = FALSE) &&
+            !is.null(get(watch, envir = where, inherits = FALSE))
+      ) {
+        VALUE <- BINDING_CONTRACT
       } else {
-        if (  exists(watch, envir = where, inherits = FALSE) &&
-              !is.null(get(watch, envir = where, inherits = FALSE))
-        ) {
-          VALUE <- BINDING_IFACE
-        } else {
-          VALUE <- NULL
-        }
+        VALUE <- NULL
+      }
+    
+#       ## Ensure hash value transfer //
+#       hash_0 <- where[[HASH]][[watch]][[watch]]
+#       hash_1 <- where[[HASH]][[watch]][[id]]
+#       if (.tracelevel == 1) {
+#         message("hash watch/watch:")
+#         print(hash_0)
+#         message("hash watch/id:")
+#         print(hash_1)
+#       }
+
+      if (.tracelevel == 1) {
+        message("----- INIT END -----")
       }
 
-      ## Ensure hash value transfer //
-      hash_0 <- where$.hash[[watch]][[watch]]
-      if (is.null(hash_0) || !length(hash_0)) {
-        hash_0 <- digest::digest(hash_0)
-        assign(watch, hash_0, envir = where$.hash[[watch]])
-      }
-      hash_1 <- where$.hash[[watch]][[id]]
-      if (is.null(hash_1) || !length(hash_1)) {
-        hash_1 <- digest::digest(hash_1)
-        assign(id, hash_1, envir = where$.hash[[watch]])
-      }
-#       if (  exists(watch, envir = where$.hash[[watch]], inherits = FALSE) &&
-#             !exists(id, envir = where$.hash[[watch]], inherits = FALSE)
-#       ) {
-      if (is.null(hash_1)) {
-        assign(
-          id, 
-#           get(watch, envir = where$.hash[[watch]]),
-          hash_0,
-          where$.hash[[watch]]
-        )
-      }
-
-print(hash_0)
-print(hash_1)
-message("----------")
       function(v) {
+
+      if (.tracelevel == 1) {
+        message("----- BINDING CONTRACT START -----")
+        message("id:")
+        message(id)
+        message("watch:")
+        message(watch)
+        message("hash id/id:")
+        print(where[[HASH]][[id]][[id]])   
+        message("hash id/watch:")
+        print(where[[HASH]][[id]][[watch]])   
+        message("hash watch/watch:")
+        print(where[[HASH]][[watch]][[watch]])   
+        message("hash watch/id:")
+        print(where[[HASH]][[watch]][[id]])   
+      }
         
         ##----------------------------------------------------------------------
         ## Set //
         ##----------------------------------------------------------------------
         
         if (!missing(v)) {
-#           where$.hash[[id]][[id]] <- digest::digest(v)
           VALUE <<- v
+          ## Update hash value //
+          assign(id, digest::digest(VALUE), where[[HASH]][[id]])
+          if (.tracelevel == 1) {
+            message(paste0(">>>>> setting ", id))
+            message("new hash id/id:")
+            print(where[[HASH]][[id]][[id]])             
+          }
         }
-        ## Ensure hash value //
-        ## PATCH-TRY: aling initial hash values
-#         if (!FORCE_VALUE) {
-          assign(id, digest::digest(VALUE), where$.hash[[id]])
-#         } else {
-#           assign(id, digest::digest(NULL), where$.hash[[id]])
-#         }
-
-message("id:")
-message(id)
-message("watch:")
-message(watch)
-message("hash of 'id':")
-print(where$.hash[[id]][[id]])   
-message("hash of 'watch':")
-print(where$.hash[[watch]][[watch]])   
-message("hash envir of 'watch':")
-print(ls(where$.hash[[watch]]))   
-
+      
         ##----------------------------------------------------------------------
         ## Get //
         ##----------------------------------------------------------------------
 
-message("Force (middle):")
-print(FORCE_VALUE)
-
-        if (  exists(watch, envir = where, inherits = FALSE) &&
-              !FORCE_VALUE
-        ) {
+        if (exists(watch, envir = where, inherits = FALSE)) {
           if (missing(v)) {
-            hash_0 <- where$.hash[[watch]][[watch]]
-            hash_1 <- where$.hash[[watch]][[id]]
-            if (!length(hash_0)) {
-              stop(paste0("[", Sys.getpid(), "] ", gsub("-|:| ", "", Sys.time()), 
-                "/reactr/binding> ID: ", id, " --> empty hash for: ", watch))
+            
+            if (.tracelevel == 1) {
+              message(paste0(">>>>> getting ", id, " watching ", watch))
             }
-            message(hash_0)
-            message(hash_1)
+            hash_0 <- where[[HASH]][[watch]][[watch]]
+            hash_1 <- where[[HASH]][[watch]][[id]]
             if (hash_0 != hash_1) {
-#               message("monitored variable has changed:")
-              message("updating")
-#               stop("planned stop")
-              VALUE <<- BINDING_IFACE
-              where$.hash[[watch]][[id]] <- hash_0
+              if (.tracelevel == 1) {
+                message(paste0("updating based on contract: ", 
+                  id, " (watching: ", watch, ")"))
+              }
+              VALUE <<- BINDING_CONTRACT
+              where[[HASH]][[watch]][[id]] <- hash_0
+              where[[HASH]][[id]][[id]] <- hash_0
+              where[[HASH]][[id]][[watch]] <- hash_0
+            } else {
+              if (.tracelevel == 1) {
+                message(paste0("in sync: ", 
+                  id, " (watching: ", watch, ")"))
+              }
             }
-#             if (FORCE_VALUE) {
-#               VALUE <<- VALUE_FORCE
-#             }
           }
         }
-        force_value <- FALSE
-message("Force (after):")
-print(FORCE_VALUE)
+      
+        if (.tracelevel == 1) {
+          message("----- BINDING CONTRACT END -----")
+        }
+      
         VALUE
       }
-
-#       force_value <- FALSE
-
-
-#       VALUE
-
     }),
     list(
       VALUE = as.name("value"), 
-      BINDING_IFACE = substitute(.binding(x = where[[watch]])),
-      FORCE_VALUE = as.name("force_value"),
-      VALUE_FORCE = as.name("value_force")
+      BINDING_CONTRACT = substitute(.binding(x = where[[watch]])),
+      HASH = as.name(".hash_id")
     )
   )    
   

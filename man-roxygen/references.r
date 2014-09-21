@@ -1,1 +1,1 @@
-#' @references \url{http://www.rappster.de/rapp/reactr}
+#' @references \url{https://github.com/Rappster/reactr}

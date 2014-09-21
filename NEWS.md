@@ -1,3 +1,19 @@
+# CHANGES IN reactr VERSION 0.1.0.4
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+- cleaned up a little bit, no major changes
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.0.3
 
 ## NEW FEATURES

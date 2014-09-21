@@ -23,7 +23,7 @@ an example environment:
 where <- new.env()
 ```
 
-### Binding scenario: identical
+### Binding scenario 1: simple monitoring (identical values)
 
 Set a variable that can be monitored:
 
@@ -60,7 +60,7 @@ where$x_2
 See scenario *Binding scenario: mutual binding* for an alternative
 to this!
 
-### Binding scenario: arbitrary functional relationship
+### Binding scenario 2: simple monitoring (arbitrary functional relationship)
 
 Set a variable that monitors `x_1` and has a reactive binding to it:
 
@@ -80,7 +80,7 @@ where$x_2
 where$x_3
 ```
 
-### Binding scenario: mutual binding
+### Binding scenario 3: mutual binding (identical values)
 
 #### NOTE: BUG (2014-09-21)
 Currently, you need to reset `where` as a function to reset the hash registry
@@ -119,6 +119,26 @@ where$x_4
 where$x_4 <- 1000
 where$x_4
 where$x_1
+```
+
+### Binding scenario 4: mutual binding (valid bi-directional relationship)
+
+```
+setValue(id = "x_5", watch = "x_6", where = where, 
+  binding = function(x) {x * 2}, mutual = TRUE)
+setValue(id = "x_6", watch = "x_5", where = where, 
+  binding = function(x) {x/2}, mutual = TRUE)
+
+where$x_5
+where$x_6
+
+where$x_5 <- 100
+where$x_5
+where$x_6
+
+where$x_6 <- 500
+where$x_6
+where$x_5
 ```
 
 ## Further examples

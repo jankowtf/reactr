@@ -8,6 +8,7 @@ Reactive object bindings with built-in caching
 ```
 require("devtools")
 devtools::install_github("Rappster/reactr")
+require("reactr")
 ```
 
 ## Quick intro 
@@ -72,17 +73,19 @@ where$x_3
 
 ### Binding scenario: mutual binding
 
-Set two variables that have a mutual binding.
-The main difference to *Binding scenario: identical* is, that you can set 
-both `x_1` **and** `x_4`.
-
-NOTE:
+#### NOTE: BUG (2014-09-21)
 Currently, you need to reset `where` as a function to reset the hash registry
 is still missing (this is scheduled for the next release):
 
 ```
 where <- new.env()
 ```
+
+Set two variables that have a mutual binding.
+The main difference to *Binding scenario: identical* is, that you can set 
+both `x_1` **and** `x_4`.
+
+
 In order to do that, it is necessary to "re-set" `x_1` as well.
 
 ```

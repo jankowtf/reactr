@@ -66,37 +66,17 @@ Sets a variable value in an environment.
 \details{
 If \code{binding_type = 1} (the current default), then the
 actual binding is established via \code{\link[base]{makeActiveBinding}}.
-This implies that the binding function \code{binding} needs to have a
-specific structure as required by both \code{\link[base]{makeActiveBinding}}
-and \code{setValue} itself. This in turn depends on what type of variable
-you want to set: a variable that should be \emph{monitored} by other variables
-(\emph{monitored}) or a variable that \emph{monitors} another
-variable (\emp{monitoring}).
-
-\itemize{
-   \item{for \emph{monitored}} {
-
-   }
-   \item{for \emph{monitoring}} {
-   }
-}
+The actual binding relationship is provided via a simple function of the
+form \code{function(x) {## Do something with 'x'}} via argument \code{binding}.
+For standard binding cases (simple monitoring and mutual bindings), you
+don't need to provided any explicit binding function via \code{binding}.
+The function takes care of setting it to \code{function(x) {x}}.
 }
 \note{
-\enumerate{
-   \item{
-   As binding functions require the use of \code{\link[base]{local}}, they need
-to be wrapped by \code{\link[base]{substitute}} in order to delay their actual
-evaluation to the actual call of \code{\link{makeActiveBinding}} inside
-this function.}
-   \item{
-   When choosing \code{binding_type = "makeActiveBinding"}, it is recommended
-   to also provide binding functions for "regular" variables as this will
-   take care of all the details for the variable turning into a monitored
-   variable later on. If you don't do that, you have to explicitly take care
-   of reassigning the respective variable accordingly before it can be
-   monitored by another variable
-   }
-}
+The main S4 method is
+\code{\link[reactr]{setValue-character-ANY-environment-character-environment-call-method}}.
+There also exist a bare S3 function that is about 10 - 15 % faster than
+the S4 method: \code{\link[reactr]{setValue_bare}}.
 }
 \examples{
 \dontrun{

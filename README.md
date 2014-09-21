@@ -46,10 +46,18 @@ where$x_1 <- 100
 where$x_2
 ```
 
-NOTE //
+#### NOTE
+
 Using this approach, you can only set `x_1`. Variable `x_2` is a mere
 "monitoring" variable. Trying to set it via `<-`, `assign()` or `setValue()` are
-disregarded. See scenario *Binding scenario: mutual binding* for an alternative
+disregarded:
+
+```
+where$x_2 <- 1000
+where$x_2
+```
+
+See scenario *Binding scenario: mutual binding* for an alternative
 to this!
 
 ### Binding scenario: arbitrary functional relationship

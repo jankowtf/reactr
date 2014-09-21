@@ -7,6 +7,7 @@ Reactive object bindings with built-in caching
 
 ```
 require("devtools")
+devtools::install_github("Rappster/classr")
 devtools::install_github("Rappster/reactr")
 require("reactr")
 ```
@@ -111,3 +112,7 @@ where$x_4 <- 1000
 where$x_4
 where$x_1
 ```
+
+## Further examples
+
+See `?setValue` and `setValue_bare`.

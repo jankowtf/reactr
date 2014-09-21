@@ -9,11 +9,11 @@
 #' Values for \code{id} are expected to be of structure \code{a/b/c/.../z},
 #' i.e. being a path-like identifier with a slash used as separator. 
 #' The identifier is transformed to \code{a$b$c$...$z} and then in turn to a
-#' valid \emph{get} expression (\code{envir$a$b$c$...$z}).
+#' valid \emph{get} expression (\code{where$a$b$c$...$z}).
 #'   	
 #' @param id \strong{Signature argument}.
 #'    Object containing path-like ID information.
-#' @param envir \strong{Signature argument}.
+#' @param where \strong{Signature argument}.
 #'    Object containing environment information.
 #' @template threedot
 #' @example inst/examples/getValue.r
@@ -27,11 +27,11 @@ setGeneric(
   name = "getValue",
   signature = c(
     "id",
-    "envir"
+    "where"
   ),
   def = function(
     id,
-    envir,
+    where,
     ...
   ) {
     standardGeneric("getValue")       
@@ -61,19 +61,19 @@ setMethod(
   f = "getValue", 
   signature = signature(
     id = "character",
-    envir = "environment"
+    where = "environment"
   ), 
   definition = function(
     id,
-    envir,
+    where,
     ...
   ) {
 
-  watch <- envir$.watch[[id]]
+  watch <- where$.watch[[id]]
   if (!is.null(watch)) {
     idx <- sapply(watch, function(ii) {
-      hash_0 <- get(ii, envir$.hash[[ii]], inherits = FALSE)
-      hash_1 <- get(id, envir$.hash[[ii]], inherits = FALSE)
+      hash_0 <- get(ii, envir = where$.hash[[ii]], inherits = FALSE)
+      hash_1 <- get(id, envir = where$.hash[[ii]], inherits = FALSE)
       hash_0 != hash_1
     })
    
@@ -81,18 +81,18 @@ setMethod(
       ## Update //
       out <- setValue(
         id = id, 
-        envir = envir, 
+        where = where, 
 #         binding = substitute(BINDING), 
-#           list(BINDING = get(id, envir$.bindings, inherits = FALSE)),
-        binding = get(id, envir$.bindings, inherits = FALSE),
+#           list(BINDING = get(id, where$.bindings, inherits = FALSE)),
+        binding = get(id, envir = where$.bindings, inherits = FALSE),
         watch = watch,
         binding_type = 2
       )
     } else {
-      out <- get(id, envir, inherits = FALSE)
+      out <- get(id, envir = where, inherits = FALSE)
     }
   } else {
-    out <- get(id, envir, inherits = FALSE)
+    out <- get(id, envir = where, inherits = FALSE)
   }
       
   return(out)

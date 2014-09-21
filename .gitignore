@@ -1,4 +1,3 @@
-man/*
 packrat/lib*/
 packrat/src
 *.dll

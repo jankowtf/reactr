@@ -5,3 +5,4 @@ packrat/src
 *.Rproj.user
 .*so
 .*o
+.Rproj.user

@@ -3,6 +3,8 @@
 #'
 #' @description 
 #' Sets a variable value in an environment.
+#' See main method 
+#' \code{\link{setThis-character-ANY-environment-character-environment-call-method}}
 #' 
 #' @details
 #' If \code{binding_type = 1} (the current default), then the 
@@ -48,7 +50,14 @@
 #'    \code{TRUE}: mutual binding contract;
 #'    \code{FALSE}: binding contract depends on \code{watch} being specified
 #'    or not (specified: \code{monitoring} contract; 
-#'    not specified: \emph{monitored} contract)
+#'    not specified: \emph{monitored} contract).
+#' @param force \code{\link{logical}}.
+#'    \code{TRUE}: force a binding reset even though there might already
+#'    have been defined another one;
+#'    \code{FALSE}: in case a binding has already been defined it is not
+#'    overwritten. \strong{Note that for the following constellations this value is 
+#'    automtically set to \code{TRUE}: \code{mutual = TRUE} and whenever an
+#'    explicit binding definition is provided via \code{binding}}.
 #' @param .hash_id \code{\link{character}}.
 #'    Name of the auxiliary environment for caching hash values. 
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
@@ -85,6 +94,7 @@ setGeneric(
     binding = substitute(expression()),
     binding_type = 1,
     mutual = FALSE,
+    force = FALSE,
     .hash_id = "._HASH",
     .tracelevel = 0,
     ...
@@ -134,6 +144,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -148,6 +159,7 @@ setMethod(
     binding = substitute(binding),
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -197,6 +209,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -211,6 +224,7 @@ setMethod(
     binding = substitute(binding),
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -260,6 +274,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -274,6 +289,7 @@ setMethod(
     binding = substitute(binding),
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -323,6 +339,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -337,6 +354,7 @@ setMethod(
     binding = binding,
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -386,6 +404,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -400,6 +419,7 @@ setMethod(
     binding = binding,
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -448,6 +468,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -462,6 +483,7 @@ setMethod(
     binding = binding,
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -510,6 +532,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -524,6 +547,7 @@ setMethod(
     binding = binding,
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -572,6 +596,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -635,6 +660,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -656,6 +682,7 @@ setMethod(
     binding_type = binding_type,
     .binding = binding,
     mutual = mutual,
+    force = force,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -704,6 +731,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -725,6 +753,7 @@ setMethod(
     binding_type = binding_type,
     .binding = binding,
     mutual = mutual,
+    force = force,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -773,6 +802,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -794,6 +824,7 @@ setMethod(
     binding_type = binding_type,
     .binding = binding,
     mutual = mutual,
+    force = force,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -842,6 +873,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     ...
@@ -856,6 +888,7 @@ setMethod(
     binding = binding,
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -911,6 +944,7 @@ setMethod(
     binding,
     binding_type,
     mutual,
+    force,
     .hash_id,
     .tracelevel,
     .binding = NULL,
@@ -924,8 +958,14 @@ setMethod(
   ## Check location identiy //
   identical_where <- identical(where, where_watch)
   
+  ## Check if specific binding or not //
   specific_binding <- !deparse(binding)[1] %in% c("expression()", 
     "substitute(expression())")
+  
+  ## Force //
+  if (mutual || specific_binding) {
+    force <- TRUE
+  }
 
   ## Binding interface //
   if (!specific_binding && binding_type == 1) {
@@ -964,7 +1004,7 @@ setMethod(
 
   if (binding_type == 1) {
     has_binding <- try(bindingIsActive(id, where), silent = TRUE)
-    if (inherits(has_binding, "try-error") || specific_binding) {
+    if (inherits(has_binding, "try-error") || force) {
       has_binding <- FALSE
     } else {
       has_binding <- has_binding
@@ -978,9 +1018,16 @@ setMethod(
     
     if (!has_binding) {
     ## Register variable with binding for the first time //
+      ## Make sure to really remove prior variables before setting or 
+      ## resetting them //
+      if (exists(id, envir = where, inherits = FALSE)) {
+        rm(list = id, envir = where, inherits = TRUE)
+      }
+      
       ## Note: this only takes care of "registering" the variable!    
       makeActiveBinding(id, eval(binding), where)  
     } else {
+    ## Assign standard value      
       out <- assign(id, value, envir = where)
     }
 

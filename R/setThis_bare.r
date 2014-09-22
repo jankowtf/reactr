@@ -42,7 +42,14 @@
 #'    \code{TRUE}: mutual binding contract;
 #'    \code{FALSE}: binding contract depends on \code{watch} being specified
 #'    or not (specified: \code{monitoring} contract; 
-#'    not specified: \emph{monitored} contract)
+#'    not specified: \emph{monitored} contract).
+#' @param force \code{\link{logical}}.
+#'    \code{TRUE}: force a binding reset even though there might already
+#'    have been defined another one;
+#'    \code{FALSE}: in case a binding has already been defined it is not
+#'    overwritten. \strong{Note that for the following constellations this value is 
+#'    automtically set to \code{TRUE}: \code{mutual = TRUE} and whenever an
+#'    explicit binding definition is provided via \code{binding}}.
 #' @param .hash_id \code{\link{character}}.
 #'    Name of the auxiliary environment for caching hash values. 
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
@@ -68,6 +75,7 @@ setThis_bare <- function(
     binding = substitute(expression()),
     binding_type = 1,
     mutual = FALSE,
+    force = FALSE,
     where_watch = where,
     .hash_id = "._HASH",
     .tracelevel = 0,
@@ -95,8 +103,14 @@ setThis_bare <- function(
     }
   }    
     
+  ## Check if specific binding or not //
   specific_binding <- !deparse(binding)[1] %in% c("expression()", 
     "substitute(expression())")
+  
+  ## Force //
+  if (mutual || specific_binding) {
+    force <- TRUE
+  }
     
   ## Binding interface //
   if (!specific_binding && binding_type == 1) {
@@ -137,7 +151,7 @@ setThis_bare <- function(
 
   if (binding_type == 1) {
     has_binding <- try(bindingIsActive(id, where), silent = TRUE)
-    if (inherits(has_binding, "try-error") || specific_binding) {
+    if (inherits(has_binding, "try-error") || force) {
       has_binding <- FALSE
     } else {
       has_binding <- has_binding

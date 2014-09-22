@@ -26,14 +26,14 @@ b1 <- substitute(
   local({
     VALUE <- NULL
     function(v) {
-      if (!exists(id, envir$.hash)) {
-        assign(id, new.env(), envir = envir$.hash)
+      if (!exists(id, envir[[.hash_id]])) {
+        assign(id, new.env(), envir = envir[[.hash_id]])
       }
       if (!missing(v)) {
         VALUE <<- v
       }
       ## Ensure hash value //
-      assign(id, digest::digest(VALUE), envir$.hash[[id]])
+      assign(id, digest::digest(VALUE), envir[[.hash_id]][[id]])
       VALUE
     }
   }),
@@ -62,13 +62,13 @@ b2 <- substitute(
     }
     
     ## Ensure hash value transfer //
-    if (  exists(watch, envir = envir$.hash[[watch]], inherits = FALSE) &&
-          !exists(id, envir = envir$.hash[[watch]], inherits = FALSE
+    if (  exists(watch, envir = envir[[.hash_id]][[watch]], inherits = FALSE) &&
+          !exists(id, envir = envir[[.hash_id]][[watch]], inherits = FALSE
     )) {
       assign(
         id, 
-        get(watch, envir = envir$.hash[[watch]]),
-        envir$.hash[[watch]]
+        get(watch, envir = envir[[.hash_id]][[watch]]),
+        envir[[.hash_id]][[watch]]
       )
     }
 
@@ -77,15 +77,15 @@ b2 <- substitute(
             !is.null(get(watch, envir = envir, FALSE))
       ) {        
         if (missing(v)) {
-          hash_0 <- envir$.hash[[watch]][[watch]]
-          hash_1 <- envir$.hash[[watch]][[id]]
+          hash_0 <- envir[[.hash_id]][[watch]][[watch]]
+          hash_1 <- envir[[.hash_id]][[watch]][[id]]
 #           message(hash_0)
 #           message(hash_1)
           if (hash_0 != hash_1) {
 #             message("monitored variable has changed:")
 #             message("updating")
             VALUE <<- envir[[watch]] + 100
-            envir$.hash[[watch]][[id]] <- hash_0
+            envir[[.hash_id]][[watch]][[id]] <- hash_0
           }
         }
       }

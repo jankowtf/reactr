@@ -413,4 +413,4 @@ where$x_7
 
 ## Further examples
 
-See `?setThis` and `setThis_bare`.
+See `?setThis` and `?setThis_bare`.

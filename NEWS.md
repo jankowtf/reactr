@@ -1,3 +1,22 @@
+# CHANGES IN reactr VERSION 0.1.0.6
+
+## NEW FEATURES
+
+## BUG FIXES
+
+- fixed issue #1
+
+## MAJOR CHANGES
+
+- added argument `force` in `setThis()`: force set/re-set of binding function
+  even though there might already have been one defined. Fixes 
+
+## MINOR CHANGES
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.0.5
 
 ## NEW FEATURES

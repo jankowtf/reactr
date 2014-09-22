@@ -17,8 +17,8 @@ setThis <- function(
   if (!exists(".observe", envir, inherits = FALSE)) {
     assign(".observe", new.env(), envir)
   }
-  if (!exists(id, envir$.hash, inherits = FALSE)) {
-    assign(id, new.env(), envir$.hash)  
+  if (!exists(id, envir[[.hash_id]], inherits = FALSE)) {
+    assign(id, new.env(), envir[[.hash_id]])  
   }
   
   ## Decide what type of value we have //
@@ -32,13 +32,13 @@ setThis <- function(
   if (has_binding) {
   ## Value with binding //
     ## Get hash value of observed value //
-    assign(id, get(observe, envir$.hash[[observe]]), envir$.hash[[observe]])
+    assign(id, get(observe, envir[[.hash_id]][[observe]]), envir[[.hash_id]][[observe]])
     ## Compute actual value:
     out <- binding(x = get(observe, envir))
     ## Store Actual value:
     assign(id, out, envir)
     ## Store hash value :
-    assign(id, digest::digest(out), envir$.hash[[id]])
+    assign(id, digest::digest(out), envir[[.hash_id]][[id]])
     ## Store binding :
     assign(id, binding, envir$.bindings)    
     ## Store observed value:
@@ -48,7 +48,7 @@ setThis <- function(
     ## Store actual value:
     out <- assign(id, value, envir)
     ## Store hash value:
-    assign(id, digest::digest(value), envir$.hash[[id]])
+    assign(id, digest::digest(value), envir[[.hash_id]][[id]])
   }
   
   return(out)
@@ -70,8 +70,8 @@ getThis <- function(
   ## Note: currently only tested with bindings that only 
   ## take one observed value 
     idx <- sapply(observe, function(ii) {
-      hash_0 <- get(ii, envir$.hash[[ii]], inherits = FALSE)
-      hash_1 <- get(id, envir$.hash[[ii]], inherits = FALSE)
+      hash_0 <- get(ii, envir[[.hash_id]][[ii]], inherits = FALSE)
+      hash_1 <- get(id, envir[[.hash_id]][[ii]], inherits = FALSE)
       hash_0 != hash_1
     })
 

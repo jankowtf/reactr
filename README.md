@@ -215,7 +215,9 @@ setThis(id = "x_7", watch = "x_8", where = where, mutual = TRUE, .tracelevel = 1
 # [1] "f9e884084b84794d762a535f3facec85"
 # ----- BINDING CONTRACT END -----
 # NULL
+```
 
+```
 setThis(id = "x_8", watch = "x_7", where = where, mutual = TRUE, .tracelevel = 1)
 # ----- INIT START -----
 # id:
@@ -254,7 +256,9 @@ setThis(id = "x_8", watch = "x_7", where = where, mutual = TRUE, .tracelevel = 1
 # in sync (x_8 watching: x_7)
 # ----- BINDING CONTRACT END -----
 # NULL
+```
 
+```
 where$x_7 <- Sys.time()
 # ----- BINDING CONTRACT START -----
 # id:
@@ -273,7 +277,9 @@ where$x_7 <- Sys.time()
 # new hash id/id:
 # [1] "330bf68a5152022e9d08b995d6bb3d88"
 # ----- BINDING CONTRACT END -----
+```
 
+```
 where$x_7
 # ----- BINDING CONTRACT START -----
 # id:
@@ -292,7 +298,9 @@ where$x_7
 # in sync (x_7 watching: x_8)
 # ----- BINDING CONTRACT END -----
 # [1] "2014-09-22 14:40:21 CEST"
+```
 
+```
 where$x_8
 # ----- BINDING CONTRACT START -----
 # id:
@@ -331,7 +339,9 @@ where$x_8
 # hash watch/id new: 91c8bc5b91169b03e8405d78132e8f00
 # ----- BINDING CONTRACT END -----
 # [1] "2014-09-22 14:40:21 CEST"
+```
 
+```
 where$x_8 <- Sys.time()
 # ----- BINDING CONTRACT START -----
 # id:
@@ -350,7 +360,9 @@ where$x_8 <- Sys.time()
 # new hash id/id:
 # [1] "d3e83df21e0f7b4da01f6ba2e215bb43"
 # ----- BINDING CONTRACT END -----
+```
 
+```
 where$x_8
 # ----- BINDING CONTRACT START -----
 # id:
@@ -369,7 +381,9 @@ where$x_8
 # in sync (x_8 watching: x_7)
 # ----- BINDING CONTRACT END -----
 # [1] "2014-09-22 14:41:18 CEST"
+```
 
+```
 where$x_7
 # ----- BINDING CONTRACT START -----
 # id:
@@ -408,6 +422,7 @@ where$x_7
 # hash watch/id new: d3e83df21e0f7b4da01f6ba2e215bb43
 # ----- BINDING CONTRACT END -----
 # [1] "2014-09-22 14:41:18 CEST"
+```
 
 ----
 

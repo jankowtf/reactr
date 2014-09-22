@@ -14,19 +14,19 @@ contracts that can be defined via regular functions (\code{\link{function}}).
 \details{
 The core functions/methods of this package:
  \itemize{
-   \item{\code{\link[reactr]{setValue}}: }{
+   \item{\code{\link[reactr]{setThis}}: }{
      Facilitates the specification of reactive object bindings (S4 method).
    }
-   \item{\code{\link[reactr]{setValue_bare}}: }{
-     Bare S3 version of \code{\link[reactr]{setValue}}. About roughly
+   \item{\code{\link[reactr]{setThis_bare}}: }{
+     Bare S3 version of \code{\link[reactr]{setThis}}. About roughly
      \code{10 - 15} faster than the S4 method.
    }
-   \item{\code{\link[reactr]{getValue}}: }{
+   \item{\code{\link[reactr]{getThis}}: }{
      Alternative way of retrieving variables from an environment.
    }
    \item{\code{\link[reactr]{getBoilerplateCode}}: }{
      Function that retrieves boilerplate code as required by
-     \code{\link[reactr]{setValue}} and \code{\link[base]{makeActiveBinding}}.
+     \code{\link[reactr]{setThis}} and \code{\link[base]{makeActiveBinding}}.
    }
 }
 }

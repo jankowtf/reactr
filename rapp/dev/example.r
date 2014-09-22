@@ -1,20 +1,20 @@
 x_1 <- new.env()  
 x_2 <- new.env()  
   
-setValue(id = "field_1", value = Sys.time(), envir = x_1)
-getValue(id = "x_1", envir = envir)
+setThis(id = "field_1", value = Sys.time(), envir = x_1)
+getThis(id = "x_1", envir = envir)
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
-setValue(id = "x_2", envir = envir, binding = binding, watch = "x_1", 
+setThis(id = "x_2", envir = envir, binding = binding, watch = "x_1", 
          binding_type = 2)
-getValue(id = "x_2", envir = envir)  
+getThis(id = "x_2", envir = envir)  
   
 ## Change value of monitored variable //
-setValue(id = "x_1", value = Sys.time(), envir = envir, binding_type = 2)
-getValue(id = "x_1", envir = envir)  
-getValue(id = "x_2", envir = envir)    
+setThis(id = "x_1", value = Sys.time(), envir = envir, binding_type = 2)
+getThis(id = "x_1", envir = envir)  
+getThis(id = "x_2", envir = envir)    
  
 ##----------------------------------------------------------------------------
 ## Setting via 'makeActiveBinding' //
@@ -40,7 +40,7 @@ b1 <- substitute(
   list(VALUE = as.name("value"))
 )
 
-setValue(
+setThis(
   id = "x_1", 
   value = 10, 
   envir = envir, 
@@ -95,7 +95,7 @@ b2 <- substitute(
   list(VALUE = as.name("value"))
 )
 
-setValue(
+setThis(
   id = "x_2", 
   envir = envir, 
   watch = "x_1", 
@@ -111,7 +111,7 @@ envir$x_1
 envir$x_2
 envir$x_2
 
-setValue(
+setThis(
   id = "x_1", 
   value = 100, 
   envir = envir, 
@@ -119,7 +119,7 @@ setValue(
   binding_type = 1
 )
 envir$x_2
-getValue("x_2", envir = envir)
+getThis("x_2", envir = envir)
 
 ##----------------------------------------------------------------------------
 ## Profiling //
@@ -129,16 +129,16 @@ require("microbenchmark")
 
 envir <- new.env()  
 res_1 <- microbenchmark(
-  "1" = setValue(id = "x_1", value = Sys.time(), envir = envir, binding_type = 2),
-  "2" = getValue(id = "x_1", envir = envir),
-  "3" = setValue(id = "x_2", envir = envir,
+  "1" = setThis(id = "x_1", value = Sys.time(), envir = envir, binding_type = 2),
+  "2" = getThis(id = "x_1", envir = envir),
+  "3" = setThis(id = "x_2", envir = envir,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
-  "4" = getValue(id = "x_2", envir = envir),
-  "5" = setValue(id = "x_1", value = Sys.time(), envir = envir,
+  "4" = getThis(id = "x_2", envir = envir),
+  "5" = setThis(id = "x_1", value = Sys.time(), envir = envir,
                  binding_type = 2),
-  "6" = getValue(id = "x_2", envir = envir),
+  "6" = getThis(id = "x_2", envir = envir),
   control = list(order = "inorder", warmup = 10)
 )
 res_1
@@ -147,13 +147,13 @@ res_1
 
 envir <- new.env()
 res_2 <- microbenchmark(
-  "1" = setValue(id = "x_1", value = 10, envir = envir, binding = b1,
+  "1" = setThis(id = "x_1", value = 10, envir = envir, binding = b1,
     binding_type = 1),
-  "2" = getValue(id = "x_1", envir = envir),
-  "3" = setValue(id = "x_2", envir = envir, binding = b2, watch = "x_1"),
-  "4" = getValue(id = "x_2", envir = envir),
-  "5" = setValue(id = "x_1", value = 100, envir = envir),
-  "6" = getValue(id = "x_2", envir = envir),
+  "2" = getThis(id = "x_1", envir = envir),
+  "3" = setThis(id = "x_2", envir = envir, binding = b2, watch = "x_1"),
+  "4" = getThis(id = "x_2", envir = envir),
+  "5" = setThis(id = "x_1", value = 100, envir = envir),
+  "6" = getThis(id = "x_2", envir = envir),
   control = list(order = "inorder", warmup = 10)
 )
 res_2

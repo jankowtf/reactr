@@ -1,4 +1,4 @@
-setValue <- function(
+setThis <- function(
   id,
   value,
   envir,
@@ -55,7 +55,7 @@ setValue <- function(
 
 }
 
-getValue <- function(
+getThis <- function(
   id,
   envir,
   ...
@@ -77,7 +77,7 @@ getValue <- function(
 
     ## Update required //
     if (any(idx)) {
-      out <- setValue(
+      out <- setThis(
         id = id, 
         envir = envir, 
         binding = get(id, envir$.bindings, inherits = FALSE),
@@ -101,11 +101,11 @@ getValue <- function(
 envir <- new.env()  
 
 ## Set regular value //
-setValue(id = "x_1", value = Sys.time(), envir = envir)
-getValue(id = "x_1", envir = envir)
+setThis(id = "x_1", value = Sys.time(), envir = envir)
+getThis(id = "x_1", envir = envir)
 
 ## Set value with binding to observed variable 'x_1' //
-setValue(
+setThis(
   id = "x_2", 
   envir = envir,
   binding = function(x) {
@@ -115,12 +115,12 @@ setValue(
 )
 ## As long as observed variable does not change, 
 ## value of 'x_2' will also not change
-getValue(id = "x_2", envir = envir)
+getThis(id = "x_2", envir = envir)
 
 ## Change value of observed variable 'x_1' //
-setValue(id = "x_1", value = Sys.time(), envir = envir)
+setThis(id = "x_1", value = Sys.time(), envir = envir)
 ## Value of 'x_2' will change according to binding function:
-getValue(id = "x_2", envir = envir)
+getThis(id = "x_2", envir = envir)
 
 ##------------------------------------------------------------------------------
 ## Profiling //
@@ -134,13 +134,13 @@ binding <- function(x) {
 }
 
 microbenchmark(
-  "1" = setValue(id = "x_1", value = Sys.time(), envir = envir),
-  "2" = getValue(id = "x_1", envir = envir),
-  "3" = setValue(id = "x_2", envir = envir,
+  "1" = setThis(id = "x_1", value = Sys.time(), envir = envir),
+  "2" = getThis(id = "x_1", envir = envir),
+  "3" = setThis(id = "x_2", envir = envir,
     binding = binding, observe = "x_1"),
-  "4" = getValue(id = "x_2", envir = envir),
-  "5" = setValue(id = "x_1", value = Sys.time(), envir = envir),
-  "6" = getValue(id = "x_2", envir = envir)
+  "4" = getThis(id = "x_2", envir = envir),
+  "5" = setThis(id = "x_1", value = Sys.time(), envir = envir),
+  "6" = getThis(id = "x_2", envir = envir)
 )
 # Unit: microseconds
 #  expr     min       lq   median       uq      max neval
@@ -204,9 +204,9 @@ fred
 # #' Set Value (character,ANY,environment,missing,call)
 # #'
 # #' @description 
-# #' See generic: \code{\link[reactr]{setValue}}
+# #' See generic: \code{\link[reactr]{setThis}}
 # #'      
-# #' @inheritParams setValue
+# #' @inheritParams setThis
 # #' @param id \code{\link{character}}.
 # #' @param value \code{\link{missing}}.
 # #' @param envir \code{\link{environment}}.
@@ -214,15 +214,15 @@ fred
 # #' @param binding \code{\link{call}}.
 # #' @return \code{\link{ANY}}. Value of \code{value} or the return value 
 # #'    of the function inside \code{binding}.
-# #' @example inst/examples/setValue.r
+# #' @example inst/examples/setThis.r
 # #' @seealso \code{
-# #'    Generic: \link[reactr]{setValue}
+# #'    Generic: \link[reactr]{setThis}
 # #' }
 # #' @template author
 # #' @template references
 # #' @export
 # setMethod(
-#   f = "setValue", 
+#   f = "setThis", 
 #   signature = signature(
 #     id = "character",
 #     value = "missing",
@@ -240,7 +240,7 @@ fred
 #     ...
 #   ) {
 # 
-#   .mthd <- selectMethod("setValue",
+#   .mthd <- selectMethod("setThis",
 #     signature=c(
 #       id = class(id),
 #       value = "ANY", 
@@ -263,7 +263,7 @@ fred
 # )
 
 setMethod(
-  f = "setValue", 
+  f = "setThis", 
   signature = signature(
     id = "ANY",
     value = "ANY",
@@ -285,7 +285,7 @@ setMethod(
   
   mc <- match.call()
   print(mc)
-  mc[[1]] <- quote(setValue)
+  mc[[1]] <- quote(setThis)
   print(mc)
   eval(mc)
   

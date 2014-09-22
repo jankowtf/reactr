@@ -1,19 +1,19 @@
 require("microbenchmark")
 
 ##------------------------------------------------------------------------------
-## setValue() //
+## setThis() //
 ##------------------------------------------------------------------------------
 
 where <- new.env()  
 
 res_1 <- microbenchmark(
-  "1" = setValue(id = "x_1", value = 10, where = where),
-  "2" = getValue(id = "x_1", where = where),
-  "3" = setValue(id = "x_2", where = where, watch = "x_1",
+  "1" = setThis(id = "x_1", value = 10, where = where),
+  "2" = getThis(id = "x_1", where = where),
+  "3" = setThis(id = "x_2", where = where, watch = "x_1",
     binding = function(x) {x + 100}),
-  "4" = getValue(id = "x_2", where = where),
-  "5" = setValue(id = "x_1", value = 100, where = where),
-  "6" = getValue(id = "x_2", where = where),
+  "4" = getThis(id = "x_2", where = where),
+  "5" = setThis(id = "x_1", value = 100, where = where),
+  "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 
@@ -22,35 +22,35 @@ res_1 <- microbenchmark(
 where <- new.env()
 
 res_2 <- microbenchmark(
-  "1" = setValue(id = "x_1", value = Sys.time(), where = where,
+  "1" = setThis(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "2" = getValue(id = "x_1", where = where),
-  "3" = setValue(id = "x_2", where = where,
+  "2" = getThis(id = "x_1", where = where),
+  "3" = setThis(id = "x_2", where = where,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
-  "4" = getValue(id = "x_2", where = where),
-  "5" = setValue(id = "x_1", value = Sys.time(), where = where,
+  "4" = getThis(id = "x_2", where = where),
+  "5" = setThis(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "6" = getValue(id = "x_2", where = where),
+  "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 
 
 ##------------------------------------------------------------------------------
-## setValue_bare() //
+## setThis_bare() //
 ##------------------------------------------------------------------------------
 
 where <- new.env()
 
 res_3 <- microbenchmark(
-  "1" = setValue_bare(id = "x_1", value = 10, where = where),
-  "2" = getValue(id = "x_1", where = where),
-  "3" = setValue_bare(id = "x_2", where = where, watch = "x_1",
+  "1" = setThis_bare(id = "x_1", value = 10, where = where),
+  "2" = getThis(id = "x_1", where = where),
+  "3" = setThis_bare(id = "x_2", where = where, watch = "x_1",
     binding = function(x) {x + 100}),
-  "4" = getValue(id = "x_2", where = where),
-  "5" = setValue_bare(id = "x_1", value = 100, where = where),
-  "6" = getValue(id = "x_2", where = where),
+  "4" = getThis(id = "x_2", where = where),
+  "5" = setThis_bare(id = "x_1", value = 100, where = where),
+  "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 
@@ -59,17 +59,17 @@ res_3 <- microbenchmark(
 where <- new.env()  
 
 res_4 <- microbenchmark(
-  "1" = setValue_bare(id = "x_1", value = Sys.time(), where = where,
+  "1" = setThis_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "2" = getValue(id = "x_1", where = where),
-  "3" = setValue_bare(id = "x_2", where = where,
+  "2" = getThis(id = "x_1", where = where),
+  "3" = setThis_bare(id = "x_2", where = where,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
-  "4" = getValue(id = "x_2", where = where),
-  "5" = setValue_bare(id = "x_1", value = Sys.time(), where = where,
+  "4" = getThis(id = "x_2", where = where),
+  "5" = setThis_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "6" = getValue(id = "x_2", where = where),
+  "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 

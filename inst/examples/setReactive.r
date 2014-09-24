@@ -58,13 +58,13 @@ where$x_2  ## cached value
 
 ## NOTE:
 ## It does not matter if you set (or get) values via 'setReactive()' 
-## (or 'getThis()') or via '<-'/'assign()' (or '$'/'get()')
+## (or 'getReactive()') or via '<-'/'assign()' (or '$'/'get()')
 setReactive(id = "x_1", value = 100, where = where)
 
 where$x_1
 where$x_2  ## value after executing binding function
 where$x_2  ## cached value
-getThis("x_2", where = where) ## cached value
+getReactive("x_2", where = where) ## cached value
 
 ###################
 ## In .GlobalEnv ##
@@ -95,7 +95,7 @@ setReactive(id = "x_1", value = 100)
 x_1
 x_2  ## value after executing binding function
 x_2  ## cached value
-getThis("x_2") ## cached value
+getReactive("x_2") ## cached value
 
 ##------------------------------------------------------------------------------
 ## Binding scenario: arbitrary functional relationship
@@ -366,19 +366,19 @@ where[[new_hash_id]]$x_1$x_1
 where <- new.env()  
   
 setReactive(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
-getThis(id = "x_1", where = where)
+getReactive(id = "x_1", where = where)
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
 setReactive(id = "x_2", where = where, binding = binding, watch = "x_1", 
          binding_type = 2)
-getThis(id = "x_2", where = where)  
+getReactive(id = "x_2", where = where)  
   
 ## Change value of monitored variable //
 setReactive(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
-getThis(id = "x_1", where = where)  
-getThis(id = "x_2", where = where) 
+getReactive(id = "x_1", where = where)  
+getReactive(id = "x_2", where = where) 
 
 ###################
 ## In .GlobalEnv ##
@@ -392,18 +392,18 @@ suppressWarnings(rm(x_2))
 suppressWarnings(rm(.hash))
   
 setReactive(id = "x_1", value = Sys.time(), binding_type = 2)
-getThis(id = "x_1")
+getReactive(id = "x_1")
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
 setReactive(id = "x_2", binding = binding, watch = "x_1", binding_type = 2)
-getThis(id = "x_2")  
+getReactive(id = "x_2")  
   
 ## Change value of monitored variable //
 setReactive(id = "x_1", value = Sys.time(), binding_type = 2)
-getThis(id = "x_1")  
-getThis(id = "x_2") 
+getReactive(id = "x_1")  
+getReactive(id = "x_2") 
 
 ##------------------------------------------------------------------------------
 ## Profiling //
@@ -416,12 +416,12 @@ where <- new.env()
 
 res_bt_1 <- microbenchmark(
   "1" = setReactive_bare(id = "x_1", value = 10, where = where),
-  "2" = getThis(id = "x_1", where = where),
+  "2" = getReactive(id = "x_1", where = where),
   "3" = setReactive_bare(id = "x_2", where = where, watch = "x_1",
     binding = function(x) {x + 100}),
-  "4" = getThis(id = "x_2", where = where),
+  "4" = getReactive(id = "x_2", where = where),
   "5" = setReactive_bare(id = "x_1", value = 100, where = where),
-  "6" = getThis(id = "x_2", where = where),
+  "6" = getReactive(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 res_bt_1
@@ -432,15 +432,15 @@ where <- new.env()
 res_bt_2 <- microbenchmark(
   "1" = setReactive_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "2" = getThis(id = "x_1", where = where),
+  "2" = getReactive(id = "x_1", where = where),
   "3" = setReactive_bare(id = "x_2", where = where,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
-  "4" = getThis(id = "x_2", where = where),
+  "4" = getReactive(id = "x_2", where = where),
   "5" = setReactive_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "6" = getThis(id = "x_2", where = where),
+  "6" = getReactive(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 res_bt_2

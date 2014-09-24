@@ -5,7 +5,7 @@
 \title{Ensure Hash Registry State}
 \usage{
 \S4method{ensureHashRegistryState}{character,missing,environment}(id,
-  watch = character(), where, .hash_id = "._HASH", ...)
+  watch = character(), where = .GlobalEnv, .hash_id = "._HASH", ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.}
@@ -13,6 +13,11 @@
 \item{watch}{\code{\link{missing}}.}
 
 \item{where}{\code{\link{environment}}.}
+
+\item{.hash_id}{\code{\link{character}}.
+Name of the auxiliary environment for caching hash values.
+Default: \code{"._HASH"}. Keep it unless this name is already taken in
+either \code{where} or \code{where_watch}.}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }

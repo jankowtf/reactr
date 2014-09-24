@@ -6,6 +6,11 @@
 #' See main method 
 #' \code{\link{unsetReactive-character-environment-method}}
 #' 
+#' @section Implications with respect to observing variables:
+#' If other reactive variables have been observing the reactive variable that
+#' has been unset, from this point on they will simply return the last value
+#' that has been cached.
+#' 
 #' @note
 #' The main S4 method is 
 #' \code{\link[reactr]{unsetReactive-character-environment-method}}.
@@ -139,6 +144,8 @@ setMethod(
       tmp <- get(id, envir = where, inherits = FALSE)
       rm(list = id, envir = where, inherits = FALSE)
       assign(id, tmp, where)
+      ## Remove hash registry entry //
+      removeFromHashRegistry(id = id, where = where, .hash_id = .hash_id, ...)
     }
   }
     

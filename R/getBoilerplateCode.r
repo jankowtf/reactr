@@ -159,28 +159,34 @@ setMethod(
             if (.tracelevel == 1) {
               message(paste0("retrieve (", id, " watching ", watch, ")"))
             }
-            hash_0 <- where_watch[[HASH]][[watch]][[watch]]
-            hash_1 <- where_watch[[HASH]][[watch]][[id]]
-            if (hash_0 != hash_1) {
-              if (.tracelevel == 1) {
-              message(paste0("update based on contract (", 
-                id, " watching ", watch, ")"))
-              message(paste0("hash watch/watch old: ", hash_0))
-              message(paste0("hash watch/id old: ", hash_1))
-            }
-            VALUE <<- BINDING_CONTRACT
-            hash_1 <- where[[HASH]][[watch]][[id]] <- hash_0
-            where[[HASH]][[id]][[id]] <- hash_0
-            where[[HASH]][[id]][[watch]] <- hash_0
-            if (.tracelevel == 1) {
-              message(paste0("hash watch/watch new: ", hash_0))
-              message(paste0("hash watch/id new: ", hash_1))
-            }
-            } else {
-              if (.tracelevel == 1) {
-                message(paste0("in sync (", 
-                  id, " watching: ", watch, ")"))
+            ## Control for reactives that have been unset in the meantime //
+            if (exists(watch, envir = where_watch[[HASH]], inherits = FALSE)) {
+              hash_0 <- where_watch[[HASH]][[watch]][[watch]]
+              hash_1 <- where_watch[[HASH]][[watch]][[id]]
+              if (hash_0 != hash_1) {
+                if (.tracelevel == 1) {
+                  message(paste0("update based on contract (", 
+                    id, " watching ", watch, ")"))
+                  message(paste0("hash watch/watch old: ", hash_0))
+                  message(paste0("hash watch/id old: ", hash_1))
+                }
+                VALUE <<- BINDING_CONTRACT
+                hash_1 <- where[[HASH]][[watch]][[id]] <- hash_0
+                where[[HASH]][[id]][[id]] <- hash_0
+                where[[HASH]][[id]][[watch]] <- hash_0
+                if (.tracelevel == 1) {
+                  message(paste0("hash watch/watch new: ", hash_0))
+                  message(paste0("hash watch/id new: ", hash_1))
+                }
+              } else {
+                if (.tracelevel == 1) {
+                  message(paste0("in sync (", 
+                    id, " watching: ", watch, ")"))
+                }
               }
+            } else {
+              suppressWarnings(rm(list = watch, envir = where[[HASH]][[id]], 
+                inherits = FALSE))
             }
           }
         }
@@ -298,32 +304,37 @@ out <- substitute(
 
       if (exists(watch, envir = where, inherits = FALSE)) {
         if (missing(v)) {
-          
-          if (.tracelevel == 1) {
-            message(paste0("retrieve (", id, " watching ", watch, ")"))
-          }
-          hash_0 <- where[[HASH]][[watch]][[watch]]
-          hash_1 <- where[[HASH]][[watch]][[id]]
-          if (hash_0 != hash_1) {
+          ## Control for reactives that have been unset in the meantime //
+          if (exists(watch, envir = where_watch[[HASH]], inherits = FALSE)) {
             if (.tracelevel == 1) {
-              message(paste0("update based on contract (", 
-                id, " watching ", watch, ")"))
-              message(paste0("hash watch/watch old: ", hash_0))
-              message(paste0("hash watch/id old: ", hash_1))
+              message(paste0("retrieve (", id, " watching ", watch, ")"))
             }
-            VALUE <<- BINDING_CONTRACT
-            hash_1 <- where[[HASH]][[watch]][[id]] <- hash_0
-            where[[HASH]][[id]][[id]] <- hash_0
-            where[[HASH]][[id]][[watch]] <- hash_0
-            if (.tracelevel == 1) {
-              message(paste0("hash watch/watch new: ", hash_0))
-              message(paste0("hash watch/id new: ", hash_1))
+            hash_0 <- where[[HASH]][[watch]][[watch]]
+            hash_1 <- where[[HASH]][[watch]][[id]]
+            if (hash_0 != hash_1) {
+              if (.tracelevel == 1) {
+                message(paste0("update based on contract (", 
+                  id, " watching ", watch, ")"))
+                message(paste0("hash watch/watch old: ", hash_0))
+                message(paste0("hash watch/id old: ", hash_1))
+              }
+              VALUE <<- BINDING_CONTRACT
+              hash_1 <- where[[HASH]][[watch]][[id]] <- hash_0
+              where[[HASH]][[id]][[id]] <- hash_0
+              where[[HASH]][[id]][[watch]] <- hash_0
+              if (.tracelevel == 1) {
+                message(paste0("hash watch/watch new: ", hash_0))
+                message(paste0("hash watch/id new: ", hash_1))
+              }
+            } else {
+              if (.tracelevel == 1) {
+                message(paste0("in sync (", 
+                  id, " watching: ", watch, ")"))
+              }
             }
           } else {
-            if (.tracelevel == 1) {
-              message(paste0("in sync (", 
-                id, " watching: ", watch, ")"))
-            }
+            suppressWarnings(rm(list = watch, envir = where[[HASH]][[id]], 
+                inherits = FALSE))
           }
         }
       }

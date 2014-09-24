@@ -15,7 +15,7 @@
 #' 
 #' @note
 #' There also exists an S4 method
-#' \code{\link[reactr]{setThis-character-ANY-environment-character-environment-call-method}}.
+#' \code{\link[reactr]{setReactive-character-ANY-environment-character-environment-call-method}}.
 #' It is about 10 - 15 % slower than this bare S3 function.
 #'     
 #' @param id \code{\link{character}}.
@@ -62,7 +62,7 @@
 #' @template threedot
 #' @example inst/examples/setThis_bare.r
 #' @seealso \code{
-#'   	\link[reactr]{setThis-character-ANY-environment-character-call-method}
+#'   	\link[reactr]{setReactive-character-ANY-environment-character-call-method}
 #' }
 #' @template author
 #' @template references

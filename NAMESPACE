@@ -2,11 +2,11 @@
 
 export(getBoilerplateCode)
 export(getThis)
-export(setThis)
+export(setReactive)
 export(setThis_bare)
 exportMethods(ensureHashRegistryState)
 exportMethods(getBoilerplateCode)
 exportMethods(getThis)
-exportMethods(setThis)
+exportMethods(setReactive)
 import(classr)
 import(digest)

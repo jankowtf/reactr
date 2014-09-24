@@ -1,4 +1,4 @@
-setThis <- function(
+setReactive <- function(
   id,
   value,
   envir,
@@ -77,7 +77,7 @@ getThis <- function(
 
     ## Update required //
     if (any(idx)) {
-      out <- setThis(
+      out <- setReactive(
         id = id, 
         envir = envir, 
         binding = get(id, envir$.bindings, inherits = FALSE),
@@ -101,11 +101,11 @@ getThis <- function(
 envir <- new.env()  
 
 ## Set regular value //
-setThis(id = "x_1", value = Sys.time(), envir = envir)
+setReactive(id = "x_1", value = Sys.time(), envir = envir)
 getThis(id = "x_1", envir = envir)
 
 ## Set value with binding to observed variable 'x_1' //
-setThis(
+setReactive(
   id = "x_2", 
   envir = envir,
   binding = function(x) {
@@ -118,7 +118,7 @@ setThis(
 getThis(id = "x_2", envir = envir)
 
 ## Change value of observed variable 'x_1' //
-setThis(id = "x_1", value = Sys.time(), envir = envir)
+setReactive(id = "x_1", value = Sys.time(), envir = envir)
 ## Value of 'x_2' will change according to binding function:
 getThis(id = "x_2", envir = envir)
 
@@ -134,12 +134,12 @@ binding <- function(x) {
 }
 
 microbenchmark(
-  "1" = setThis(id = "x_1", value = Sys.time(), envir = envir),
+  "1" = setReactive(id = "x_1", value = Sys.time(), envir = envir),
   "2" = getThis(id = "x_1", envir = envir),
-  "3" = setThis(id = "x_2", envir = envir,
+  "3" = setReactive(id = "x_2", envir = envir,
     binding = binding, observe = "x_1"),
   "4" = getThis(id = "x_2", envir = envir),
-  "5" = setThis(id = "x_1", value = Sys.time(), envir = envir),
+  "5" = setReactive(id = "x_1", value = Sys.time(), envir = envir),
   "6" = getThis(id = "x_2", envir = envir)
 )
 # Unit: microseconds
@@ -204,9 +204,9 @@ fred
 # #' Set Value (character,ANY,environment,missing,call)
 # #'
 # #' @description 
-# #' See generic: \code{\link[reactr]{setThis}}
+# #' See generic: \code{\link[reactr]{setReactive}}
 # #'      
-# #' @inheritParams setThis
+# #' @inheritParams setReactive
 # #' @param id \code{\link{character}}.
 # #' @param value \code{\link{missing}}.
 # #' @param envir \code{\link{environment}}.
@@ -214,15 +214,15 @@ fred
 # #' @param binding \code{\link{call}}.
 # #' @return \code{\link{ANY}}. Value of \code{value} or the return value 
 # #'    of the function inside \code{binding}.
-# #' @example inst/examples/setThis.r
+# #' @example inst/examples/setReactive.r
 # #' @seealso \code{
-# #'    Generic: \link[reactr]{setThis}
+# #'    Generic: \link[reactr]{setReactive}
 # #' }
 # #' @template author
 # #' @template references
 # #' @export
 # setMethod(
-#   f = "setThis", 
+#   f = "setReactive", 
 #   signature = signature(
 #     id = "character",
 #     value = "missing",
@@ -240,7 +240,7 @@ fred
 #     ...
 #   ) {
 # 
-#   .mthd <- selectMethod("setThis",
+#   .mthd <- selectMethod("setReactive",
 #     signature=c(
 #       id = class(id),
 #       value = "ANY", 
@@ -263,7 +263,7 @@ fred
 # )
 
 setMethod(
-  f = "setThis", 
+  f = "setReactive", 
   signature = signature(
     id = "ANY",
     value = "ANY",
@@ -285,7 +285,7 @@ setMethod(
   
   mc <- match.call()
   print(mc)
-  mc[[1]] <- quote(setThis)
+  mc[[1]] <- quote(setReactive)
   print(mc)
   eval(mc)
   

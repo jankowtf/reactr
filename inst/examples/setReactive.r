@@ -9,7 +9,7 @@
 where <- new.env()
 
 ## Set variable that can be monitored by others //
-setThis(id = "x_1", value = 10, where = where)
+setReactive(id = "x_1", value = 10, where = where)
 
 ## Get current variable value //
 where$x_1
@@ -24,7 +24,7 @@ where$x_1
 suppressWarnings(rm(x_1))
 suppressWarnings(rm(.hash))
 
-setThis(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 x_1
 
 ##------------------------------------------------------------------------------
@@ -32,11 +32,11 @@ x_1
 ##------------------------------------------------------------------------------
 
 ## Ensure 'x_1' is set //
-setThis(id = "x_1", value = 10, where = where)
+setReactive(id = "x_1", value = 10, where = where)
 
 ## Set variable that monitors 'x_1' //
 ## Binding contract: identical
-setThis(id = "x_2", where = where, watch = "x_1", binding = function(x) {x})
+setReactive(id = "x_2", where = where, watch = "x_1", binding = function(x) {x})
 
 ## When 'x_1' changes, 'x_2' changes accordingly:
 ## NOTE:
@@ -57,9 +57,9 @@ where$x_2  ## cached value
 where$x_2  ## cached value
 
 ## NOTE:
-## It does not matter if you set (or get) values via 'setThis()' 
+## It does not matter if you set (or get) values via 'setReactive()' 
 ## (or 'getThis()') or via '<-'/'assign()' (or '$'/'get()')
-setThis(id = "x_1", value = 100, where = where)
+setReactive(id = "x_1", value = 100, where = where)
 
 where$x_1
 where$x_2  ## value after executing binding function
@@ -76,7 +76,7 @@ getThis("x_2", where = where) ## cached value
 suppressWarnings(rm(x_2))
 suppressWarnings(rm(.hash))
 
-setThis(id = "x_2", watch = "x_1", binding = function(x) {x})
+setReactive(id = "x_2", watch = "x_1", binding = function(x) {x})
 
 x_1
 x_2  ## cached value
@@ -90,7 +90,7 @@ x_2  ## value after executing binding function
 x_2  ## cached value
 x_2  ## cached value
 
-setThis(id = "x_1", value = 100)
+setReactive(id = "x_1", value = 100)
 
 x_1
 x_2  ## value after executing binding function
@@ -102,7 +102,7 @@ getThis("x_2") ## cached value
 ##------------------------------------------------------------------------------
 
 ## Set variable that monitors 'x_1' //
-setThis(id = "x_3", where = where, watch = "x_1", binding = function(x) {x + 100})
+setReactive(id = "x_3", where = where, watch = "x_1", binding = function(x) {x + 100})
 
 where$x_1
 where$x_3
@@ -115,7 +115,7 @@ where$x_3
 
 ## BE CAREFUL WHAT YOU DO!
 
-setThis(id = "x_3", watch = "x_1", binding = function(x) {x + 100})
+setReactive(id = "x_3", watch = "x_1", binding = function(x) {x + 100})
 
 x_1
 x_3
@@ -133,9 +133,9 @@ where <- new.env()
 ## going on
 .tracelevel <- 0
     
-setThis(id = "x_1", where = where, watch = "x_2", 
+setReactive(id = "x_1", where = where, watch = "x_2", 
   mutual = TRUE, .tracelevel = .tracelevel)
-setThis(id = "x_2", where = where, watch = "x_1", 
+setReactive(id = "x_2", where = where, watch = "x_1", 
   mutual = TRUE, .tracelevel = .tracelevel
 )
 
@@ -167,8 +167,8 @@ suppressWarnings(rm(.hash))
 ## going on
 .tracelevel <- 0
     
-setThis(id = "x_1", watch = "x_2", mutual = TRUE, .tracelevel = .tracelevel)
-setThis(id = "x_2", watch = "x_1", mutual = TRUE, .tracelevel = .tracelevel)
+setReactive(id = "x_1", watch = "x_2", mutual = TRUE, .tracelevel = .tracelevel)
+setReactive(id = "x_2", watch = "x_1", mutual = TRUE, .tracelevel = .tracelevel)
 
 x_1
 x_2
@@ -190,12 +190,12 @@ x_1
 where <- new.env()      
 
 ## Set variables that are mutually bound //
-setThis(id = "x_1", where = where, watch = "x_2", 
+setReactive(id = "x_1", where = where, watch = "x_2", 
   mutual = TRUE, .tracelevel = .tracelevel)
-setThis(id = "x_2", where = where, watch = "x_1", 
+setReactive(id = "x_2", where = where, watch = "x_1", 
   mutual = TRUE, .tracelevel = .tracelevel
 )
-setThis(id = "x_3", where = where, watch = "x_2", 
+setReactive(id = "x_3", where = where, watch = "x_2", 
   binding = function(x) {x + 100}, .tracelevel = .tracelevel
 )
 
@@ -231,9 +231,9 @@ suppressWarnings(rm(.hash))
 ## going on
 .tracelevel <- 0
 
-setThis(id = "x_1", watch = "x_2", mutual = TRUE, .tracelevel = .tracelevel)
-setThis(id = "x_2", watch = "x_1", mutual = TRUE, .tracelevel = .tracelevel)
-setThis(id = "x_3", watch = "x_2", binding = function(x) {x + 100}, 
+setReactive(id = "x_1", watch = "x_2", mutual = TRUE, .tracelevel = .tracelevel)
+setReactive(id = "x_2", watch = "x_1", mutual = TRUE, .tracelevel = .tracelevel)
+setReactive(id = "x_3", watch = "x_2", binding = function(x) {x + 100}, 
   .tracelevel = .tracelevel)
 
 x_1 <- 100
@@ -263,9 +263,9 @@ x_3
 where <- new.env()  
 
 ## Set variables that are mutually bound //
-setThis(id = "x_1", where = where, watch = "x_2", 
+setReactive(id = "x_1", where = where, watch = "x_2", 
   mutual = TRUE, binding = function(x) {x/2}, .tracelevel = .tracelevel)
-setThis(id = "x_2", where = where, watch = "x_1", 
+setReactive(id = "x_2", where = where, watch = "x_1", 
   mutual = TRUE, binding = function(x) {x * 2}, .tracelevel = .tracelevel
 )
 
@@ -294,9 +294,9 @@ suppressWarnings(rm(.hash))
 .tracelevel <- 0
 
 ## Set variables that are mutually bound //
-setThis(id = "x_1", watch = "x_2", mutual = TRUE, 
+setReactive(id = "x_1", watch = "x_2", mutual = TRUE, 
   binding = function(x) {x/2}, .tracelevel = .tracelevel)
-setThis(id = "x_2", watch = "x_1", mutual = TRUE, 
+setReactive(id = "x_2", watch = "x_1", mutual = TRUE, 
   binding = function(x) {x * 2}, .tracelevel = .tracelevel
 )
 
@@ -316,14 +316,14 @@ x_1 <- new.env()
 x_2 <- new.env()  
 
 ## Set regular "complex" variable 'x_1' //
-setThis(id = "field_1", value = TRUE, where = x_1)
-setThis(id = "field_2", value = data.frame(x_1 = 1:5, x_2 = letters[1:5]), 
+setReactive(id = "field_1", value = TRUE, where = x_1)
+setReactive(id = "field_2", value = data.frame(x_1 = 1:5, x_2 = letters[1:5]), 
   where = x_1)
 
 ## Set variable with bindings //
-setThis(id = "field_1", where = x_2, watch = "field_1", where_watch = x_1, 
+setReactive(id = "field_1", where = x_2, watch = "field_1", where_watch = x_1, 
          binding = function(x) {!x})
-setThis(id = "field_2", where = x_2, watch = "field_2", where_watch = x_1, 
+setReactive(id = "field_2", where = x_2, watch = "field_2", where_watch = x_1, 
          binding = function(x) {x[,-1,drop = FALSE]})
 
 x_1$field_1
@@ -342,7 +342,7 @@ x_2$field_2
 ## need to specify an alternative hash environment ID via '.hash_id'.
 
 ## Default hash ID //
-setThis(id = "x_1", value = 10, where = where)
+setReactive(id = "x_1", value = 10, where = where)
 where$._HASH$x_1
 where$._HASH$x_1$x_1
 
@@ -350,7 +350,7 @@ where$._HASH$x_1$x_1
 where <- new.env()
 new_hash_id <- ".ALTERNATIVE_HASH"
 
-setThis(id = "x_1", value = 10, where = where, .hash_id = new_hash_id)
+setReactive(id = "x_1", value = 10, where = where, .hash_id = new_hash_id)
 where$._HASH$x_1   ## environment does not exist anymore
 where[[new_hash_id]]$x_1 
 where[[new_hash_id]]$x_1$x_1
@@ -365,18 +365,18 @@ where[[new_hash_id]]$x_1$x_1
 
 where <- new.env()  
   
-setThis(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
+setReactive(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
 getThis(id = "x_1", where = where)
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
-setThis(id = "x_2", where = where, binding = binding, watch = "x_1", 
+setReactive(id = "x_2", where = where, binding = binding, watch = "x_1", 
          binding_type = 2)
 getThis(id = "x_2", where = where)  
   
 ## Change value of monitored variable //
-setThis(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
+setReactive(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
 getThis(id = "x_1", where = where)  
 getThis(id = "x_2", where = where) 
 
@@ -391,17 +391,17 @@ suppressWarnings(rm(x_1))
 suppressWarnings(rm(x_2))
 suppressWarnings(rm(.hash))
   
-setThis(id = "x_1", value = Sys.time(), binding_type = 2)
+setReactive(id = "x_1", value = Sys.time(), binding_type = 2)
 getThis(id = "x_1")
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
-setThis(id = "x_2", binding = binding, watch = "x_1", binding_type = 2)
+setReactive(id = "x_2", binding = binding, watch = "x_1", binding_type = 2)
 getThis(id = "x_2")  
   
 ## Change value of monitored variable //
-setThis(id = "x_1", value = Sys.time(), binding_type = 2)
+setReactive(id = "x_1", value = Sys.time(), binding_type = 2)
 getThis(id = "x_1")  
 getThis(id = "x_2") 
 

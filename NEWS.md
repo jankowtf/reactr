@@ -44,7 +44,7 @@
 
 ## MAJOR CHANGES
 
-- added argument `force` in `setThis()`: force set/re-set of binding function
+- added argument `force` in `setReactive()`: force set/re-set of binding function
   even though there might already have been one defined. Fixes 
 
 ## MINOR CHANGES
@@ -67,7 +67,7 @@
 
 ## MAJOR CHANGES
 
-- changed `setValue*()` to `setThis*()`
+- changed `setValue*()` to `setReactive*()`
 - changed `getValue()` to `getThis()`
 
 ## MINOR CHANGES
@@ -124,7 +124,7 @@
 ## MAJOR CHANGES
 
 - argument `envir` changed to `where` in order to make the interfaces for 
-  `setThis` and `getThis` more generic
+  `setReactive` and `getThis` more generic
 - added dependencies for `classr` and `digest`
 - started to implement mutual bindings (not fully functional yet)
 

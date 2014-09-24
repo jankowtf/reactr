@@ -1,18 +1,18 @@
 require("microbenchmark")
 
 ##------------------------------------------------------------------------------
-## setThis() //
+## setReactive() //
 ##------------------------------------------------------------------------------
 
 where <- new.env()  
 
 res_1 <- microbenchmark(
-  "1" = setThis(id = "x_1", value = 10, where = where),
+  "1" = setReactive(id = "x_1", value = 10, where = where),
   "2" = getThis(id = "x_1", where = where),
-  "3" = setThis(id = "x_2", where = where, watch = "x_1",
+  "3" = setReactive(id = "x_2", where = where, watch = "x_1",
     binding = function(x) {x + 100}),
   "4" = getThis(id = "x_2", where = where),
-  "5" = setThis(id = "x_1", value = 100, where = where),
+  "5" = setReactive(id = "x_1", value = 100, where = where),
   "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")
 )
@@ -22,15 +22,15 @@ res_1 <- microbenchmark(
 where <- new.env()
 
 res_2 <- microbenchmark(
-  "1" = setThis(id = "x_1", value = Sys.time(), where = where,
+  "1" = setReactive(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
   "2" = getThis(id = "x_1", where = where),
-  "3" = setThis(id = "x_2", where = where,
+  "3" = setReactive(id = "x_2", where = where,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
   "4" = getThis(id = "x_2", where = where),
-  "5" = setThis(id = "x_1", value = Sys.time(), where = where,
+  "5" = setReactive(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
   "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")

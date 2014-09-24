@@ -3,7 +3,7 @@
 ##------------------------------------------------------------------------------
 ## Important remarks //
 ##------------------------------------------------------------------------------
-## This is a function that is currently only used inside a call to 'setThis()'
+## This is a function that is currently only used inside a call to 'setReactive()'
 ## or 'setThis_bare()'.
 ## Thus, in order to see what's going on here, we first need to mimick the 
 ## expected system state.
@@ -12,7 +12,7 @@
 where <- new.env()
 
 ## Ensuring that 'test' exists:
-setThis(id = "test", value = Sys.time(), where = where)
+setReactive(id = "test", value = Sys.time(), where = where)
 
 ## Getting boilerplate code for binding contract:
 binding <- getBoilerplateCode(
@@ -27,7 +27,7 @@ watch <- "test"
 ## call "binding contract".
 ## It defines the value of the variable monitoring 'test' based on the 
 ## value of 'test' via a function.
-## This is the value of 'binding' when you call 'setThis()'.
+## This is the value of 'binding' when you call 'setReactive()'.
 .binding <- function(x) {
   ## Add 24 hours //
   x + 60*60*24

@@ -1,5 +1,5 @@
-context("setThis-1")
-test_that("setThis", {
+context("setReactive-1")
+test_that("setReactive", {
   
   .hash_id <- "._HASH"
   where = new.env()  
@@ -7,7 +7,7 @@ test_that("setThis", {
   id <- "x_1"
   value <- Sys.time()
   expect_equal(
-    setThis(id = "x_1", value = value, where = where, binding_type = 2),
+    setReactive(id = "x_1", value = value, where = where, binding_type = 2),
     value
   )
   
@@ -26,7 +26,7 @@ test_that("setThis", {
   watch <- "x_1"
   expected <- eval(binding)(x = value)
   expect_equal(
-    setThis(id = id, where = where, binding = binding, watch = watch,
+    setReactive(id = id, where = where, binding = binding, watch = watch,
              binding_type = 2),
     expected
   )
@@ -46,7 +46,7 @@ test_that("setThis", {
   ## Change watch value //
   value = Sys.time()
   expect_equal(
-    setThis(id = "x_1", value = value, where = where, binding_type = 2),
+    setReactive(id = "x_1", value = value, where = where, binding_type = 2),
     value
   )
   expect_true(where[[.hash_id]]$x_1$x_1 != where[[.hash_id]]$x_1$x_2)
@@ -66,7 +66,7 @@ test_that("setThis", {
   value <- 10
   
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_1", 
       value = value, 
       where = where, 
@@ -86,7 +86,7 @@ test_that("setThis", {
   ## Set again //
   value <- 10
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_1", 
       value = value, 
       where = where, 
@@ -101,7 +101,7 @@ test_that("setThis", {
   binding <- function(x) {x + 100}
   
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_2", 
       where = where, 
       watch = "x_1", 
@@ -134,7 +134,7 @@ test_that("setThis", {
   value <- 500
   expected <- value
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_1", 
       value = value, 
       where = where, 
@@ -148,7 +148,7 @@ test_that("setThis", {
   expected <- binding(x = where$x_1)
 
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_2", 
       where = where, 
       watch = "x_1",
@@ -171,15 +171,15 @@ test_that("setThis", {
     
     where <- new.env()  
     res_1 <- microbenchmark(
-      "1" = setThis(id = "x_1", value = Sys.time(), where = where,
+      "1" = setReactive(id = "x_1", value = Sys.time(), where = where,
                      binding_type = 2),
       "2" = getThis(id = "x_1", where = where),
-      "3" = setThis(id = "x_2", where = where,
+      "3" = setReactive(id = "x_2", where = where,
         binding = substitute(function(x) {
             x + 60*60*24
           }), watch = "x_1", binding_type = 2),
       "4" = getThis(id = "x_2", where = where),
-      "5" = setThis(id = "x_1", value = Sys.time(), where = where,
+      "5" = setReactive(id = "x_1", value = Sys.time(), where = where,
                      binding_type = 2),
       "6" = getThis(id = "x_2", where = where),
       control = list(order = "inorder")
@@ -191,12 +191,12 @@ test_that("setThis", {
     where <- new.env()
     
     res_2 <- microbenchmark(
-      "1" = setThis(id = "x_1", value = 10, where = where),
+      "1" = setReactive(id = "x_1", value = 10, where = where),
       "2" = getThis(id = "x_1", where = where),
-      "3" = setThis(id = "x_2", where = where, watch = "x_1",
+      "3" = setReactive(id = "x_2", where = where, watch = "x_1",
         binding = function(x) {x + 100}),
       "4" = getThis(id = "x_2", where = where),
-      "5" = setThis(id = "x_1", value = 100, where = where),
+      "5" = setReactive(id = "x_1", value = 100, where = where),
       "6" = getThis(id = "x_2", where = where),
       control = list(order = "inorder")
     )
@@ -232,15 +232,15 @@ test_that("setThis", {
 
 ##------------------------------------------------------------------------------
 
-context("setThis-2")
-test_that("setThis", {
+context("setReactive-2")
+test_that("setReactive", {
   
   where = new.env()  
   id = "x_1"
   value = 10
   
   expect_equal(
-    setThis(
+    setReactive(
       id = id, 
       value = value, 
       where = where
@@ -248,7 +248,7 @@ test_that("setThis", {
     value
   )
   expect_equal(
-    setThis(
+    setReactive(
       id = id, 
       value = value, 
       where = where
@@ -265,7 +265,7 @@ test_that("setThis", {
 
   expected <- binding(value)
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_2", 
       where = where, 
       watch = "x_1", 
@@ -283,14 +283,14 @@ test_that("setThis", {
 
 ##------------------------------------------------------------------------------
 
-context("setThis-3")
-test_that("setThis", {
+context("setReactive-3")
+test_that("setReactive", {
   
   .hash_id <- "._HASH"
   where <- new.env()  
     
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_1", 
       value = 10, 
       where = where
@@ -298,7 +298,7 @@ test_that("setThis", {
     10
   )
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_2", 
       where = where,
       watch = "x_1"
@@ -307,7 +307,7 @@ test_that("setThis", {
   )
   ## Values are ignored if variable monitors another //
   expect_warning(
-    setThis(
+    setReactive(
       id = "x_3", 
       value = 20, 
       where = where,
@@ -322,7 +322,7 @@ test_that("setThis", {
   where <- new.env()  
     
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_1", 
       where = where,
       watch = "x_2",
@@ -333,7 +333,7 @@ test_that("setThis", {
   )
   
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_2", 
       where = where,
       watch = "x_1",
@@ -392,8 +392,8 @@ test_that("setThis", {
 
 ##------------------------------------------------------------------------------
 
-context("setThis-4")
-test_that("setThis", {
+context("setReactive-4")
+test_that("setReactive", {
 
   if (FALSE) {
     
@@ -402,14 +402,14 @@ test_that("setThis", {
   suppressWarnings(rm(.hash))
   
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_1", 
       value = 10
     ),
     10
   )
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_2", 
       watch = "x_1"
     ),
@@ -417,7 +417,7 @@ test_that("setThis", {
   )
   ## Values are ignored if variable monitors another //
   expect_warning(
-    setThis(
+    setReactive(
       id = "x_3", 
       value = 20, 
       watch = "x_1"
@@ -432,7 +432,7 @@ test_that("setThis", {
   ##----------------------------------------------------------------------------
   
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_1", 
       watch = "x_2",
       mutual = TRUE,
@@ -442,7 +442,7 @@ test_that("setThis", {
   )
   
   expect_equal(
-    setThis(
+    setReactive(
       id = "x_2", 
       watch = "x_1",
       mutual = TRUE,
@@ -506,21 +506,21 @@ test_that("setThis", {
 
 ##------------------------------------------------------------------------------
 
-context("setThis-5")
-test_that("setThis", {
+context("setReactive-5")
+test_that("setReactive", {
 
   tracelevel <- 0
   where <- new.env()
   
-  setThis(id = "x_1", value = 10, where = where)
-  setThis(id = "x_2", watch = "x_1", where = where)
+  setReactive(id = "x_1", value = 10, where = where)
+  setReactive(id = "x_2", watch = "x_1", where = where)
   
   where$x_1 
   where$x_2
   where$x_1 <- 100 
   where$x_2
   
-  setThis(id = "x_3", watch = "x_1", where = where, 
+  setReactive(id = "x_3", watch = "x_1", where = where, 
     binding = function(x) {x * 2})
   
   where$x_1 
@@ -530,9 +530,9 @@ test_that("setThis", {
   where$x_2
   where$x_3  
   
-  setThis(id = "x_1", watch = "x_4", where = where, mutual = TRUE, 
+  setReactive(id = "x_1", watch = "x_4", where = where, mutual = TRUE, 
           .tracelevel = tracelevel)
-  setThis(id = "x_4", watch = "x_1", where = where, mutual = TRUE,
+  setReactive(id = "x_4", watch = "x_1", where = where, mutual = TRUE,
           .tracelevel = tracelevel)
 
   where$x_1

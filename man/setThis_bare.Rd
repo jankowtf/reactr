@@ -67,7 +67,7 @@ The function takes care of setting it to \code{function(x) {x}}.
 }
 \note{
 There also exists an S4 method
-\code{\link[reactr]{setThis-character-ANY-environment-character-environment-call-method}}.
+\code{\link[reactr]{setReactive-character-ANY-environment-character-environment-call-method}}.
 It is about 10 - 15 % slower than this bare S3 function.
 }
 \examples{
@@ -322,7 +322,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-  	\link[reactr]{setThis-character-ANY-environment-character-call-method}
+  	\link[reactr]{setReactive-character-ANY-environment-character-call-method}
 }
 }
 

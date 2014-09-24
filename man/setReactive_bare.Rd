@@ -3,9 +3,10 @@
 \alias{setReactive_bare}
 \title{Set Value (bare)}
 \usage{
-setReactive_bare(id, value = NULL, where = .GlobalEnv, watch = character(),
-  binding = substitute(expression()), binding_type = 1, mutual = FALSE,
-  where_watch = where, .hash_id = "._HASH", .tracelevel = 0, ...)
+setReactive_bare(id, value = NULL, where = .GlobalEnv,
+  watch = character(), binding = substitute(expression()),
+  binding_type = 1, mutual = FALSE, force = FALSE, where_watch = where,
+  .hash_id = "._HASH", .tracelevel = 0, ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.
@@ -38,7 +39,15 @@ Function that defines the binding relationship between \code{id} and
 \code{TRUE}: mutual binding contract;
 \code{FALSE}: binding contract depends on \code{watch} being specified
 or not (specified: \code{monitoring} contract;
-not specified: \emph{monitored} contract)}
+not specified: \emph{monitored} contract).}
+
+\item{force}{\code{\link{logical}}.
+\code{TRUE}: force a binding reset even though there might already
+have been defined another one;
+\code{FALSE}: in case a binding has already been defined it is not
+overwritten. \strong{Note that for the following constellations this value is
+automtically set to \code{TRUE}: \code{mutual = TRUE} and whenever an
+explicit binding definition is provided via \code{binding}}.}
 
 \item{.hash_id}{\code{\link{character}}.
 Name of the auxiliary environment for caching hash values.
@@ -115,13 +124,13 @@ where$x_2  ## cached value
 
 ## NOTE:
 ## It does not matter if you set (or get) values via 'setReactive_bare()' 
-## (or 'getThis()') or via '<-'/'assign()' (or '$'/'get()')
+## (or 'getReactive()') or via '<-'/'assign()' (or '$'/'get()')
 setReactive_bare(id = "x_1", value = 100, where = where)
 
 where$x_1
 where$x_2  ## value after executing binding function
 where$x_2  ## cached value
-getThis("x_2", where = where) ## cached value
+getReactive("x_2", where = where) ## cached value
 
 ##------------------------------------------------------------------------------
 ## Binding scenario: arbitrary functional relationship
@@ -258,19 +267,19 @@ x_2$field_2
 where <- new.env()  
   
 setReactive_bare(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
-getThis(id = "x_1", where = where)
+getReactive(id = "x_1", where = where)
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
 setReactive_bare(id = "x_2", where = where, binding = binding, watch = "x_1", 
          binding_type = 2)
-getThis(id = "x_2", where = where)  
+getReactive(id = "x_2", where = where)  
   
 ## Change value of monitored variable //
 setReactive_bare(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
-getThis(id = "x_1", where = where)  
-getThis(id = "x_2", where = where) 
+getReactive(id = "x_1", where = where)  
+getReactive(id = "x_2", where = where) 
 
 ##------------------------------------------------------------------------------
 ## Profiling //
@@ -283,12 +292,12 @@ where <- new.env()
 
 res_bt_1 <- microbenchmark(
   "1" = setReactive_bare(id = "x_1", value = 10, where = where),
-  "2" = getThis(id = "x_1", where = where),
+  "2" = getReactive(id = "x_1", where = where),
   "3" = setReactive_bare(id = "x_2", where = where, watch = "x_1",
     binding = function(x) {x + 100}),
-  "4" = getThis(id = "x_2", where = where),
+  "4" = getReactive(id = "x_2", where = where),
   "5" = setReactive_bare(id = "x_1", value = 100, where = where),
-  "6" = getThis(id = "x_2", where = where),
+  "6" = getReactive(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 res_bt_1
@@ -299,15 +308,15 @@ where <- new.env()
 res_bt_2 <- microbenchmark(
   "1" = setReactive_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "2" = getThis(id = "x_1", where = where),
+  "2" = getReactive(id = "x_1", where = where),
   "3" = setReactive_bare(id = "x_2", where = where,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
-  "4" = getThis(id = "x_2", where = where),
+  "4" = getReactive(id = "x_2", where = where),
   "5" = setReactive_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
-  "6" = getThis(id = "x_2", where = where),
+  "6" = getReactive(id = "x_2", where = where),
   control = list(order = "inorder")
 )
 res_bt_2

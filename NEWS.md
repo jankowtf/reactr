@@ -1,3 +1,19 @@
+# CHANGES IN reactr VERSION 0.1.3.1
+
+## NEW FEATURES
+
+## BUG FIXES
+
+- renamed: `getReactive()` --> `getReactive()`
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.2
 
 ## NEW FEATURES
@@ -96,7 +112,7 @@
 ## MAJOR CHANGES
 
 - changed `setValue*()` to `setReactive*()`
-- changed `getValue()` to `getThis()`
+- changed `getValue()` to `getReactive()`
 
 ## MINOR CHANGES
 
@@ -152,7 +168,7 @@
 ## MAJOR CHANGES
 
 - argument `envir` changed to `where` in order to make the interfaces for 
-  `setReactive` and `getThis` more generic
+  `setReactive` and `getReactive` more generic
 - added dependencies for `classr` and `digest`
 - started to implement mutual bindings (not fully functional yet)
 

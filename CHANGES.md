@@ -1,3 +1,9 @@
+# Version 0.1.3.1
+ - Merge branch 'release-v0.1.2' into develop
+ - Bumped version number to 0.1.2
+
+----------
+
 # Version 0.1.2
  - Merge branch 'feature-removeFromRegistry' into develop
  - `removeFromHashRegistry()`

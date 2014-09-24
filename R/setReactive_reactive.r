@@ -4,7 +4,7 @@
 #' @description 
 #' Sets a variable value in an environment.
 #' See main method 
-#' \code{\link{setThis_reactive-character-ANY-environment-character-environment-call-method}}
+#' \code{\link{setReactive_reactive-character-ANY-environment-character-environment-call-method}}
 #' 
 #' @details
 #' If \code{binding_type = 1} (the current default), then the 
@@ -17,9 +17,9 @@
 #' 
 #' @note
 #' The main S4 method is 
-#' \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-environment-call-method}}.
+#' \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-environment-call-method}}.
 #' There also exist a bare S3 function that is about 10 - 15 % faster than 
-#' the S4 method: \code{\link[reactr]{setThis_reactive_bare}}.
+#' the S4 method: \code{\link[reactr]{setReactive_reactive_bare}}.
 #'     
 #' @param id \strong{Signature argument}.
 #'    Object containing path-like ID information.
@@ -68,15 +68,15 @@
 #'    control tracing. The trace level can also be set as a global option when
 #'    using package \code{tracer} (\strong{not functional yet}).
 #' @template threedot
-#' @example inst/examples/setThis_reactive.r
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'   	\link[reactr]{setThis_reactive-character-ANY-environment-character-environment-call-method}
+#'   	\link[reactr]{setReactive_reactive-character-ANY-environment-character-environment-call-method}
 #' }
 #' @template author
 #' @template references
 #' @export 
 setGeneric(
-  name = "setThis_reactive",
+  name = "setReactive_reactive",
   signature = c(
     "id",
     "value",
@@ -99,7 +99,7 @@ setGeneric(
     .tracelevel = 0,
     ...
   ) {
-    standardGeneric("setThis_reactive")       
+    standardGeneric("setReactive_reactive")       
   }
 )
 
@@ -107,9 +107,9 @@ setGeneric(
 #' Set Value (character,ANY,missing,missing,missing,missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{missing}}.
@@ -117,16 +117,16 @@ setGeneric(
 #' @param watch \code{\link{missing}}.
 #' @param binding \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-missing-character-missing-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-missing-character-missing-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -150,7 +150,7 @@ setMethod(
     ...
   ) {
   
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -172,9 +172,9 @@ setMethod(
 #' Set Value (character,ANY,environment,missing,missing,missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
@@ -182,16 +182,16 @@ setMethod(
 #' @param watch \code{\link{missing}}.
 #' @param binding \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-missing-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-missing-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -215,7 +215,7 @@ setMethod(
     ...
   ) {
   
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -237,9 +237,9 @@ setMethod(
 #' Set Value (character,ANY,environment,missing,environment,missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
@@ -247,16 +247,16 @@ setMethod(
 #' @param watch \code{\link{environment}}.
 #' @param binding \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-environment-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-environment-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -280,7 +280,7 @@ setMethod(
     ...
   ) {
   
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -302,9 +302,9 @@ setMethod(
 #' Set Value (character,ANY,missing,character,missing,call)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{missing}}.
@@ -312,16 +312,16 @@ setMethod(
 #' @param where_watch \code{\link{missing}}.
 #' @param binding \code{\link{call}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-missing-character-missing-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-missing-character-missing-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -345,7 +345,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -367,9 +367,9 @@ setMethod(
 #' Set Value (character,ANY,environment,missing,environment,call)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
@@ -377,16 +377,16 @@ setMethod(
 #' @param where_watch \code{\link{environment}}.
 #' @param binding \code{\link{call}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-environment-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-environment-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -410,7 +410,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -432,9 +432,9 @@ setMethod(
 #' Set Value (character,ANY,missing,character,missing,missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{missing}}.
@@ -442,15 +442,15 @@ setMethod(
 #' @param where_watch \code{\link{missing}}.
 #' @param binding \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-missing-character-missing-call-method}}.
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-missing-character-missing-call-method}}.
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -474,7 +474,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -496,9 +496,9 @@ setMethod(
 #' Set Value (character,ANY,environment,character,missing,missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
@@ -506,15 +506,15 @@ setMethod(
 #' @param where_watch \code{\link{missing}}.
 #' @param binding \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-missing-call-method}}.
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-missing-call-method}}.
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -538,7 +538,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -560,9 +560,9 @@ setMethod(
 #' Set Value (character,ANY,environment,character,environment,missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
@@ -570,15 +570,15 @@ setMethod(
 #' @param where_watch \code{\link{environment}}.
 #' @param binding \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-environment-call-method}}.
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-environment-call-method}}.
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -602,7 +602,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -623,26 +623,26 @@ setMethod(
 #' Set Value (character,ANY,missing,character,missing,function)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{missing}}.
 #' @param watch \code{\link{character}}.
 #' @param binding \code{\link{function}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-missing-character-missing-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-missing-character-missing-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 #' @import classr
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -666,7 +666,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -694,26 +694,26 @@ setMethod(
 #' Set Value (character,ANY,environment,character,missing,function)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
 #' @param watch \code{\link{character}}.
 #' @param binding \code{\link{function}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-missing-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-missing-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 #' @import classr
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -737,7 +737,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -765,26 +765,26 @@ setMethod(
 #' Set Value (character,ANY,environment,character,environment,function)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
 #' @param watch \code{\link{character}}.
 #' @param binding \code{\link{function}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-environment-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-environment-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 #' @import classr
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -808,7 +808,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -836,9 +836,9 @@ setMethod(
 #' Set Value (character,ANY,environment,missing,missing,call)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'      
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
@@ -846,16 +846,16 @@ setMethod(
 #' @param where_watch \code{\link{missing}}.
 #' @param binding \code{\link{call}}.
 #' @return See method
-#'    \code{\link[reactr]{setThis_reactive-character-ANY-environment-character-missing-call-method}}.
-#' @example inst/examples/setThis_reactive.r
+#'    \code{\link[reactr]{setReactive_reactive-character-ANY-environment-character-missing-call-method}}.
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",
@@ -879,7 +879,7 @@ setMethod(
     ...
   ) {
 
-  return(setThis_reactive(
+  return(setReactive_reactive(
     id = id,
     value = value,
     where = where,
@@ -900,9 +900,9 @@ setMethod(
 #' Set Value (character,ANY,environment,character,environment,call)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{setThis_reactive}}
+#' See generic: \code{\link[reactr]{setReactive_reactive}}
 #'   	 
-#' @inheritParams setThis_reactive
+#' @inheritParams setReactive_reactive
 #' @param id \code{\link{character}}.
 #' @param value \code{\link{ANY}}.
 #' @param where \code{\link{environment}}.
@@ -915,18 +915,18 @@ setMethod(
 #'    provided via argument \code{binding}.
 #' @return \code{\link{ANY}}. Value of \code{value} or the return value 
 #'    of the binding function.
-#' @example inst/examples/setThis_reactive.r
+#' @example inst/examples/setReactive_reactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{setThis_reactive}
+#'    Generic: \link[reactr]{setReactive_reactive}
 #' }
 #' @template author
 #' @template references
-#' @aliases setThis_reactive-method_main 
+#' @aliases setReactive_reactive-method_main 
 #' @export
 #' @import digest
 #' @import classr
 setMethod(
-  f = "setThis_reactive", 
+  f = "setReactive_reactive", 
   signature = signature(
     id = "character",
     value = "ANY",

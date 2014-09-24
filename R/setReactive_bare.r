@@ -60,14 +60,14 @@
 #'    control tracing. The trace level can also be set as a global option when
 #'    using package \code{tracer} (\strong{not functional yet}).
 #' @template threedot
-#' @example inst/examples/setThis_bare.r
+#' @example inst/examples/setReactive_bare.r
 #' @seealso \code{
 #'   	\link[reactr]{setReactive-character-ANY-environment-character-call-method}
 #' }
 #' @template author
 #' @template references
 #' @export 
-setThis_bare <- function(
+setReactive_bare <- function(
     id,
     value = NULL,
     where = .GlobalEnv,

@@ -19,7 +19,7 @@
 #' The main S4 method is 
 #' \code{\link[reactr]{setReactive-character-ANY-environment-character-environment-call-method}}.
 #' There also exist a bare S3 function that is about 10 - 15 % faster than 
-#' the S4 method: \code{\link[reactr]{setThis_bare}}.
+#' the S4 method: \code{\link[reactr]{setReactive_bare}}.
 #'     
 #' @param id \strong{Signature argument}.
 #'    Object containing path-like ID information.

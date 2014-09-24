@@ -63,7 +63,7 @@
 
 ## BUG FIXES
 
-- fixed documentation in `R/setThis_bare.r`
+- fixed documentation in `R/setReactive_bare.r`
 
 ## MAJOR CHANGES
 
@@ -100,7 +100,7 @@
 
 ## MAJOR CHANGES
 
-- added S3 bare function `setThis_bare`
+- added S3 bare function `setReactive_bare`
 - added argument `mutual` and implemented functionality to set mutual bindings
 - added argument `where_watch` 
 - added argument `.hash_id` 

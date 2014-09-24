@@ -17,7 +17,7 @@ The core functions/methods of this package:
    \item{\code{\link[reactr]{setReactive}}: }{
      Facilitates the specification of reactive object bindings (S4 method).
    }
-   \item{\code{\link[reactr]{setThis_bare}}: }{
+   \item{\code{\link[reactr]{setReactive_bare}}: }{
      Bare S3 version of \code{\link[reactr]{setReactive}}. About roughly
      \code{10 - 15} faster than the S4 method.
    }

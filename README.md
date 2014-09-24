@@ -428,4 +428,4 @@ where$x_7
 
 ## Further examples
 
-See `?setReactive` and `?setThis_bare`.
+See `?setReactive` and `?setReactive_bare`.

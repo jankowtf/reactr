@@ -3,7 +3,7 @@
 export(getBoilerplateCode)
 export(getThis)
 export(setReactive)
-export(setThis_bare)
+export(setReactive_bare)
 exportMethods(ensureHashRegistryState)
 exportMethods(getBoilerplateCode)
 exportMethods(getThis)

@@ -23,7 +23,7 @@ Get boilerplate code for binding contract.
 ## Important remarks //
 ##------------------------------------------------------------------------------
 ## This is a function that is currently only used inside a call to 'setReactive()'
-## or 'setThis_bare()'.
+## or 'setReactive_bare()'.
 ## Thus, in order to see what's going on here, we first need to mimick the 
 ## expected system state.
   

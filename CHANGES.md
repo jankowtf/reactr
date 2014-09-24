@@ -1,3 +1,17 @@
+# Version 0.1.2
+ - Merge branch 'feature-removeFromRegistry' into develop
+ - `removeFromHashRegistry()`
+ - `unsetReactive()`
+ - Renamed to `setReactive`
+ - Merge branch 'develop' into feature-shinyreactive
+ - Merge branch 'master' into develop
+ - More renaming
+ - Renamed to `setReactive`
+ - Version in `README.md`
+ - first solution based on `reactive()`
+
+----------
+
 # Version 0.1.1
  - Clean up commit
  - Version bump to  :exit

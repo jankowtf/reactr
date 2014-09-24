@@ -16,6 +16,24 @@
 
 -----
 
+# CHANGES IN reactr VERSION 0.1.0.7
+
+## NEW FEATURES
+
+## BUG FIXES
+
+- fixes #1
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+## MISC
+
+- auto-closing feature for issues on GitHub did not work --> trying again
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.0.6
 
 ## NEW FEATURES

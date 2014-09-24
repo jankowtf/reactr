@@ -2,19 +2,19 @@ x_1 <- new.env()
 x_2 <- new.env()  
   
 setReactive(id = "field_1", value = Sys.time(), envir = x_1)
-getThis(id = "x_1", envir = envir)
+getReactive(id = "x_1", envir = envir)
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
 setReactive(id = "x_2", envir = envir, binding = binding, watch = "x_1", 
          binding_type = 2)
-getThis(id = "x_2", envir = envir)  
+getReactive(id = "x_2", envir = envir)  
   
 ## Change value of monitored variable //
 setReactive(id = "x_1", value = Sys.time(), envir = envir, binding_type = 2)
-getThis(id = "x_1", envir = envir)  
-getThis(id = "x_2", envir = envir)    
+getReactive(id = "x_1", envir = envir)  
+getReactive(id = "x_2", envir = envir)    
  
 ##----------------------------------------------------------------------------
 ## Setting via 'makeActiveBinding' //
@@ -119,7 +119,7 @@ setReactive(
   binding_type = 1
 )
 envir$x_2
-getThis("x_2", envir = envir)
+getReactive("x_2", envir = envir)
 
 ##----------------------------------------------------------------------------
 ## Profiling //
@@ -130,15 +130,15 @@ require("microbenchmark")
 envir <- new.env()  
 res_1 <- microbenchmark(
   "1" = setReactive(id = "x_1", value = Sys.time(), envir = envir, binding_type = 2),
-  "2" = getThis(id = "x_1", envir = envir),
+  "2" = getReactive(id = "x_1", envir = envir),
   "3" = setReactive(id = "x_2", envir = envir,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
-  "4" = getThis(id = "x_2", envir = envir),
+  "4" = getReactive(id = "x_2", envir = envir),
   "5" = setReactive(id = "x_1", value = Sys.time(), envir = envir,
                  binding_type = 2),
-  "6" = getThis(id = "x_2", envir = envir),
+  "6" = getReactive(id = "x_2", envir = envir),
   control = list(order = "inorder", warmup = 10)
 )
 res_1
@@ -149,11 +149,11 @@ envir <- new.env()
 res_2 <- microbenchmark(
   "1" = setReactive(id = "x_1", value = 10, envir = envir, binding = b1,
     binding_type = 1),
-  "2" = getThis(id = "x_1", envir = envir),
+  "2" = getReactive(id = "x_1", envir = envir),
   "3" = setReactive(id = "x_2", envir = envir, binding = b2, watch = "x_1"),
-  "4" = getThis(id = "x_2", envir = envir),
+  "4" = getReactive(id = "x_2", envir = envir),
   "5" = setReactive(id = "x_1", value = 100, envir = envir),
-  "6" = getThis(id = "x_2", envir = envir),
+  "6" = getReactive(id = "x_2", envir = envir),
   control = list(order = "inorder", warmup = 10)
 )
 res_2

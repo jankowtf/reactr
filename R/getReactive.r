@@ -117,7 +117,7 @@ setMethod(
    
     if (any(idx)) {
       ## Update //
-      out <- setThis(
+      out <- setReactive(
         id = id, 
         where = where, 
 #         binding = substitute(BINDING), 

@@ -28,14 +28,14 @@ where <- new.env()
 Set a variable that can be monitored:
 
 ```
-setThis(id = "x_1", value = 10, where = where)
+setReactive(id = "x_1", value = 10, where = where)
 # [1] 10
 ```
 
 Set a variable that monitors `x_1` and has a reactive binding to it:
 
 ```
-setThis(id = "x_2", watch = "x_1", where = where)
+setReactive(id = "x_2", watch = "x_1", where = where)
 # [1] 10
 ```
 
@@ -56,7 +56,7 @@ where$x_2
 #### NOTE
 
 Using this approach, you can only set `x_1`. Variable `x_2` is a mere
-"monitoring" variable. Trying to set it via `<-`, `assign()` or `setThis()` is
+"monitoring" variable. Trying to set it via `<-`, `assign()` or `setReactive()` is
 disregarded:
 
 ```
@@ -75,7 +75,7 @@ to this!
 Set a variable that monitors `x_1` and has a reactive binding to it:
 
 ```
-setThis(id = "x_3", watch = "x_1", where = where, 
+setReactive(id = "x_3", watch = "x_1", where = where, 
   binding = function(x) {x * 2})
 # [1] 200  
 ```
@@ -109,13 +109,13 @@ In order to do that, it is necessary to reset the binding for `x_1` as well
 with `mutual = TRUE`:
 
 ```
-setThis(id = "x_1", watch = "x_4", where = where, mutual = TRUE)
+setReactive(id = "x_1", watch = "x_4", where = where, mutual = TRUE)
 # NULL
-setThis(id = "x_4", watch = "x_1", where = where, mutual = TRUE)
+setReactive(id = "x_4", watch = "x_1", where = where, mutual = TRUE)
 # NULL
 ```
 
-Note that variables with mutual bindings are merely initialized by `setThis()` 
+Note that variables with mutual bindings are merely initialized by `setReactive()` 
 and have a default value of `NULL`. You must actually assign a value to either 
 one of them via `<-` **after** establishing the binding:
 
@@ -154,14 +154,14 @@ where$x_3
 
 The binding contract for variables with mutual bindings does not have to 
 be based on the standard binding definition of 
-(`function(x) {x}` set automatically inside `setThis()`). You should just make
+(`function(x) {x}` set automatically inside `setReactive()`). You should just make
 sure that it is a valid bi-directional relationship that you define:
 
 ```
-setThis(id = "x_5", watch = "x_6", where = where, 
+setReactive(id = "x_5", watch = "x_6", where = where, 
   binding = function(x) {x * 2}, mutual = TRUE)
 # NULL
-setThis(id = "x_6", watch = "x_5", where = where, 
+setReactive(id = "x_6", watch = "x_5", where = where, 
   binding = function(x) {x / 2}, mutual = TRUE)
 # NULL
 
@@ -193,7 +193,7 @@ To understand what's going on behind the scenes, I've include a `.tracelevel`
 argument that you can use:
 
 ```
-setThis(id = "x_7", watch = "x_8", where = where, mutual = TRUE, .tracelevel = 1)
+setReactive(id = "x_7", watch = "x_8", where = where, mutual = TRUE, .tracelevel = 1)
 # ----- INIT START -----
 # id:
 # x_7
@@ -218,7 +218,7 @@ setThis(id = "x_7", watch = "x_8", where = where, mutual = TRUE, .tracelevel = 1
 ```
 
 ```
-setThis(id = "x_8", watch = "x_7", where = where, mutual = TRUE, .tracelevel = 1)
+setReactive(id = "x_8", watch = "x_7", where = where, mutual = TRUE, .tracelevel = 1)
 # ----- INIT START -----
 # id:
 # x_8
@@ -428,4 +428,4 @@ where$x_7
 
 ## Further examples
 
-See `?setThis` and `?setThis_bare`.
+See `?setReactive` and `?setReactive_bare`.

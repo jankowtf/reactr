@@ -15,7 +15,7 @@
 #' 
 #' @note
 #' There also exists an S4 method
-#' \code{\link[reactr]{setThis-character-ANY-environment-character-environment-call-method}}.
+#' \code{\link[reactr]{setReactive-character-ANY-environment-character-environment-call-method}}.
 #' It is about 10 - 15 % slower than this bare S3 function.
 #'     
 #' @param id \code{\link{character}}.
@@ -60,14 +60,14 @@
 #'    control tracing. The trace level can also be set as a global option when
 #'    using package \code{tracer} (\strong{not functional yet}).
 #' @template threedot
-#' @example inst/examples/setThis_bare.r
+#' @example inst/examples/setReactive_bare.r
 #' @seealso \code{
-#'   	\link[reactr]{setThis-character-ANY-environment-character-call-method}
+#'   	\link[reactr]{setReactive-character-ANY-environment-character-call-method}
 #' }
 #' @template author
 #' @template references
 #' @export 
-setThis_bare <- function(
+setReactive_bare <- function(
     id,
     value = NULL,
     where = .GlobalEnv,

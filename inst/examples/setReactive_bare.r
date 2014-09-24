@@ -9,7 +9,7 @@
 where <- new.env()
 
 ## Set variable that can be monitored by others //
-setThis_bare(id = "x_1", value = 10, where = where)
+setReactive_bare(id = "x_1", value = 10, where = where)
 
 ## Get current variable value //
 where$x_1
@@ -20,7 +20,7 @@ where$x_1
 
 ## Set variable that monitors 'x_1' //
 ## Binding contract: identical
-setThis_bare(id = "x_2", where = where, watch = "x_1", binding = function(x) {x})
+setReactive_bare(id = "x_2", where = where, watch = "x_1", binding = function(x) {x})
 
 ## When 'x_1' changes, 'x_2' changes accordingly:
 ## NOTE:
@@ -41,9 +41,9 @@ where$x_2  ## cached value
 where$x_2  ## cached value
 
 ## NOTE:
-## It does not matter if you set (or get) values via 'setThis_bare()' 
+## It does not matter if you set (or get) values via 'setReactive_bare()' 
 ## (or 'getThis()') or via '<-'/'assign()' (or '$'/'get()')
-setThis_bare(id = "x_1", value = 100, where = where)
+setReactive_bare(id = "x_1", value = 100, where = where)
 
 where$x_1
 where$x_2  ## value after executing binding function
@@ -55,7 +55,7 @@ getThis("x_2", where = where) ## cached value
 ##------------------------------------------------------------------------------
 
 ## Set variable that monitors 'x_1' //
-setThis_bare(id = "x_3", where = where, watch = "x_1", binding = function(x) {x + 100})
+setReactive_bare(id = "x_3", where = where, watch = "x_1", binding = function(x) {x + 100})
 
 where$x_1
 where$x_3
@@ -73,9 +73,9 @@ where <- new.env()
 ## going on
 .tracelevel <- 0
     
-setThis_bare(id = "x_1", where = where, watch = "x_2", 
+setReactive_bare(id = "x_1", where = where, watch = "x_2", 
   mutual = TRUE, .tracelevel = .tracelevel)
-setThis_bare(id = "x_2", where = where, watch = "x_1", 
+setReactive_bare(id = "x_2", where = where, watch = "x_1", 
   mutual = TRUE, .tracelevel = .tracelevel
 )
 
@@ -102,12 +102,12 @@ where$x_1
 where <- new.env()      
 
 ## Set variables that are mutually bound //
-setThis_bare(id = "x_1", where = where, watch = "x_2", 
+setReactive_bare(id = "x_1", where = where, watch = "x_2", 
   mutual = TRUE, .tracelevel = .tracelevel)
-setThis_bare(id = "x_2", where = where, watch = "x_1", 
+setReactive_bare(id = "x_2", where = where, watch = "x_1", 
   mutual = TRUE, .tracelevel = .tracelevel
 )
-setThis_bare(id = "x_3", where = where, watch = "x_2", 
+setReactive_bare(id = "x_3", where = where, watch = "x_2", 
   binding = function(x) {x + 100}, .tracelevel = .tracelevel
 )
 
@@ -138,9 +138,9 @@ where$x_3
 where <- new.env()  
 
 ## Set variables that are mutually bound //
-setThis_bare(id = "x_1", where = where, watch = "x_2", 
+setReactive_bare(id = "x_1", where = where, watch = "x_2", 
   mutual = TRUE, binding = function(x) {x/2}, .tracelevel = .tracelevel)
-setThis_bare(id = "x_2", where = where, watch = "x_1", 
+setReactive_bare(id = "x_2", where = where, watch = "x_1", 
   mutual = TRUE, binding = function(x) {x * 2}, .tracelevel = .tracelevel
 )
 
@@ -160,14 +160,14 @@ x_1 <- new.env()
 x_2 <- new.env()  
 
 ## Set regular "complex" variable 'x_1' //
-setThis_bare(id = "field_1", value = TRUE, where = x_1)
-setThis_bare(id = "field_2", value = data.frame(x_1 = 1:5, x_2 = letters[1:5]), 
+setReactive_bare(id = "field_1", value = TRUE, where = x_1)
+setReactive_bare(id = "field_2", value = data.frame(x_1 = 1:5, x_2 = letters[1:5]), 
   where = x_1)
 
 ## Set variable with bindings //
-setThis_bare(id = "field_1", where = x_2, watch = "field_1", where_watch = x_1, 
+setReactive_bare(id = "field_1", where = x_2, watch = "field_1", where_watch = x_1, 
          binding = function(x) {!x})
-setThis_bare(id = "field_2", where = x_2, watch = "field_2", where_watch = x_1, 
+setReactive_bare(id = "field_2", where = x_2, watch = "field_2", where_watch = x_1, 
          binding = function(x) {x[,-1,drop = FALSE]})
 
 x_1$field_1
@@ -184,18 +184,18 @@ x_2$field_2
 
 where <- new.env()  
   
-setThis_bare(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
+setReactive_bare(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
 getThis(id = "x_1", where = where)
 
 binding <- substitute(function(x) {
   x + 60*60*24
 })
-setThis_bare(id = "x_2", where = where, binding = binding, watch = "x_1", 
+setReactive_bare(id = "x_2", where = where, binding = binding, watch = "x_1", 
          binding_type = 2)
 getThis(id = "x_2", where = where)  
   
 ## Change value of monitored variable //
-setThis_bare(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
+setReactive_bare(id = "x_1", value = Sys.time(), where = where, binding_type = 2)
 getThis(id = "x_1", where = where)  
 getThis(id = "x_2", where = where) 
 
@@ -209,12 +209,12 @@ require("microbenchmark")
 where <- new.env()
 
 res_bt_1 <- microbenchmark(
-  "1" = setThis_bare(id = "x_1", value = 10, where = where),
+  "1" = setReactive_bare(id = "x_1", value = 10, where = where),
   "2" = getThis(id = "x_1", where = where),
-  "3" = setThis_bare(id = "x_2", where = where, watch = "x_1",
+  "3" = setReactive_bare(id = "x_2", where = where, watch = "x_1",
     binding = function(x) {x + 100}),
   "4" = getThis(id = "x_2", where = where),
-  "5" = setThis_bare(id = "x_1", value = 100, where = where),
+  "5" = setReactive_bare(id = "x_1", value = 100, where = where),
   "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")
 )
@@ -224,15 +224,15 @@ res_bt_1
 where <- new.env()  
 
 res_bt_2 <- microbenchmark(
-  "1" = setThis_bare(id = "x_1", value = Sys.time(), where = where,
+  "1" = setReactive_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
   "2" = getThis(id = "x_1", where = where),
-  "3" = setThis_bare(id = "x_2", where = where,
+  "3" = setReactive_bare(id = "x_2", where = where,
     binding = substitute(function(x) {
         x + 60*60*24
       }), watch = "x_1", binding_type = 2),
   "4" = getThis(id = "x_2", where = where),
-  "5" = setThis_bare(id = "x_1", value = Sys.time(), where = where,
+  "5" = setReactive_bare(id = "x_1", value = Sys.time(), where = where,
                  binding_type = 2),
   "6" = getThis(id = "x_2", where = where),
   control = list(order = "inorder")

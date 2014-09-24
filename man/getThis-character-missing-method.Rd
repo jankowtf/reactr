@@ -31,7 +31,7 @@ See generic: \code{\link[reactr]{getThis}}
 \dontrun{
 
 where <- new.env()  
-setThis(id = "x_1", value = TRUE, where = where)
+setReactive(id = "x_1", value = TRUE, where = where)
 getThis(id = "x_1", where = where)
 
 }

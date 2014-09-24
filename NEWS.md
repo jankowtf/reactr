@@ -1,3 +1,17 @@
+# CHANGES IN reactr VERSION 0.1.1
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.0.7
 
 ## NEW FEATURES
@@ -44,7 +58,7 @@
 
 ## MAJOR CHANGES
 
-- added argument `force` in `setThis()`: force set/re-set of binding function
+- added argument `force` in `setReactive()`: force set/re-set of binding function
   even though there might already have been one defined. Fixes 
 
 ## MINOR CHANGES
@@ -63,11 +77,11 @@
 
 ## BUG FIXES
 
-- fixed documentation in `R/setThis_bare.r`
+- fixed documentation in `R/setReactive_bare.r`
 
 ## MAJOR CHANGES
 
-- changed `setValue*()` to `setThis*()`
+- changed `setValue*()` to `setReactive*()`
 - changed `getValue()` to `getThis()`
 
 ## MINOR CHANGES
@@ -100,7 +114,7 @@
 
 ## MAJOR CHANGES
 
-- added S3 bare function `setThis_bare`
+- added S3 bare function `setReactive_bare`
 - added argument `mutual` and implemented functionality to set mutual bindings
 - added argument `where_watch` 
 - added argument `.hash_id` 
@@ -124,7 +138,7 @@
 ## MAJOR CHANGES
 
 - argument `envir` changed to `where` in order to make the interfaces for 
-  `setThis` and `getThis` more generic
+  `setReactive` and `getThis` more generic
 - added dependencies for `classr` and `digest`
 - started to implement mutual bindings (not fully functional yet)
 

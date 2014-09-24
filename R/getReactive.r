@@ -20,15 +20,15 @@
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
 #'    either \code{where} or \code{where_watch}.
 #' @template threedot
-#' @example inst/examples/getThis.r
+#' @example inst/examples/getReactive.r
 #' @seealso \code{
-#'   	\link[reactr]{getThis-character-environment-method}
+#'   	\link[reactr]{getReactive-character-environment-method}
 #' }
 #' @template author
 #' @template references
 #' @export 
 setGeneric(
-  name = "getThis",
+  name = "getReactive",
   signature = c(
     "id",
     "where"
@@ -39,7 +39,7 @@ setGeneric(
     .hash_id = "._HASH",
     ...
   ) {
-    standardGeneric("getThis")       
+    standardGeneric("getReactive")       
   }
 )
 
@@ -47,21 +47,21 @@ setGeneric(
 #' Get Value from Environment
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{getThis}}
+#' See generic: \code{\link[reactr]{getReactive}}
 #'      
-#' @inheritParams getThis
+#' @inheritParams getReactive
 #' @param id \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{getThis-character-environment-method}}
-#' @example inst/examples/getThis.r
+#'    \code{\link[reactr]{getReactive-character-environment-method}}
+#' @example inst/examples/getReactive.r
 #' @seealso \code{
-#'    \link[reactr]{getThis}
+#'    \link[reactr]{getReactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "getThis", 
+  f = "getReactive", 
   signature = signature(
     id = "character",
     where = "missing"
@@ -73,7 +73,7 @@ setMethod(
     ...
   ) {
 
-  return(getThis(id = id, where = where, .hash_id = .hash_id, ...))
+  return(getReactive(id = id, where = where, .hash_id = .hash_id, ...))
     
   }
 )
@@ -82,20 +82,20 @@ setMethod(
 #' Get Value from Environment
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{getThis}}
+#' See generic: \code{\link[reactr]{getReactive}}
 #'   	 
-#' @inheritParams getThis
+#' @inheritParams getReactive
 #' @param id \code{\link{character}}.
 #' @return \code{\link{ANY}}. Variable value
-#' @example inst/examples/getThis.r
+#' @example inst/examples/getReactive.r
 #' @seealso \code{
-#'    \link[reactr]{getThis}
+#'    \link[reactr]{getReactive}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "getThis", 
+  f = "getReactive", 
   signature = signature(
     id = "character",
     where = "environment"

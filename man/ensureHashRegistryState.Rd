@@ -3,8 +3,8 @@
 \alias{ensureHashRegistryState}
 \title{Ensure Hash Registry State}
 \usage{
-ensureHashRegistryState(id, watch = character(), where, .hash_id = "._HASH",
-  ...)
+ensureHashRegistryState(id, watch = character(), where = .GlobalEnv,
+  .hash_id = "._HASH", ...)
 }
 \arguments{
 \item{id}{\strong{Signature argument}.
@@ -16,10 +16,15 @@ Object containing monitored variable information.}
 \item{where}{\strong{Signature argument}.
 Object containing location information.}
 
+\item{.hash_id}{\code{\link{character}}.
+Name of the auxiliary environment for caching hash values.
+Default: \code{"._HASH"}. Keep it unless this name is already taken in
+either \code{where} or \code{where_watch}.}
+
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \description{
-Ensures the required state of the hash registry \code{<where>$.hash}.
+Ensures the required state of the hash registry \code{<where>[[.hash_id]]}.
 }
 \examples{
 \dontrun{
@@ -52,7 +57,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-  	\link[reactr]{ensureHashRegistryState-missing-method}
+  	\link[reactr]{ensureHashRegistryState-character-character-environment-method}
 }
 }
 

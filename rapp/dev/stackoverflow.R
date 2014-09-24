@@ -55,7 +55,7 @@ setReactive <- function(
 
 }
 
-getThis <- function(
+getReactive <- function(
   id,
   envir,
   ...
@@ -102,7 +102,7 @@ envir <- new.env()
 
 ## Set regular value //
 setReactive(id = "x_1", value = Sys.time(), envir = envir)
-getThis(id = "x_1", envir = envir)
+getReactive(id = "x_1", envir = envir)
 
 ## Set value with binding to observed variable 'x_1' //
 setReactive(
@@ -115,12 +115,12 @@ setReactive(
 )
 ## As long as observed variable does not change, 
 ## value of 'x_2' will also not change
-getThis(id = "x_2", envir = envir)
+getReactive(id = "x_2", envir = envir)
 
 ## Change value of observed variable 'x_1' //
 setReactive(id = "x_1", value = Sys.time(), envir = envir)
 ## Value of 'x_2' will change according to binding function:
-getThis(id = "x_2", envir = envir)
+getReactive(id = "x_2", envir = envir)
 
 ##------------------------------------------------------------------------------
 ## Profiling //
@@ -135,12 +135,12 @@ binding <- function(x) {
 
 microbenchmark(
   "1" = setReactive(id = "x_1", value = Sys.time(), envir = envir),
-  "2" = getThis(id = "x_1", envir = envir),
+  "2" = getReactive(id = "x_1", envir = envir),
   "3" = setReactive(id = "x_2", envir = envir,
     binding = binding, observe = "x_1"),
-  "4" = getThis(id = "x_2", envir = envir),
+  "4" = getReactive(id = "x_2", envir = envir),
   "5" = setReactive(id = "x_1", value = Sys.time(), envir = envir),
-  "6" = getThis(id = "x_2", envir = envir)
+  "6" = getReactive(id = "x_2", envir = envir)
 )
 # Unit: microseconds
 #  expr     min       lq   median       uq      max neval

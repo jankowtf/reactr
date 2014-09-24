@@ -18,7 +18,7 @@
 #'      Bare S3 version of \code{\link[reactr]{setReactive}}. About roughly 
 #'      \code{10 - 15} faster than the S4 method.
 #'    }
-#'    \item{\code{\link[reactr]{getThis}}: }{
+#'    \item{\code{\link[reactr]{getReactive}}: }{
 #'      Alternative way of retrieving objects from an environment.
 #'    }
 #'    \item{\code{\link[reactr]{getBoilerplateCode}}: }{

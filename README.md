@@ -1,4 +1,4 @@
-reactr
+reactr (v0.1.1)
 ======
 
 Reactive object bindings with built-in caching
@@ -14,7 +14,7 @@ require("reactr")
 
 ## Quick intro 
 
-The default location that variables are set to is `.GlobalEnv`.
+The default location that objects are set to is `.GlobalEnv`.
 
 However, in order not to mess up things in `.GlobalEnv`, we will use 
 an example environment:
@@ -23,16 +23,16 @@ an example environment:
 where <- new.env()
 ```
 
-### Binding scenario 1: simple monitoring (identical values)
+### Binding scenario 1: simple observing (identical values)
 
-Set a variable that can be monitored:
+Set an object that can be observed:
 
 ```
 setReactive(id = "x_1", value = 10, where = where)
 # [1] 10
 ```
 
-Set a variable that monitors `x_1` and has a reactive binding to it:
+Set an object that observes `x_1` and has a reactive binding to it:
 
 ```
 setReactive(id = "x_2", watch = "x_1", where = where)
@@ -55,8 +55,8 @@ where$x_2
 
 #### NOTE
 
-Using this approach, you can only set `x_1`. Variable `x_2` is a mere
-"monitoring" variable. Trying to set it via `<-`, `assign()` or `setReactive()` is
+Using this approach, you can only set `x_1`. Object `x_2` is a mere
+"observing" object. Trying to set it via `<-`, `assign()` or `setReactive()` is
 disregarded:
 
 ```
@@ -70,9 +70,9 @@ to this!
 
 -----
 
-### Binding scenario 2: simple monitoring (arbitrary functional relationship)
+### Binding scenario 2: simple observing (arbitrary functional relationship)
 
-Set a variable that monitors `x_1` and has a reactive binding to it:
+Set an object that observes `x_1` and has a reactive binding to it:
 
 ```
 setReactive(id = "x_3", watch = "x_1", where = where, 
@@ -101,7 +101,7 @@ where$x_3
 
 ### Binding scenario 3: mutual binding (identical values)
 
-Set two variables that have a mutual binding.
+Set two objects that have a mutual binding.
 The main difference to *Binding scenario 1* is, that you can set 
 both `x_1` **and** `x_4` and have the changes reflected.
 
@@ -115,7 +115,7 @@ setReactive(id = "x_4", watch = "x_1", where = where, mutual = TRUE)
 # NULL
 ```
 
-Note that variables with mutual bindings are merely initialized by `setReactive()` 
+Note that objects with mutual bindings are merely initialized by `setReactive()` 
 and have a default value of `NULL`. You must actually assign a value to either 
 one of them via `<-` **after** establishing the binding:
 
@@ -126,7 +126,7 @@ where$x_1
 where$x_4
 # NULL
 
-## Set actual initial value to either one of the variables //
+## Set actual initial value to either one of the objects //
 where$x_1 <- 100
 where$x_1
 # [1] 100
@@ -152,7 +152,7 @@ where$x_3
 
 ### Binding scenario 4: mutual binding (valid bi-directional relationship)
 
-The binding contract for variables with mutual bindings does not have to 
+The binding contract for objects with mutual bindings does not have to 
 be based on the standard binding definition of 
 (`function(x) {x}` set automatically inside `setReactive()`). You should just make
 sure that it is a valid bi-directional relationship that you define:
@@ -429,3 +429,34 @@ where$x_7
 ## Further examples
 
 See `?setReactive` and `?setReactive_bare`.
+
+
+----
+
+## Unsetting reactive objects
+
+```
+where <- new.env()  
+
+setReactive(id = "x_1", value = 10, where = where)
+setReactive(id = "x_2", watch = "x_1", where = where)
+
+## Illustrate reactiveness //
+where$x_1
+where$x_2
+where$x_1 <- 50
+where$x_1 
+where$x_2
+
+## Unset reactive --> turn it into a regular object again //
+unsetReactive(id = "x_1", where = where)
+
+## Illustrate removed reactiveness //
+where$x_1
+where$x_2
+where$x_1 <- 10
+where$x_1
+where$x_2
+## --> 'x_1' is not a reactive object anymore; from now on, 'x_2' simply returns
+## the last value that has been cached
+```

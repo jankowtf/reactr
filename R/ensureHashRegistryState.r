@@ -3,17 +3,21 @@
 #'
 #' @description 
 #' Ensures the required state of the hash registry \code{<where>[[.hash_id]]}.
-#'   	
+#'     
 #' @param id \strong{Signature argument}.
 #'    Object containing id information.
 #' @param watch \strong{Signature argument}.
 #'    Object containing monitored variable information.
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
+#' @param .hash_id \code{\link{character}}.
+#'    Name of the auxiliary environment for caching hash values. 
+#'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
+#'    either \code{where} or \code{where_watch}.
 #' @template threedot
 #' @example inst/examples/ensureHashRegistryState.r
 #' @seealso \code{
-#'   	\link[reactr]{ensureHashRegistryState-missing-method}
+#'   	\link[reactr]{ensureHashRegistryState-character-character-environment-method}
 #' }
 #' @template author
 #' @template references
@@ -27,7 +31,7 @@ setGeneric(
   def = function(
     id,
     watch = character(),
-    where,
+    where = .GlobalEnv,
     .hash_id = "._HASH",
     ...
   ) {

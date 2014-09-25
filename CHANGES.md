@@ -1,3 +1,13 @@
+# Version 0.1.3.2
+ - Merge branch 'feature-removeReactive' into develop
+ - added `strict` behavior
+ - Merge branch 'feature-removeReactive' into develop
+ - implemented feature `removeReactive`
+ - Merge branch 'release-0.1.3.1' into develop
+ - `getThis()` --> `getReactive()`
+
+----------
+
 # Version 0.1.3.1
  - Merge branch 'release-v0.1.2' into develop
  - Bumped version number to 0.1.2

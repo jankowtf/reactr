@@ -472,11 +472,30 @@ setReactive(id = "x_1", value = 10, where = where)
 setReactive(id = "x_2", watch = "x_1", where = where)
 
 ## Remove reactive --> remove it from 'where' //
-unsetReactive(id = "x_1", where = where)
+removeReactive(id = "x_1", where = where)
 
 exists("x_1", envir = where, inherits = FALSE)
+```
 
-## Illustrate implications on observing objects //
+### Implications on observing objects
+
+The implications of removing a reactive object depends on the value of 
+`strict` when setting them via `setReactive()`
+
+Compare:
+
+```
+where <- new.env()  
+
+setReactive(id = "x_1", value = 10, where = where)
+
+## Non-strict --> observing object will return last cached value //
+setReactive(id = "x_2", watch = "x_1", where = where)
+
+## Strict --> observing object will return 'NULL' //
+setReactive(id = "x_3", watch = "x_1", where = where, strict = TRUE)
+
+removeReactive(id = "x_1", where = where)
 where$x_2  
-## --> returns last cached value
+where$x_3 
 ```

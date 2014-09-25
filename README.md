@@ -1,4 +1,4 @@
-reactr (v0.1.3.2)
+reactr (v0.1.3.3)
 ======
 
 Reactive object bindings with built-in caching
@@ -498,4 +498,41 @@ setReactive(id = "x_3", watch = "x_1", where = where, strict = TRUE)
 removeReactive(id = "x_1", where = where)
 where$x_2  
 where$x_3 
+```
+
+## Resetting removed reactive objects
+
+```
+where <- new.env()  
+
+setReactive(id = "x_1", value = 10, where = where)
+```
+
+Non-strict:
+
+```
+setReactive(id = "x_2", watch = "x_1", where = where)
+```
+
+Strict :
+
+```
+setReactive(id = "x_3", watch = "x_1", where = where, strict = TRUE)
+```
+
+Reset without notifying `x_2` or `x_3` (i.e. "cold reset"):
+
+```
+removeReactive(id = "x_1", where = where)
+setReactive(id = "x_1", value = 100, where = where)
+```
+
+Implications:
+
+
+```
+where$x_2
+## --> 'x_2' re-establishes the reactive binding
+where$x_3
+## --> error
 ```

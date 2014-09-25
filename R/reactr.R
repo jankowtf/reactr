@@ -21,11 +21,25 @@
 #'    \item{\code{\link[reactr]{getReactive}}: }{
 #'      Alternative way of retrieving objects from an environment.
 #'    }
+#'    \item{\code{\link[reactr]{unsetReactive}}: }{
+#'      Removes reactive binding from an object and turns it into a regularly
+#'      assigned object again.
+#'    }
+#'    \item{\code{\link[reactr]{removeReactive}}: }{
+#'      Removes an reactive object from its environment completely.
+#'      This is equivalent to \code{\link[base]{rm}} with a previous call to
+#'      \code{\link[reactr]{unsetReactive}}
+#'    }   
+#' }
+#' 
+#' A more internal but very central function:
+#' \itemiz{
 #'    \item{\code{\link[reactr]{getBoilerplateCode}}: }{
 #'      Function that retrieves boilerplate code as required by 
 #'      \code{\link[reactr]{setReactive}} and \code{\link[base]{makeActiveBinding}}.
 #'    }
 #' }
+#' 
 #' @template author
 #' @template references
 #' @docType package

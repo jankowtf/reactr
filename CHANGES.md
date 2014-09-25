@@ -1,3 +1,12 @@
+# Version 0.1.3.3
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.3.2'
+ - Bump to version 0.1.3.2
+ - Merge branch 'release-0.1.3.1'
+ - Merge branch 'release-v0.1.2'
+
+----------
+
 # Version 0.1.3.2
  - Merge branch 'feature-removeReactive' into develop
  - added `strict` behavior

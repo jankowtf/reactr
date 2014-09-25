@@ -58,6 +58,13 @@
 #'    overwritten. \strong{Note that for the following constellations this value is 
 #'    automtically set to \code{TRUE}: \code{mutual = TRUE} and whenever an
 #'    explicit binding definition is provided via \code{binding}}.
+#' @param strict \code{\link{logical}}.
+#'    \code{TRUE}: if object is removed, all observing objects are set to 
+#'    \code{NULL} as returning the last cached value would be 
+#'    misleading (that would be the case if the object has just been 
+#'    unset by \code{\link[reactr]{unsetReactive}});
+#'    \code{FALSE}: observing object return the last cached value of the 
+#'    linked to the removed object.
 #' @param .hash_id \code{\link{character}}.
 #'    Name of the auxiliary environment for caching hash values. 
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
@@ -95,6 +102,7 @@ setGeneric(
     binding_type = 1,
     mutual = FALSE,
     force = FALSE,
+    strict = FALSE,
     .hash_id = "._HASH",
     .tracelevel = 0,
     ...
@@ -145,6 +153,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -160,6 +169,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -210,6 +220,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -225,6 +236,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -275,6 +287,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -290,6 +303,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -340,6 +354,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -355,6 +370,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -405,6 +421,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -420,6 +437,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -469,6 +487,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -484,6 +503,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -533,6 +553,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -548,6 +569,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -597,6 +619,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -611,6 +634,8 @@ setMethod(
     binding = binding,
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -661,6 +686,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -683,6 +709,7 @@ setMethod(
     .binding = binding,
     mutual = mutual,
     force = force,
+    strict = strict,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -732,6 +759,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -753,6 +781,7 @@ setMethod(
     binding_type = binding_type,
     .binding = binding,
     mutual = mutual,
+    strict = strict,
     force = force,
     .tracelevel = .tracelevel,
     ...
@@ -803,6 +832,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -825,6 +855,7 @@ setMethod(
     .binding = binding,
     mutual = mutual,
     force = force,
+    strict = strict,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -874,6 +905,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -889,6 +921,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -945,6 +978,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     .binding = NULL,

@@ -1,17 +1,25 @@
 #' @title
-#' Unset Reactive Object
+#' Remove Reactive Object
 #'
 #' @description 
-#' Removes the reactive binding from an object
+#' Removes a reactive object from its environment. 
+#' 
+#' @details
+#' \strong{Note that tis is different from unsetting a reactive object 
+#' via \code{\link[reactr]{removeReactive}}}. It is equivalent to 
+#' \code{\link[base]{rm}} with a previous call to 
+#' \code{\link[reactr]{unsetReactive}}. 
 #' 
 #' @section Implications with respect to observing variables:
 #' If other reactive variables have been observing the reactive variable that
-#' has been unset, from this point on they will simply return the last value
-#' that has been cached.
+#' has been removed, from this point on they will simply return the last value
+#' that has been cached if \code{strict = FALSE} or \code{NULL} if 
+#' \code{strict = TRUE} when the observing object was set via 
+#' \code{\link[reactr]{setReactive}}
 #' 
 #' @note
 #' The main S4 method is 
-#' \code{\link[reactr]{unsetReactive-character-environment-method}}.
+#' \code{\link[reactr]{removeReactive-character-environment-method}}.
 #'     
 #' @param id \strong{Signature argument}.
 #'    Object containing path-like ID information.
@@ -27,15 +35,15 @@
 #'    control tracing. The trace level can also be set as a global option when
 #'    using package \code{tracer} (\strong{not functional yet}).
 #' @template threedot
-#' @example inst/examples/unsetReactive.r
+#' @example inst/examples/removeReactive.r
 #' @seealso \code{
-#'   	\link[reactr]{unsetReactive-character-environment-method}
+#'   	\link[reactr]{removeReactive-character-environment-method}
 #' }
 #' @template author
 #' @template references
 #' @export 
 setGeneric(
-  name = "unsetReactive",
+  name = "removeReactive",
   signature = c(
     "id",
     "where"
@@ -47,7 +55,7 @@ setGeneric(
     .tracelevel = 0,
     ...
   ) {
-    standardGeneric("unsetReactive")       
+    standardGeneric("removeReactive")       
   }
 )
 
@@ -55,26 +63,26 @@ setGeneric(
 #' Unset Reactive Object
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{unsetReactive}}
+#' See generic: \code{\link[reactr]{removeReactive}}
 #'      
-#' @inheritParams unsetReactive
+#' @inheritParams removeReactive
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{missing}}.
 #'    Internal argument that should not be set explicitly.
 #'    The value at runtime will correspond to the function that has been 
 #'    provided via argument \code{binding}.
 #' @return See method
-#'    \code{\link[reactr]{unsetReactive-character-environment-method}}
-#' @example inst/examples/unsetReactive.r
+#'    \code{\link[reactr]{removeReactive-character-environment-method}}
+#' @example inst/examples/removeReactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{unsetReactive}
+#'    Generic: \link[reactr]{removeReactive}
 #' }
 #' @template author
 #' @template references
-#' @aliases unsetReactive-method_main 
+#' @aliases removeReactive-method_main 
 #' @export
 setMethod(
-  f = "unsetReactive", 
+  f = "removeReactive", 
   signature = signature(
     id = "character",
     where = "missing"
@@ -87,7 +95,7 @@ setMethod(
     ...
   ) {
   
-  return(unsetReactive(
+  return(removeReactive(
     id = id,
     where = where,
     .hash_id = .hash_id,
@@ -102,25 +110,25 @@ setMethod(
 #' Unset Reactive Object
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{unsetReactive}}
+#' See generic: \code{\link[reactr]{removeReactive}}
 #'   	 
-#' @inheritParams unsetReactive
+#' @inheritParams removeReactive
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #'    Internal argument that should not be set explicitly.
 #'    The value at runtime will correspond to the function that has been 
 #'    provided via argument \code{binding}.
 #' @return \code{\link{logical}}. \code{TRUE}.
-#' @example inst/examples/unsetReactive.r
+#' @example inst/examples/removeReactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{unsetReactive}
+#'    Generic: \link[reactr]{removeReactive}
 #' }
 #' @template author
 #' @template references
-#' @aliases unsetReactive-method_main 
+#' @aliases removeReactive-method_main 
 #' @export
 setMethod(
-  f = "unsetReactive", 
+  f = "removeReactive", 
   signature = signature(
     id = "character",
     where = "environment"
@@ -139,11 +147,8 @@ setMethod(
       has_binding <- FALSE
     } 
     if (has_binding) {
-      tmp <- get(id, envir = where, inherits = FALSE)
+      unsetReactive(id = id, where = where, .hash_id = .hash_id)
       rm(list = id, envir = where, inherits = FALSE)
-      assign(id, tmp, where)
-      ## Remove hash registry entry //
-      removeFromHashRegistry(id = id, where = where, .hash_id = .hash_id, ...)
     }
   }
     

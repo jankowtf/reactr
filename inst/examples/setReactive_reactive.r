@@ -1,5 +1,0 @@
-\dontrun{
-
-## TODO: add example
-
-}

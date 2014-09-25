@@ -8,16 +8,14 @@
 #' \strong{Note that tis is different from unsetting a reactive object 
 #' via \code{\link[reactr]{removeReactive}}}. It is equivalent to 
 #' \code{\link[base]{rm}} with a previous call to 
-#' \code{\link[reactr]{unsetReactive}}.
+#' \code{\link[reactr]{unsetReactive}}. 
 #' 
 #' @section Implications with respect to observing variables:
 #' If other reactive variables have been observing the reactive variable that
 #' has been removed, from this point on they will simply return the last value
-#' that has been cached. 
-#' 
-#' Possible extension in future releases: once the value of object observing 
-#' a now removed object is requested, it is signaled that the object has been
-#' removed in some way and gets a value of, for example, \code{NULL}.
+#' that has been cached if \code{strict = FALSE} or \code{NULL} if 
+#' \code{strict = TRUE} when the observing object was set via 
+#' \code{\link[reactr]{setReactive}}
 #' 
 #' @note
 #' The main S4 method is 

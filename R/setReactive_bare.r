@@ -103,11 +103,9 @@ setReactive_bare <- function(
   if (is.function(binding)) {
     .binding <- binding
     if (!mutual) {
-      binding <- getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitoring.S3"))
+      binding <- getBoilerplateCode(reactr::BindingContractObserving.S3())
     } else {
-      binding <- getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMutual.S3"))
+      binding <- getBoilerplateCode(reactr::BindingContractMutual.S3())
     }
   }    
     
@@ -124,8 +122,7 @@ setReactive_bare <- function(
   if (!specific_binding && binding_type == 1) {
   ## Default "set-only" binding contract //      
     if (!length(watch)) {
-      binding <- getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitored.S3"))
+      binding <- getBoilerplateCode(reactr::BindingContractObserved.S3())
     } else {
       ## Variables that binding boilerplate needs to find //
       if (is.null(.binding)) {
@@ -137,12 +134,10 @@ setReactive_bare <- function(
       
       if (mutual) {
       ## Mutual binding contract //          
-        binding <- getBoilerplateCode(ns = classr::createInstance(
-          cl = "Reactr.BindingContractMutual.S3"))
+        binding <- getBoilerplateCode(reactr::BindingContractMutual.S3())
       } else {
       ## Monitoring binding contract //          
-        binding <- getBoilerplateCode(ns = classr::createInstance(
-          cl = "Reactr.BindingContractMonitoring.S3"))
+        binding <- getBoilerplateCode(reactr::BindingContractObserving.S3())
       }
     }
   }

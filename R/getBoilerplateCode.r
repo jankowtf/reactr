@@ -7,7 +7,12 @@
 #' @param ns \strong{Signature argument}.
 #'    Object containing boilerplate namespace information.
 #'    This usually corresponds to an instance of a class used for 
-#'    distinguishing boilerplate code. See \code{\link[classr]{asClassInstance}}
+#'    distinguishing boilerplate code. 
+#' 		See \code{
+#' 			\link[reactr]{BindingContractObserved.S3},
+#' 			\link[reactr]{BindingContractObserving.S3},
+#' 			\link[reactr]{BindingContractMutual.S3}
+#' 		}
 #' @template threedot
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
@@ -36,7 +41,7 @@ setGeneric(
 #' See generic: \code{\link[reactr]{getBoilerplateCode}}
 #'   	 
 #' @inheritParams getBoilerplateCode
-#' @param ns \code{\link{Reactr.BindingContractMonitored.S3}}.
+#' @param ns \code{\link{BindingContractObserved.S3}}.
 #' @return \code{\link{call}}. Implemented binding interface.
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
@@ -48,7 +53,7 @@ setGeneric(
 setMethod(
   f = "getBoilerplateCode", 
   signature = signature(
-    ns = "Reactr.BindingContractMonitored.S3"
+    ns = "BindingContractObserved.S3"
   ), 
   definition = function(
     ns,
@@ -85,7 +90,7 @@ setMethod(
 #' See generic: \code{\link[reactr]{getBoilerplateCode}}
 #'      
 #' @inheritParams getBoilerplateCode
-#' @param ns \code{\link{Reactr.BindingContractMonitoring.S3}}.
+#' @param ns \code{\link{BindingContractObserving.S3}}.
 #' @return \code{\link{call}}. Implemented binding interface.
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
@@ -97,7 +102,7 @@ setMethod(
 setMethod(
   f = "getBoilerplateCode", 
   signature = signature(
-    ns = "Reactr.BindingContractMonitoring.S3"
+    ns = "BindingContractObserving.S3"
   ), 
   definition = function(
     ns,
@@ -222,7 +227,7 @@ setMethod(
 #' See generic: \code{\link[reactr]{getBoilerplateCode}}
 #'      
 #' @inheritParams getBoilerplateCode
-#' @param ns \code{\link{Reactr.BindingContractMutual.S3}}.
+#' @param ns \code{\link{BindingContractMutual.S3}}.
 #' @return \code{\link{call}}. Implemented binding interface.
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
@@ -235,7 +240,7 @@ setMethod(
 setMethod(
   f = "getBoilerplateCode", 
   signature = signature(
-    ns = "Reactr.BindingContractMutual.S3"
+    ns = "BindingContractMutual.S3"
   ), 
   definition = function(
     ns,

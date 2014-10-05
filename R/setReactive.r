@@ -665,7 +665,6 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -699,11 +698,9 @@ setMethod(
     watch = watch,
     where_watch = where_watch,
     binding = if (!mutual) {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitoring.S3"))
+      getBoilerplateCode(ns = reactr::BindingContractObserving.S3())
     } else {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMutual.S3"))
+      getBoilerplateCode(ns = reactr::BindingContractMutual.S3())
     },
     binding_type = binding_type,
     .binding = binding,
@@ -738,7 +735,6 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -772,11 +768,9 @@ setMethod(
     watch = watch,
     where_watch = where_watch,
     binding = if (!mutual) {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitoring.S3"))
+      getBoilerplateCode(ns = BindingContractObserving.S3())
     } else {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMutual.S3"))
+      getBoilerplateCode(ns = BindingContractMutual.S3())
     },
     binding_type = binding_type,
     .binding = binding,
@@ -811,7 +805,6 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -845,11 +838,9 @@ setMethod(
     watch = watch,
     where_watch = where_watch,
     binding = if (!mutual) {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitoring.S3"))
+      getBoilerplateCode(ns = BindingContractObserving.S3())
     } else {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMutual.S3"))
+      getBoilerplateCode(ns = reactr::BindingContractMutual.S3())
     },
     binding_type = binding_type,
     .binding = binding,
@@ -957,7 +948,6 @@ setMethod(
 #' @aliases setReactive-method_main 
 #' @export
 #' @import digest
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -1005,8 +995,7 @@ setMethod(
   if (!specific_binding && binding_type == 1) {
   ## Default "set-only" binding contract //      
     if (!length(watch)) {
-      binding <- getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitored.S3"))
+      binding <- getBoilerplateCode(ns = BindingContractObserved.S3())
     } else {
       ## Variables that binding boilerplate needs to find //
       if (is.null(.binding)) {
@@ -1014,15 +1003,13 @@ setMethod(
       }
       if (mutual) {
       ## Mutual binding contract //          
-        binding <- getBoilerplateCode(ns = classr::createInstance(
-          cl = "Reactr.BindingContractMutual.S3"))
+        binding <- getBoilerplateCode(ns = BindingContractMutual.S3())
       } else {
       ## Monitoring binding contract //          
         if (length(value)) {
           warning(paste0("Variable has monitoring binding --> disregarding provided 'value'"))
         }
-        binding <- getBoilerplateCode(ns = classr::createInstance(
-          cl = "Reactr.BindingContractMonitoring.S3"))
+        binding <- getBoilerplateCode(ns = BindingContractObserving.S3())
       }
     }
   }

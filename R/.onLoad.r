@@ -9,7 +9,7 @@
 #' @template references
 #' @export .onLoad
 .onLoad <- function(libname, pkgname) {
-  setOldClass("Reactr.BindingContractMonitored.S3")
-  setOldClass("Reactr.BindingContractMonitoring.S3")
-  setOldClass("Reactr.BindingContractMutual.S3")
+  setOldClass("BindingContractObserved.S3")
+  setOldClass("BindingContractObserving.S3")
+  setOldClass("BindingContractMutual.S3")
 }

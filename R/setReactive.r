@@ -58,6 +58,13 @@
 #'    overwritten. \strong{Note that for the following constellations this value is 
 #'    automtically set to \code{TRUE}: \code{mutual = TRUE} and whenever an
 #'    explicit binding definition is provided via \code{binding}}.
+#' @param strict \code{\link{logical}}.
+#'    \code{TRUE}: if object is removed, all observing objects are set to 
+#'    \code{NULL} as returning the last cached value would be 
+#'    misleading (that would be the case if the object has just been 
+#'    unset by \code{\link[reactr]{unsetReactive}});
+#'    \code{FALSE}: observing object return the last cached value of the 
+#'    linked to the removed object.
 #' @param .hash_id \code{\link{character}}.
 #'    Name of the auxiliary environment for caching hash values. 
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
@@ -95,6 +102,7 @@ setGeneric(
     binding_type = 1,
     mutual = FALSE,
     force = FALSE,
+    strict = FALSE,
     .hash_id = "._HASH",
     .tracelevel = 0,
     ...
@@ -145,6 +153,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -160,6 +169,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -210,6 +220,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -225,6 +236,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -275,6 +287,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -290,6 +303,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -340,6 +354,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -355,6 +370,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -405,6 +421,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -420,6 +437,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -469,6 +487,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -484,6 +503,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -533,6 +553,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -548,6 +569,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -597,6 +619,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -611,6 +634,8 @@ setMethod(
     binding = binding,
     binding_type = binding_type,
     mutual = mutual,
+    force = force,
+    strict = strict,
     .hash_id = .hash_id,
     .tracelevel = .tracelevel,
     ...
@@ -640,7 +665,6 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -661,6 +685,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -673,16 +698,15 @@ setMethod(
     watch = watch,
     where_watch = where_watch,
     binding = if (!mutual) {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitoring.S3"))
+      getBoilerplateCode(ns = reactr::BindingContractObserving.S3())
     } else {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMutual.S3"))
+      getBoilerplateCode(ns = reactr::BindingContractMutual.S3())
     },
     binding_type = binding_type,
     .binding = binding,
     mutual = mutual,
     force = force,
+    strict = strict,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -711,7 +735,6 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -732,6 +755,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -744,15 +768,14 @@ setMethod(
     watch = watch,
     where_watch = where_watch,
     binding = if (!mutual) {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitoring.S3"))
+      getBoilerplateCode(ns = BindingContractObserving.S3())
     } else {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMutual.S3"))
+      getBoilerplateCode(ns = BindingContractMutual.S3())
     },
     binding_type = binding_type,
     .binding = binding,
     mutual = mutual,
+    strict = strict,
     force = force,
     .tracelevel = .tracelevel,
     ...
@@ -782,7 +805,6 @@ setMethod(
 #' @template author
 #' @template references
 #' @export
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -803,6 +825,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -815,16 +838,15 @@ setMethod(
     watch = watch,
     where_watch = where_watch,
     binding = if (!mutual) {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitoring.S3"))
+      getBoilerplateCode(ns = BindingContractObserving.S3())
     } else {
-      getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMutual.S3"))
+      getBoilerplateCode(ns = reactr::BindingContractMutual.S3())
     },
     binding_type = binding_type,
     .binding = binding,
     mutual = mutual,
     force = force,
+    strict = strict,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -874,6 +896,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     ...
@@ -889,6 +912,7 @@ setMethod(
     binding_type = binding_type,
     mutual = mutual,
     force = force,
+    strict = strict,
     .tracelevel = .tracelevel,
     ...
   ))
@@ -924,7 +948,6 @@ setMethod(
 #' @aliases setReactive-method_main 
 #' @export
 #' @import digest
-#' @import classr
 setMethod(
   f = "setReactive", 
   signature = signature(
@@ -945,6 +968,7 @@ setMethod(
     binding_type,
     mutual,
     force,
+    strict,
     .hash_id,
     .tracelevel,
     .binding = NULL,
@@ -971,8 +995,7 @@ setMethod(
   if (!specific_binding && binding_type == 1) {
   ## Default "set-only" binding contract //      
     if (!length(watch)) {
-      binding <- getBoilerplateCode(ns = classr::createInstance(
-        cl = "Reactr.BindingContractMonitored.S3"))
+      binding <- getBoilerplateCode(ns = BindingContractObserved.S3())
     } else {
       ## Variables that binding boilerplate needs to find //
       if (is.null(.binding)) {
@@ -980,15 +1003,13 @@ setMethod(
       }
       if (mutual) {
       ## Mutual binding contract //          
-        binding <- getBoilerplateCode(ns = classr::createInstance(
-          cl = "Reactr.BindingContractMutual.S3"))
+        binding <- getBoilerplateCode(ns = BindingContractMutual.S3())
       } else {
       ## Monitoring binding contract //          
         if (length(value)) {
           warning(paste0("Variable has monitoring binding --> disregarding provided 'value'"))
         }
-        binding <- getBoilerplateCode(ns = classr::createInstance(
-          cl = "Reactr.BindingContractMonitoring.S3"))
+        binding <- getBoilerplateCode(ns = BindingContractObserving.S3())
       }
     }
   }

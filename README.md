@@ -1,4 +1,4 @@
-reactr (v0.1.3.1)
+reactr (v0.1.4)
 ======
 
 Reactive object bindings with built-in caching
@@ -7,12 +7,15 @@ Reactive object bindings with built-in caching
 
 ```
 require("devtools")
-devtools::install_github("Rappster/classr")
 devtools::install_github("Rappster/reactr")
 require("reactr")
 ```
 
-## Quick intro 
+## Overview 
+
+See `?reactr`
+
+## Example environment
 
 The default location that objects are set to is `.GlobalEnv`.
 
@@ -23,7 +26,7 @@ an example environment:
 where <- new.env()
 ```
 
-### Binding scenario 1: simple observing (identical values)
+## Binding scenario 1: simple observing (identical values)
 
 Set an object that can be observed:
 
@@ -53,7 +56,7 @@ where$x_2
 # [1] 100
 ```
 
-#### NOTE
+### NOTE
 
 Using this approach, you can only set `x_1`. Object `x_2` is a mere
 "observing" object. Trying to set it via `<-`, `assign()` or `setReactive()` is
@@ -70,7 +73,7 @@ to this!
 
 -----
 
-### Binding scenario 2: simple observing (arbitrary functional relationship)
+## Binding scenario 2: simple observing (arbitrary functional relationship)
 
 Set an object that observes `x_1` and has a reactive binding to it:
 
@@ -99,7 +102,7 @@ where$x_3
 
 -----
 
-### Binding scenario 3: mutual binding (identical values)
+## Binding scenario 3: mutual binding (identical values)
 
 Set two objects that have a mutual binding.
 The main difference to *Binding scenario 1* is, that you can set 
@@ -150,7 +153,7 @@ where$x_3
 
 -----
 
-### Binding scenario 4: mutual binding (valid bi-directional relationship)
+## Binding scenario 4: mutual binding (valid bi-directional relationship)
 
 The binding contract for objects with mutual bindings does not have to 
 be based on the standard binding definition of 
@@ -187,7 +190,7 @@ where$x_5
 
 -----
 
-### Tracing what's actually going on
+## Tracing what's actually going on
 
 To understand what's going on behind the scenes, I've include a `.tracelevel`
 argument that you can use:
@@ -459,4 +462,80 @@ where$x_1
 where$x_2
 ## --> 'x_1' is not a reactive object anymore; from now on, 'x_2' simply returns
 ## the last value that has been cached
+```
+
+## Removing reactive objects
+
+This means deleting the object alltogether. 
+
+```
+where <- new.env()  
+
+setReactive(id = "x_1", value = 10, where = where)
+setReactive(id = "x_2", watch = "x_1", where = where)
+
+## Remove reactive --> remove it from 'where' //
+removeReactive(id = "x_1", where = where)
+
+exists("x_1", envir = where, inherits = FALSE)
+```
+
+### Implications on observing objects
+
+The implications of removing a reactive object depends on the value of 
+`strict` when setting them via `setReactive()`
+
+Compare:
+
+```
+where <- new.env()  
+
+setReactive(id = "x_1", value = 10, where = where)
+
+## Non-strict --> observing object will return last cached value //
+setReactive(id = "x_2", watch = "x_1", where = where)
+
+## Strict --> observing object will return 'NULL' //
+setReactive(id = "x_3", watch = "x_1", where = where, strict = TRUE)
+
+removeReactive(id = "x_1", where = where)
+where$x_2  
+where$x_3 
+```
+
+## Resetting removed reactive objects
+
+```
+where <- new.env()  
+
+setReactive(id = "x_1", value = 10, where = where)
+```
+
+Non-strict:
+
+```
+setReactive(id = "x_2", watch = "x_1", where = where)
+```
+
+Strict :
+
+```
+setReactive(id = "x_3", watch = "x_1", where = where, strict = TRUE)
+```
+
+Reset without notifying `x_2` or `x_3` (i.e. "cold reset"):
+
+```
+removeReactive(id = "x_1", where = where)
+setReactive(id = "x_1", value = 100, where = where)
+```
+
+Implications:
+
+
+```
+where$x_2
+## --> 'x_2' re-establishes the reactive binding
+where$x_3
+## --> error
 ```

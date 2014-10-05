@@ -48,7 +48,7 @@ test_that("setReactive_reactive", {
   setReactive_reactive(id = "x_2", watch = "x_1", binding = reactive(x_1 + 60*60*24), 
                    where = where)
 
-  getBoilerplateCode(ns = classr::createInstance("Reactr.BindingContractMutual.S3"))
+  getBoilerplateCode(ns = reactr::BindingContractMutual.S3())
 
   options(shiny.suppressMissingContextError=TRUE)
   binding <- reactive(x_1 + 60*60*24)
@@ -362,12 +362,14 @@ x_3
 
   ## Where to ensure this?
   getOption("shiny.suppressMissingContextError")
-  require("microbenchmark")
-  res <- microbenchmark(getOption("shiny.suppressMissingContextError"))
-  in_secs <- median(res$time)/1000000000
-  in_secs
-  ## --> doesn't cost me much, so okay to check each time instead of only once 
-  ## globaly
+  if ("microbenchmark" %in% .packages(all.available = TRUE)) {
+    require("microbenchmark")
+    res <- microbenchmark(getOption("shiny.suppressMissingContextError"))
+    in_secs <- median(res$time)/1000000000
+    in_secs
+    ## --> doesn't cost me much, so okay to check each time instead of only once 
+    ## globaly
+  }
 
   func <- attributes(reactive(x_1 + 60*60*24))$observable$.func
   func

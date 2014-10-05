@@ -166,7 +166,7 @@ test_that("setReactive_bare", {
   ## Profiling //
   ##----------------------------------------------------------------------------
 
-  if (TRUE) {
+  if (FALSE) {
     require(microbenchmark)
     
     where <- new.env()  

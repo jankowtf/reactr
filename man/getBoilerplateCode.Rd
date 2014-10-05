@@ -35,7 +35,7 @@ setReactive(id = "test", value = Sys.time(), where = where)
 
 ## Getting boilerplate code for binding contract:
 binding <- getBoilerplateCode(
-  ns = classr::createInstance(cl = "Reactr.BindingContractMonitoring.S3")
+  ns = classr::createInstance(cl = "BindingContractObserving.S3")
 )
 
 ## We'd like to set a variable that monitors the variable 'test':
@@ -66,13 +66,13 @@ eval(binding)()
 
 ## All available boilerplate code of this package //
 getBoilerplateCode(
-  ns = classr::createInstance(cl = "Reactr.BindingContractMonitored.S3")
+  ns = classr::createInstance(cl = "BindingContractObserved.S3")
 )
 getBoilerplateCode(
-  ns = classr::createInstance(cl = "Reactr.BindingContractMonitoring.S3")
+  ns = classr::createInstance(cl = "BindingContractObserving.S3")
 )
 getBoilerplateCode(
-  ns = classr::createInstance(cl = "Reactr.BindingContractMutual.S3")
+  ns = classr::createInstance(cl = "BindingContractMutual.S3")
 )
 
 }

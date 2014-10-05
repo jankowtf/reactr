@@ -1,3 +1,22 @@
+# CHANGES IN VERSION 0.1.4
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+- removed package dependency: `classr`
+- added: class `BindingContractObserved.S3`
+- added: class `BindingContractObserving.S3`
+- added: class `BindingContractMutual.S3`
+
+## MINOR CHANGES
+
+## MISC
+
+-----
+
 # CHANGES IN VERSION 0.1.3.3
 
 ## NEW FEATURES

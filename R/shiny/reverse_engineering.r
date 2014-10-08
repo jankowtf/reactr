@@ -1,3 +1,124 @@
+library(shiny)
+options(shiny.suppressMissingContextError=TRUE)
+
+makeReactiveBinding("x_1")
+x_1 <- Sys.time()
+x_2 <- reactive(x_1 + 60*60*24)
+x_1
+x_2()
+x_1 <- Sys.time()
+x_1
+x_2()
+x_2 <- reactive(x_1 + 60*60*24*2)
+
+# Now let's try an observer
+shiny:::setAutoflush(TRUE)
+observe(print(paste("The time changed:", x_1)))
+x_1 <- Sys.time()
+x_2()
+##------------------------------------------------------------------------------
+
+makeReactiveBinding("a")
+values <- reactiveValues(value = 10)
+values$value
+
+.subset2(values, "impl")$.allValuesDeps
+ls(.subset2(values, "impl")$.allValuesDeps)
+.subset2(values, "impl")$.allValuesDeps$initialize
+.subset2(values, "impl")$.allValuesDeps$invalidate
+.subset2(values, "impl")$.allValuesDeps$register
+.subset2(values, "impl")$.allValuesDeps$self
+ls(.subset2(values, "impl")$.allValuesDeps$self)
+.subset2(values, "impl")$mset
+.subset2(values, "impl")$.dependents
+ls(.subset2(values, "impl")$.dependents)
+.subset2(values, "impl")$.label
+.subset2(values, "impl")$.nameDeps
+.subset2(values, "impl")$.setLabel
+.subset2(values, "impl")$.values
+ls(.subset2(values, "impl")$.values)
+.subset2(values, "impl")$.valuesDeps
+ls(.subset2(values, "impl")$.valuesDeps)
+.subset2(values, "impl")$get
+.subset2(values, "impl")$initialize
+.subset2(values, "impl")$mset
+.subset2(values, "impl")$names
+.subset2(values, "impl")$self
+.subset2(values, "impl")$set
+.subset2(values, "impl")$toList
+
+b <- reactive(a * -1)
+observe(print(b()))
+a <- 20
+
+rm(x_1)
+rm(x_2)
+quote(reactive(x_2))
+x = quote(x_1)
+env = parent.frame()
+quoted = TRUE
+label = NULL
+domain = getDefaultReactiveDomain()
+reactive2 <- function (x, env = parent.frame(), quoted = FALSE, label = NULL, 
+    domain = getDefaultReactiveDomain()) 
+{
+    fun <- exprToFunction(x, env, quoted)
+    if (is.null(label)) 
+        label <- sprintf("reactive(%s)", paste(deparse(body(fun)), 
+            collapse = "\n"))
+    srcref <- attr(substitute(x), "srcref")
+    if (length(srcref) >= 2) 
+        attr(label, "srcref") <- srcref[[2]]
+    attr(label, "srcfile") <- shiny:::srcFileOfRef(srcref[[1]])
+    o <- shiny:::Observable$new(fun, label, domain)
+    shiny:::registerDebugHook(".func", o, "Reactive")
+#     structure(o$getValue, observable = o, class = "reactive")
+    structure(o$getValue, observable = o, class = "reactive2")
+}
+
+x_1 <- 10
+x_2 <- reactive2(x_1)
+x_1
+x_2()
+x_1 <- 20
+x_2()
+makeReactiveBinding("x_1")
+x_2 <- reactive2(x_1)
+x_2()
+x_1 <- 30
+x_2()
+x_2
+x_1 <- 100
+function () 
+{
+    this <- attributes(x_2)$observable
+    
+#     ls(this$.dependents)
+#     shiny:::Map$new
+#     this$.dependents$initialize()
+    this$.dependents$register()
+    if (this$.invalidated || this$.running) {
+        this$self$.updateValue()
+    }
+    ## This somehow has to do with some lookup/comparison of depending and
+    ## dependee variable via IDs
+    shiny:::.graphDependsOnId(
+      shiny:::getCurrentContext()$id, 
+      this$.mostRecentCtxId
+    )
+    if (identical(class(this$.value), "try-error")) 
+        stop(attr(this$.value, "condition"))
+    if (this$.visible) 
+        .value
+    else invisible(this$.value)
+}
+
+################################################################################
+################################################################################
+################################################################################
+
+## OLD //
+
 context("setReactive_reactive-1")
 test_that("setReactive_reactive", {
 
@@ -212,13 +333,12 @@ test_that("setReactive_reactive", {
   ## Make sure 'x_1' and 'x_2' are removed:
   suppressWarnings(rm(x_1))
   suppressWarnings(rm(x_2))
-  setReactive("x_1", value = Sys.time())
+  setReactive(id = "x_1", value = Sys.time())
   x_1
   x_1 <- Sys.time()
   x_1
 
-
-  setReactive("x_2", value = reactive(x_1 + 60*60*24))
+  setReactive(id = "x_2", value = reactive(x_1 + 60*60*24))
   x_2
   x_1 <- Sys.time()
   x_1
@@ -401,3 +521,8 @@ x_3
   }
 
 })
+
+b <- reactive(a * -1)
+observe(print(b()))
+b()
+a <- 20

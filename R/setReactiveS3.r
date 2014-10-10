@@ -18,7 +18,7 @@
 #' @template threedot
 #' @example inst/examples/setReactiveS3.r
 #' @seealso \code{
-#'   	\link[reactr]{setReactive-character-ANY-environment-character-call-method}
+#'   	\link[reactr]{setReactiveS3}
 #' }
 #' @template author
 #' @template references
@@ -27,7 +27,7 @@
 setReactiveS3 <- function(
     id,
     value = NULL,
-    where = .GlobalEnv,
+    where = parent.frame(),
     force = FALSE,
     .debug = FALSE,
     ...

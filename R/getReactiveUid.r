@@ -11,7 +11,7 @@
 #' @template threedot
 #' @example inst/examples/getReactiveUid.r
 #' @seealso \code{
-#'   	\link[reactr]{setReactive-character-ANY-environment-character-call-method}
+#'   	\link[reactr]{setReactiveS3}
 #' }
 #' @template author
 #' @template references
@@ -19,7 +19,7 @@
 #' @import shiny
 getReactiveUid <- function(
     id,
-    where = .GlobalEnv,
+    where = parent.frame(),
     ...
   ) {
 

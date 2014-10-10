@@ -1,7 +1,7 @@
 context("removeReactiveByUid-A")
 test_that("removeReactiveByUid", {
   
-  skip()
+  skip("not finished")
   where = new.env()  
   
   setReactiveS3(id = "x_1", value = 10, where = where, force = TRUE)

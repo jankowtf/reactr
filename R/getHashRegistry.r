@@ -21,7 +21,7 @@ setGeneric(
     "where"
   ),
   def = function(
-    where = getOption("reactr")$.hash,
+    where = NULL,
     ...
   ) {
     standardGeneric("getHashRegistry")       
@@ -55,6 +55,11 @@ setMethod(
     where,
     ...
   ) {
+    
+  if (is.null(getOption("reactr")$.hash)) {
+    initializeHashRegistry()
+  }
+  where <- getOption("reactr")$.hash
     
   return(getHashRegistry(
     where = where,

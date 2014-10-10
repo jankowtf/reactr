@@ -1,6 +1,8 @@
 context("getHashRegistry-A")
 test_that("getHashRegistry", {
   
-  expect_equal(getHashRegistry(), getOption("reactr")$.hash)
+  options("reactr" = NULL)
+  expect_is(res <- getHashRegistry(), "environment")
+  expect_equal(res, getOption("reactr")$.hash)
   
 })

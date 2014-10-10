@@ -28,7 +28,7 @@
 #'    Initial: \code{NULL}.
 #' @field where \code{\link{environment}}.
 #'    Environment of reactive object.
-#'    Initial: \code{.GlobalEnv}.
+#'    Initial: \code{parent.frame()}.
 #' @field hash \code{\link{environment}}.
 #'    Environment for hash value storage.
 #'    Initial: \code{getHashRegistry()}.
@@ -53,7 +53,7 @@ Reactive.S3 <- function(
   id = character(),
   uid = character(),
   value = character(),
-  where = .GlobalEnv,
+  where = parent.frame(),
   hash = getHashRegistry(),
   dependees = new.env(parent = emptyenv()),
   dependencies = new.env(parent = emptyenv())
@@ -65,6 +65,7 @@ Reactive.S3 <- function(
     out <- new.env()
     out$id <- id
     out$value <- value
+    out$where <- where
     out$hash <- hash
     out$dependees <- dependees
     out$dependencies <- dependencies

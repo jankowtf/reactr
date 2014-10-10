@@ -1,6 +1,6 @@
 context("setReactiveS3-A")
 test_that("in .GlobalEnv", {
-  skip()
+  
   .debug <- FALSE
   
   ## Make sure 'x_1' and 'x_2' are removed:
@@ -21,14 +21,14 @@ test_that("in .GlobalEnv", {
     x_1
     x_1 <- Sys.time()
     x_1
-    uid <- getReactiveUid(id = "x_1", where = .GlobalEnv)
+    uid <- getReactiveUid(id = "x_1", where = environment())
     expect_true("id" %in% ls(getHashRegistry()[[uid]]))
     expect_true("where" %in% ls(getHashRegistry()[[uid]]))
   }
   
   setReactiveS3(id = "x_2", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_1", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_1", envir = environment())
     
     ## Do something with the dependencies //
     .react_1 + 60*60*24
@@ -50,8 +50,8 @@ test_that("in .GlobalEnv", {
   ##----------------------------------------------------------------------------
 
   setReactiveS3(id = "x_3", value = function() {
-    .react_1 <- get(x = "x_1", envir = .GlobalEnv)
-    .react_2 <- get(x = "x_2", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_1", envir = environment())
+    .react_2 <- get(x = "x_2", envir = environment())
     
     message(paste0("Dependency 1: ", .react_1))
     message(paste0("Dependency 2: ", .react_2))
@@ -119,7 +119,7 @@ test_that("in .GlobalEnv", {
 
   setReactiveS3(id = "x_1", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_2", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_2", envir = environment())
     
     ## Do something with the dependencies //
     .react_1
@@ -131,7 +131,7 @@ test_that("in .GlobalEnv", {
   }
   setReactiveS3(id = "x_2", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_1", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_1", envir = environment())
     
     ## Do something with the dependencies //
     .react_1
@@ -175,7 +175,7 @@ test_that("in .GlobalEnv", {
   
   setReactiveS3(id = "x_1", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_2", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_2", envir = environment())
     
     ## Do something with the dependencies //
     .react_1 * 2
@@ -187,7 +187,7 @@ test_that("in .GlobalEnv", {
   }
   setReactiveS3(id = "x_2", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_1", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_1", envir = environment())
     
     ## Do something with the dependencies //
     .react_1 / 2
@@ -237,7 +237,7 @@ test_that("in .GlobalEnv", {
   
   setReactiveS3(id = "x_1", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_2", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_2", envir = environment())
     
     ## Do something with the dependencies //
     .react_1 + 10
@@ -249,7 +249,7 @@ test_that("in .GlobalEnv", {
   }
   setReactiveS3(id = "x_2", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_1", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_1", envir = environment())
     
     ## Do something with the dependencies //
     .react_1
@@ -318,7 +318,7 @@ test_that("in .GlobalEnv", {
   
   setReactiveS3(id = "x_1", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_2", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_2", envir = environment())
     
     ## Do something with the dependencies //
     .react_1 + 10
@@ -330,7 +330,7 @@ test_that("in .GlobalEnv", {
   }
   setReactiveS3(id = "x_2", value = function() {
     ## State dependencies //
-    .react_1 <- get(x = "x_1", envir = .GlobalEnv)
+    .react_1 <- get(x = "x_1", envir = environment())
     
     ## Do something with the dependencies //
     .react_1 + 10
@@ -406,70 +406,10 @@ test_that("in .GlobalEnv", {
 #   x_1 <- 10
 #   x_1
 })
-  
-test_that("in .GlobalEnv", {
-  skip()
-  ## In custom environment //
-  where <- new.env()
-  suppressWarnings(rm(x_1, envir = where))
-  suppressWarnings(rm(x_2, envir = where))
-  
-  setReactive("x_1", value = Sys.time(), where = where)
-  where$x_1
-  where$x_1 <- Sys.time()
-  where$x_1
-
-  setReactive("x_2", value = reactive(x_1 + 60*60*24, env = where), where = where)
-  where$x_2
-  where$x_1 <- Sys.time()
-  where$x_1
-  where$x_2
-  
-  ## Stackoverflow //
-
-  ## Where to ensure this?
-  getOption("shiny.suppressMissingContextError")
-  if ("microbenchmark" %in% .packages(all.available = TRUE)) {
-    require("microbenchmark")
-    res <- microbenchmark(getOption("shiny.suppressMissingContextError"))
-    in_secs <- median(res$time)/1000000000
-    in_secs
-    ## --> doesn't cost me much, so okay to check each time instead of only once 
-    ## globaly
-  }
-
-  func <- attributes(reactive(x_1 + 60*60*24))$observable$.func
-  func
-  where <- new.env()
-  value <- reactive(x_1 + 60*60*24, env = where)
-  func <- attributes(value)$observable$.func
-  class(func)
-  environment(func)
-  norm <- function(x) sqrt(x%*%x)
-  formals(norm)
-  reactive_expr <- gsub(") $", ", env = where)", capture.output(value))
-# function () 
-# x_1 + 60 * 60 * 24
-# attr(,"_rs_shinyDebugPtr")
-# <pointer: 0x0000000008930380>
-# attr(,"_rs_shinyDebugId")
-# [1] 858
-# attr(,"_rs_shinyDebugLabel")
-# [1] "Reactive"  
-
-  options(shiny.suppressMissingContextError = TRUE)
-  where_1 <- new.env()
-  where_2 <- new.env()
-  where_1$x_1 <- 10
-  where_2$x_2 <- 20
-  value <- reactive((x_1 + x_2)*2, env = list(where_2, where_2))
-  x_3 <- value
-  x_3()
-
-})
 
 test_that("different environments", {
-    skip()
+  
+  skip("manual only due to environment issues")
   where <- new.env()
   value <- Sys.time()
   
@@ -564,20 +504,22 @@ test_that("different environments", {
 })
 
 test_that("alternative specification of environments", {
-    skip()
-  value <- Sys.time()
-  setReactiveS3(id = "x_1", value = value)
-  expect_equal(x_1, value)
-  setReactiveS3(id = "x_2", value = function(
-    deps = list(x_1 = .GlobalEnv)) x_1)
-  expect_equal(x_2, x_1)
-  expect_equal(x_1, value)
-  x_1 <- Sys.time()
-  expect_equal(x_2, x_1)
-  
-  suppressWarnings(rm(x_1))
-  suppressWarnings(rm(x_2))
-  resetHashRegistry()
+  skip("only manually due to environment issues")
+## TODO: better removal  
+#   value <- Sys.time()
+#   where <- environment()
+#   setReactiveS3(id = "x_1", value = value, force = TRUE)
+#   expect_equal(x_1, value)
+#   setReactiveS3(id = "x_2", value = function(
+#     deps = list(x_1 = where)) x_1, force = TRUE)
+#   expect_equal(x_2, x_1)
+#   expect_equal(x_1, value)
+#   x_1 <- Sys.time()
+#   expect_equal(x_2, x_1)
+#   
+#   suppressWarnings(rm(x_1))
+#   suppressWarnings(rm(x_2))
+#   resetHashRegistry()
   
   ##----------
   
@@ -639,7 +581,7 @@ test_that("alternative specification of environments", {
   
   setReactiveS3(id = "x_1", value = value)
   expect_equal(x_1, value)
-  setReactiveS3(id = "x_2", value = function(deps = list(x_1 = .GlobalEnv)) {
+  setReactiveS3(id = "x_2", value = function(deps = list(x_1 = environment())) {
     x_1 + 60*60*24
   }, where = where)
   expect_equal(where$x_2, x_1 + 60*60*24)

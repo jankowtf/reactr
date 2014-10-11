@@ -19,7 +19,7 @@ Environment to create the object in.}
 \item{strict}{\code{\link{numeric}}.
 Relevant if a referenced object has been removed thus breaking the
 reactive relationship.
-\itemiz{
+\itemize{
   \item{\code{0}: } {function returns last cached value}
   \item{\code{1}: } {object value is set to \code{NULL} and is returned}
   \item{\code{2}: } {object value is set to an instance of condition class

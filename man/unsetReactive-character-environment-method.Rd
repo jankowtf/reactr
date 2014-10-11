@@ -3,34 +3,21 @@
 \name{unsetReactive,character,environment-method}
 \alias{unsetReactive,character,environment-method}
 \alias{unsetReactive-method_main}
-\title{Unset Reactive Object}
+\title{Unset Reactive Object (char-env-method)}
 \usage{
-\S4method{unsetReactive}{character,environment}(id, where = .GlobalEnv,
-  .hash_id = "._HASH", .tracelevel = 0, ...)
+\S4method{unsetReactive}{character,environment}(id, where = parent.frame(),
+  ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.}
 
-\item{where}{\code{\link{environment}}.
-Internal argument that should not be set explicitly.
-The value at runtime will correspond to the function that has been
-provided via argument \code{binding}.}
-
-\item{.hash_id}{\code{\link{character}}.
-Name of the auxiliary environment for caching hash values.
-Default: \code{"._HASH"}. Keep it unless this name is already taken in
-either \code{where} or \code{where_watch}.}
-
-\item{.tracelevel}{\code{\link{numeric}}.
-Verbosity level for tracing purposes. Value of \code{0} means
-\emph{no tracing} whereas values of \code{> 0} can be used to fine
-control tracing. The trace level can also be set as a global option when
-using package \code{tracer} (\strong{not functional yet}).}
+\item{where}{\code{\link{environment}}.}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{logical}}. \code{TRUE}.
+\code{\link{logical}}. \code{TRUE}: success; \code{FALSE}: object
+   was not a reactive one or failure to unset.
 }
 \description{
 See generic: \code{\link[reactr]{unsetReactive}}
@@ -38,29 +25,37 @@ See generic: \code{\link[reactr]{unsetReactive}}
 \examples{
 \dontrun{
 
-where <- new.env()  
+## Start with a fresh hash registry //
+resetHashRegistry()
 
-setReactive(id = "x_1", value = 10, where = where)
-setReactive(id = "x_2", watch = "x_1", where = where)
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", 
+  value = function(refs = list(x_1 = parent.frame())) x_1 * 2
+)
 
 ## Illustrate reactiveness //
-where$x_1
-where$x_2
-where$x_1 <- 50
-where$x_1 
-where$x_2
+x_1
+x_2
+x_1 <- 50
+x_1 
+x_2
 
 ## Unset reactive --> turn it into a regular object again //
 unsetReactive(id = "x_1", where = where)
 
 ## Illustrate removed reactiveness //
-where$x_1
-where$x_2
-where$x_1 <- 10
-where$x_1
-where$x_2
+x_1
+x_2
+x_1 <- 10
+x_1
+x_2
 ## --> 'x_1' is not a reactive object anymore; from now on, 'x_2' simply returns
 ## the last value that has been cached
+
+## Implications with respect to hash registry //
+## Entry corresponding to 'x_1' set in 'environment()' has been removed
+exists(getReactiveUid(id = "x_1", where = where, getHashRegistry()))
+## [1] FALSE
 
 }
 }

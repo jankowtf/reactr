@@ -3,34 +3,20 @@
 \name{removeReactive,character,environment-method}
 \alias{removeReactive,character,environment-method}
 \alias{removeReactive-method_main}
-\title{Unset Reactive Object}
+\title{Remove Reactive Object (char-env-method)}
 \usage{
-\S4method{removeReactive}{character,environment}(id, where = .GlobalEnv,
-  .hash_id = "._HASH", .tracelevel = 0, ...)
+\S4method{removeReactive}{character,environment}(id, where = .GlobalEnv, ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.}
 
-\item{where}{\code{\link{environment}}.
-Internal argument that should not be set explicitly.
-The value at runtime will correspond to the function that has been
-provided via argument \code{binding}.}
-
-\item{.hash_id}{\code{\link{character}}.
-Name of the auxiliary environment for caching hash values.
-Default: \code{"._HASH"}. Keep it unless this name is already taken in
-either \code{where} or \code{where_watch}.}
-
-\item{.tracelevel}{\code{\link{numeric}}.
-Verbosity level for tracing purposes. Value of \code{0} means
-\emph{no tracing} whereas values of \code{> 0} can be used to fine
-control tracing. The trace level can also be set as a global option when
-using package \code{tracer} (\strong{not functional yet}).}
+\item{where}{\code{\link{environment}}.}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{logical}}. \code{TRUE}.
+\code{\link{logical}}. \code{TRUE}: success; \code{FALSE}: object
+   was not a reactive one or failure to remove.
 }
 \description{
 See generic: \code{\link[reactr]{removeReactive}}
@@ -38,23 +24,30 @@ See generic: \code{\link[reactr]{removeReactive}}
 \examples{
 \dontrun{
 
-where = new.env()  
+## Start with fresh hash registry //
+resetHashRegistry()
 
-setReactive(id = "x_1", value = 10, where = where)
-setReactive(id = "x_2", watch = "x_1", where = where)
+## Non-strict //
+where <- new.env()  
+setReactiveS3(id = "x_1", value = 10, where = where)
+setReactiveS3(id = "x_2", 
+  value = function(refs = list(x_1 = where)) {x_1 * 2}, 
+  where = where)
 
 removeReactive(id = "x_1", where = where)
 exists("x_1", envir = where, inherits = FALSE)
 where$x_2
 
 ## Strict //
-where = new.env()  
-  
-setReactive(id = "x_1", value = 10, where = where)
-setReactive(id = "x_2", watch = "x_1", where = where, strict = TRUE)
+where <- new.env()  
+setReactiveS3(id = "x_2", 
+  value = function(refs = list(x_1 = where)) {x_1 * 2}, 
+  where = where, 
+  strict = TRUE
+)
 removeReactive(id = "x_1", where = where)
-where$x_2
-## --> as observed object 'x_1' does not exist anymore
+try(where$x_2)
+## --> as referenced object 'x_1' does not exist anymore
 
 }
 }

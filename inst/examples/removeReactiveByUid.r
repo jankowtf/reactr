@@ -3,7 +3,7 @@
 where = new.env()  
 setReactiveS3(id = "x_1", value = 10, where = where)
 setReactiveS3(id = "x_2", 
-              value = function(deps = list(x_1 = where)) x_1,
+              value = function(refs = list(x_1 = where)) x_1,
               where = where)
 
 unsetReactiveByUid(uid = getReactiveUid("x_1", where))

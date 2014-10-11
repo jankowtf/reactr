@@ -1,12 +1,14 @@
 #' @title
-#' Remove From Hash Registry
+#' Remove From Hash Registry (generic)
 #'
 #' @description 
 #' Removes entry of associated reactive object that has been unset via 
-#' \code{\link[reactr]{unsetReactiveByUid}} from hash registry \code{<where>[[.hash_id]]}.
+#' \code{\link[reactr]{unsetReactive}} from the hash registry.
 #'   	
-#' @param uid \strong{Signature argument}.
-#'    Object containing UID information.
+#' @param id \strong{Signature argument}.
+#'    Object containing name/ID information.
+#' @param where \strong{Signature argument}.
+#'    Object containing location information.
 #' @template threedot
 #' @example inst/examples/removeFromHashRegistry.r
 #' @seealso \code{
@@ -17,10 +19,12 @@
 setGeneric(
   name = "removeFromHashRegistry",
   signature = c(
-    "uid"
+    "id",
+    "where"
   ),
   def = function(
-    uid,
+    id,
+    where,
     ...
   ) {
     standardGeneric("removeFromHashRegistry")       
@@ -28,16 +32,16 @@ setGeneric(
 )
 
 #' @title
-#' Remove From Hash Registry
+#' Remove From Hash Registry (char-env-method)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{removeFromHashRegistry}}
-#'      
+#'   	 
 #' @inheritParams removeFromHashRegistry
-#' @param uid \code{\link{character}}.
+#' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
-#' @return See method
-#'    \code{\link[reactr]{removeFromHashRegistry-character-character-environment-method}}
+#' @return \code{\link{logical}}. \code{TRUE}: successfully removed; 
+#'    \code{FALSE}: not removed because there was nothing to remove.
 #' @example inst/examples/removeFromHashRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{removeFromHashRegistry}
@@ -48,27 +52,22 @@ setGeneric(
 setMethod(
   f = "removeFromHashRegistry", 
   signature = signature(
-    uid = "character"
+    id = "character",
+    where = "environment"
   ), 
   definition = function(
-    uid,
+    id,
+    where,
     ...
   ) {
-    
-  out <- FALSE
+
   hash_env <- getHashRegistry()
-  if (is.null(hash_env)) {
-    stop("No hash environment available ('getOption(\"reactr\")$.hash')")
+  out <- FALSE
+  if (length(id)) {
+    uid <- getReactiveUid(id = id, where = where)
+    out <- removeFromHashRegistryByUid(uid = uid)
   }
-  if (length(uid)) {
-    if (exists(uid, envir = hash_env, inherits = FALSE)) {
-      rm(list = uid, envir = hash_env, inherits = FALSE)
-      out <- TRUE
-    }
-  }
-  return(out)  
+  return(out)
     
   }
 )
-
-

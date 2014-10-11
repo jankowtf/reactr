@@ -40,6 +40,12 @@
 #'    Environment storing information of objects that this object depends on.
 #'    Initial: \code{new.env(parent = emptyenv())}.
 #'    \strong{Not used currently, for potential future use only}.
+#' @field condition \code{\link{condition}} (at least by inheritance).
+#'    If a condition has been signaled, this field is assigned a respectiv 
+#'    condition object that is triggered when \code{.self$value} is requested.
+#'    See \code{\link[base]{signalCondition}} and 
+#'    \code{\link[conditionr]{signalCondition}}
+#'    Initial: \code{NULL}.
 #' @return Instance of class \code{Reactive.S3}.
 #' @example inst/examples/Reactive.S3.r
 #' @seealso \code{
@@ -56,7 +62,8 @@ Reactive.S3 <- function(
   where = parent.frame(),
   hash = getHashRegistry(),
   dependees = new.env(parent = emptyenv()),
-  dependencies = new.env(parent = emptyenv())
+  dependencies = new.env(parent = emptyenv()),
+  condition = NULL
 ) {
   if (!missing(.x)) {
     class(.x) <- c("Reactive.S3", class(.x))
@@ -73,6 +80,7 @@ Reactive.S3 <- function(
       out$uid <- eval(substitute(digest::digest(list(id = ID, where = WHERE)), 
         list(ID = id, WHERE = where)))
     }
+    out$condition <- condition
     class(out) <- c("Reactive.S3", class(out))
   }
   return(out)

@@ -44,7 +44,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 \seealso{
 \code{
    \link[reactr]{getHashRegistry-environment-method},
-    \link[reactr]{removeFromHashRegistry}
+    \link[reactr]{removeFromHashRegistryByUid}
 }
 }
 

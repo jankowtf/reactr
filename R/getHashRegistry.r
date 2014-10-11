@@ -11,7 +11,7 @@
 #' @example inst/examples/getHashRegistry.r
 #' @seealso \code{
 #'   	\link[reactr]{getHashRegistry-environment-method},
-#'     \link[reactr]{removeFromHashRegistry}
+#'     \link[reactr]{removeFromHashRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -41,7 +41,7 @@ setGeneric(
 #' @example inst/examples/getHashRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{getHashRegistry-environment-method},
-#'     \link[reactr]{removeFromHashRegistry}
+#'     \link[reactr]{removeFromHashRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -81,7 +81,7 @@ setMethod(
 #' @example inst/examples/getHashRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{getHashRegistry},
-#'     \link[reactr]{removeFromHashRegistry}
+#'     \link[reactr]{removeFromHashRegistryByUid}
 #' }
 #' @template author
 #' @template references

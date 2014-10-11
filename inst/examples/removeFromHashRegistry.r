@@ -1,29 +1,29 @@
 \dontrun{
 
-## Set reactives so hash registry contains elements //  
-id_1 <- "x_1"
-id_2 <- "x_2"
-where <- environment()
+## NOTE //
+## This function should typically only be called inside 'unsetReactive()'
+## as it manages the internal hash registry!
 
-setReactiveS3(id = id_1, value = 10)
-setReactiveS3(id = id_2, value = function() {
-  .react_1 <- get("x_1", envir = where)
-})
+## Start with a clean hash registry //
+resetHashRegistry()
 
-## Comput UIDs //
-uid_1 <- getReactiveUid(id = id_1, where = where)
-uid_2 <- getReactiveUid(id = id_2, where = where)
+where <- new.env()
+setReactiveS3(id = id, value = 10, where = where)
+setReactiveS3(id = id_2, 
+  value = function() .ref_1 <- get("x_1", envir = where),
+  where = where
+)
 
-## Inspect current state of hash registry //
-hash <- getHashRegistry()
-ls(hash)
-exists(uid_1, hash)
-exists(uid_2, hash)
+## Insepct hash registry before removal //
+ls(getHashRegistry())
 
-## Remove //
-removeFromHashRegistry(uid = uid_1)
-exists(uid_1, hash)
-removeFromHashRegistry(uid = uid_2)
-exists(uid_2, hash)
+removeFromHashRegistry(id = "x_1", where = where)
+ls(getHashRegistry())
+removeFromHashRegistry(id = "x_2", where = where)
+ls(getHashRegistry())
+
+## Sanity of actual cached values is not affected by this //
+where$x_1
+where$x_2
 
 }

@@ -43,7 +43,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 \seealso{
 \code{
    \link[reactr]{getHashRegistry},
-    \link[reactr]{removeFromHashRegistry}
+    \link[reactr]{removeFromHashRegistryByUid}
 }
 }
 

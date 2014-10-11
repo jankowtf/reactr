@@ -12,10 +12,15 @@ Object containing UID information.}
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \description{
-Removes the reactive \strong{character} from an object, i.e. its binding(s) to others
-or the ability for other objects to have bindings to it. This is \strong{not}
-equivalent to removing/deleting the object! See \code{\link[reactr]{removeReactive}}
-for this purpose.
+Removes the reactive \strong{character} from an object, i.e. its
+binding(s) to other objects and the ability for other objects to have
+bindings to it. It is equivalent to transforming the object to one that
+has been assigned via \code{\link[base]{assign}} or \code{\link[base]{<-}}
+instead of \code{\link[reactr]{setReactiveS3}} and thus in turn
+by \code{\link[base]{makeActiveBinding}}.
+
+Note that it is \strong{not} equivalent to removing/deleting the object!
+See \code{\link[reactr]{removeReactive}} for this purpose.
 }
 \note{
 The main S4 method is
@@ -23,9 +28,10 @@ The main S4 method is
 }
 \section{Implications with respect objects depending on this object}{
 
+
 If other reactive objects have been relying on this reactive variable,
 from this point on they will simply return the last value
-that has been cached.
+that has been cached. \strong{So there is no actual reactive binding anymore}.
 }
 \examples{
 \dontrun{
@@ -33,7 +39,7 @@ that has been cached.
 setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(
   id = "x_2", 
-  value = function(deps = list(x_1 = .GlobalEnv)) {x_1}
+  value = function(refs = list(x_1 = .GlobalEnv)) {x_1}
 )
 unsetReactiveByUid(uid = getReactiveUid("x_1", .GlobalEnv))
 x_1

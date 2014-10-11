@@ -10,7 +10,7 @@ test_that("getReactiveUid", {
     
     setReactiveS3(id = id_1, value = 10)
     setReactiveS3(id = id_2, value = function() {
-      .react_1 <- get(id_1, envir = where)
+      .ref_1 <- get(id_1, envir = where)
     })
   
     uid_1 <- getReactiveUid(id = id_1, where = where)

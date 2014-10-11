@@ -52,7 +52,7 @@
 #' mechanism that allows reactive functions only to be triggered when actually
 #' needed, i.e. when the referenced object has actually changed.
 #' 
-#' @section Outlook with respect to the integration of shiny functionality
+#' @section Outlook with respect to the integration of shiny functionality:
 #' 
 #' Currently, at the end of the day the function does little more than 
 #' providing a wrapper for \code{\link[base]{makeActiveBinding}} to the 

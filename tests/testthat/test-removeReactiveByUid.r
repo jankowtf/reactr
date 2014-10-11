@@ -1,12 +1,12 @@
 context("removeReactiveByUid-A")
-test_that("removeReactiveByUid", {
+test_that("removeReactiveByUid: non-strict", {
   
   skip("not finished")
   where = new.env()  
   
   setReactiveS3(id = "x_1", value = 10, where = where, force = TRUE)
   setReactiveS3(id = "x_2", 
-                value = function(deps = list(x_1 = where)) {x_1},
+                value = function(refs = list(x_1 = where)) {x_1},
                 where = where, force = TRUE)
   where$x_1 <- 100
   where$x_2
@@ -17,12 +17,16 @@ test_that("removeReactiveByUid", {
   setReactiveS3(id = "x_1", value = 100, where = where)
 #   expect_error(where$x_2)
 #   expect_equal(where$x_2, 100)
-  
-#   where = new.env()  
-  
-#   setReactiveS3(id = "x_1", value = 10, where = where)
-#   setReactiveS3(id = "x_2", watch = "x_1", where = where, strict = TRUE)
-#   expect_true(removeReactiveByUid(id = "x_1", where = where))
+
+})  
+
+test_that("removeReactiveByUid: strict", {
+  where = new.env()  
+  setReactiveS3(id = "x_1", value = 10, where = where, force = TRUE)
+  setReactiveS3(id = "x_2", 
+                value = function(refs = list(x_1 = where)) {x_1},
+                where = where, force = TRUE, strict = TRUE)
+  expect_true(removeReactiveByUid(uid = getReactiveUid(id = "x_1", where = where)))
 #   expect_equal(where$x_2, NULL)
 
 })

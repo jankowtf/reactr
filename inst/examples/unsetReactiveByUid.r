@@ -3,7 +3,7 @@
 setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(
   id = "x_2", 
-  value = function(deps = list(x_1 = .GlobalEnv)) {x_1}
+  value = function(refs = list(x_1 = .GlobalEnv)) {x_1}
 )
 unsetReactiveByUid(uid = getReactiveUid("x_1", .GlobalEnv))
 x_1

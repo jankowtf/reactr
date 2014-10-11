@@ -6,7 +6,7 @@
 Reactive.S3(.x, id = character(), uid = character(), value = character(),
   where = parent.frame(), hash = getHashRegistry(),
   dependees = new.env(parent = emptyenv()), dependencies = new.env(parent =
-  emptyenv()))
+  emptyenv()), condition = NULL)
 }
 \arguments{
 \item{.x}{\code{\link{ANY}}. An object of an arbitrary class whose class
@@ -58,6 +58,13 @@ Initial: \code{new.env(parent = emptyenv())}.
 Environment storing information of objects that this object depends on.
 Initial: \code{new.env(parent = emptyenv())}.
 \strong{Not used currently, for potential future use only}.}
+
+\item{\code{condition}}{\code{\link{condition}} (at least by inheritance).
+If a condition has been signaled, this field is assigned a respectiv
+condition object that is triggered when \code{.self$value} is requested.
+See \code{\link[base]{signalCondition}} and
+\code{\link[conditionr]{signalCondition}}
+Initial: \code{NULL}.}
 }}
 \section{Intended use of this class}{
 

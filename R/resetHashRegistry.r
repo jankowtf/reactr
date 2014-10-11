@@ -10,7 +10,7 @@
 #' @example inst/examples/resetHashRegistry.r
 #' @seealso \code{
 #'   	\link[reactr]{resetHashRegistry-environment-method},
-#'     \link[reactr]{removeFromHashRegistry}
+#'     \link[reactr]{removeFromHashRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -40,7 +40,7 @@ setGeneric(
 #' @example inst/examples/resetHashRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{resetHashRegistry-environment-method},
-#'     \link[reactr]{removeFromHashRegistry}
+#'     \link[reactr]{removeFromHashRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -75,7 +75,7 @@ setMethod(
 #' @example inst/examples/resetHashRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{resetHashRegistry},
-#'     \link[reactr]{removeFromHashRegistry}
+#'     \link[reactr]{removeFromHashRegistryByUid}
 #' }
 #' @template author
 #' @template references

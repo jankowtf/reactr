@@ -15,4 +15,5 @@ NeedsCompilation: no
 Repository: CRAN
 Imports:
     digest,
-    shiny
+    shiny,
+    yaml

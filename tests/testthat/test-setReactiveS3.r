@@ -978,7 +978,7 @@ test_that("setReactiveS3: recognition based on '.ref_*'", {
   
 })
 
-test_that("setReactiveS3: recognition based on 'deps'", {
+test_that("setReactiveS3: recognition based on 'refs'", {
   
   value <- 10
   expect_equal(
@@ -1013,7 +1013,7 @@ test_that("setReactiveS3: recognition based on 'deps'", {
   
 })
 
-test_that("setReactiveS3: recognition based on '[@' markup", {
+test_that("setReactiveS3: recognition based on YAML", {
   
   value <- 10
   expect_equal(
@@ -1022,45 +1022,72 @@ test_that("setReactiveS3: recognition based on '[@' markup", {
   )
   expect_equal(
     setReactiveS3(id = "x_2", value = function() {
-      ## [@reactive-ref: x_1]
+      "reactive-ref: {id: x_1}"
       x_1
     }),
     x_1
   )
   expect_equal(
-    setReactiveS3(id = "x_3", value = function()
-      ## [@reactive-ref: x_1]
+    setReactiveS3(id = "x_3", value = function() {
+      ## reactive-ref: {id: x_1}
       x_1
-    ),
+    }),
     x_1
   )
   expect_equal(
     setReactiveS3(id = "x_4", value = function()
-      ## [@reactive-ref: x_1 as ref_1]
-      ref_1
+      "reactive-ref: {id: x_1}"
     ),
     x_1
   )
   expect_equal(
     setReactiveS3(id = "x_5", value = function()
-      ## [@reactive-ref: x_1 in where as ref_1]
-      ## [@reactive-ref: x_2 as ref_2]
+      ## reactive-ref: {id: x_1}
+      x_1
+    ),
+    x_1
+  )
+  expect_equal(
+    setReactiveS3(id = "x_6", value = function() {
+      "reactive-ref: {id: x_1, as: ref_1}"
+      ref_1
+    }),
+    x_1
+  )
+  expect_equal(
+    setReactiveS3(id = "x_7", value = function()
+      ## reactive-ref: {id: x_1, as: ref_1}
+      ref_1
+    ),
+    x_1
+  )
+  expect_equal(
+    setReactiveS3(id = "x_8", value = function() {
+      "reactive-ref: {id: x_1, where: where, as: ref_1}"
+      "reactive-ref: {id: x_2, as: ref_2}"
+      ref_1 + ref_2
+    }),
+    x_1 + x_2 
+  )
+  ## TODO: github #10 
+  expect_equal(
+    setReactiveS3(id = "x_9", value = function()
+      ## reactive-ref: {id: x_1, where: where, as: ref_1}
+      ## reactive-ref: {id: x_2, as: ref_2}
       ref_1 + ref_2
     ),
     x_1 + x_2 
-  )
-  expect_error(
-    setReactiveS3(id = "x_6", value = function()
-      ## [@reactive-ref: x_1 as ref_1 in where]
-      ## [@reactive-ref: x_2 as ref_2]
-      ref_1 + ref_2
-    )
   )
   
   rm(x_1)
   rm(x_2)
   rm(x_3)
   rm(x_4)
+  rm(x_5)
+  rm(x_6)
+  rm(x_7)
+  rm(x_8)
+  rm(x_9)
   resetHashRegistry()
   
 })

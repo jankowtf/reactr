@@ -1,13 +1,10 @@
-```{r}
-require("knitr")
-opts_chunk$set(cache=TRUE, cache.path = 'test_files/', fig.path='figure/')
-```
-
 ---
 title: "Untitled"
 author: "Janko Thyson"
 date: "Saturday, October 11, 2014"
-output: html_document
+output:
+  html_document:
+    self_contained: no
 ---
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.

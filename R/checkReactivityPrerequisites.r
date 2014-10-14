@@ -69,6 +69,7 @@ setMethod(
   ), 
   definition = function(
     input,
+    strict,
     ...
   ) {
     
@@ -84,13 +85,28 @@ setMethod(
   } 
 
   if (idx_exist && !has_binding) {
-    if (strict <= 1) {
+    if (strict == 0) {
+      out <- TRUE
+    } else if (strict == 1) {
+      conditionr::signalCondition(
+        condition = "ReactivityPrerequisitesNotMetButOverwrite",
+        msg = c(
+          Reason = "already a non-reactive object",
+          Action = "overwrite existing object",
+          ID = input$id,
+          UID = input$uid,
+          Location = capture.output(input$where)
+        ),
+        ns = "reactr",
+        type = "warning"
+      )
       out <- TRUE
     } else if (strict == 2) {
       conditionr::signalCondition(
         condition = "ReactivityPrerequisitesNotMet",
         msg = c(
           Reason = "already a non-reactive object",
+          Action = "exit with error",
           ID = input$id,
           UID = input$uid,
           Location = capture.output(input$where)
@@ -100,13 +116,28 @@ setMethod(
       )
     }
   } else if (has_binding) {
-    if (strict <= 1) {
+    if (strict == 0) {
+      out <- TRUE
+    } else if (strict == 1) {
+      conditionr::signalCondition(
+        condition = "ReactivityPrerequisitesNotMetButOverwrite",
+        msg = c(
+          Reason = "already an reactive object",
+          Action = "existing object is overwritten",
+          ID = input$id,
+          UID = input$uid,
+          Location = capture.output(input$where)
+        ),
+        ns = "reactr",
+        type = "warning"
+      )
       out <- TRUE
     } else if (strict == 2) {
       conditionr::signalCondition(
         condition = "ReactivityPrerequisitesNotMet",
         msg = c(
           Reason = "already an reactive object",
+          Action = "exit with error",
           ID = input$id,
           UID = input$uid,
           Location = capture.output(input$where)
@@ -116,13 +147,27 @@ setMethod(
       )
     }
   } else if (!has_binding) {
-    if (strict <= 1) {
+    if (strict == 0) {
       out <- TRUE
+    } else if (strict == 1) {
+      conditionr::signalCondition(
+        condition = "ReactivityPrerequisitesNotMetButOverwrite",
+        msg = c(
+          Reason = "object does not exist yet",
+          Action = "object is created",
+          ID = input$id,
+          UID = input$uid,
+          Location = capture.output(input$where)
+        ),
+        ns = "reactr",
+        type = "warning"
+      )
     } else if (strict == 2) {
       conditionr::signalCondition(
         condition = "ReactivityPrerequisitesNotMet",
         msg = c(
           Reason = "object does not exist yet",
+          Action = "exit with error",
           ID = input$id,
           UID = input$uid,
           Location = capture.output(input$where)

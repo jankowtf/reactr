@@ -23,7 +23,7 @@ You currently have three different options in order to specify the function that
 The easiest and most compact way of letting `setReactiveS3()` know which objects you are referencing is by specifying them in a special comment that is recognized as "markup":
 
 ```{r, eval=FALSE, cache=FALSE}
-## [@reactive-ref: {id} in {where} as {ref-id}]
+## [@object-ref: {id} in {where} as {ref-id}]
 ```
 
 ### Explanation
@@ -38,10 +38,10 @@ The easiest and most compact way of letting `setReactiveS3()` know which objects
 Here are the possible markup constellations
 
 ```{r, eval=FALSE}
-## [@reactive-ref: x_1]
-## [@reactive-ref: x_1 in where_1]
-## [@reactive-ref: x_1 in where_1 as ref_1]
-## [@reactive-ref: x_1 as ref_1]
+## [@object-ref: x_1]
+## [@object-ref: x_1 in where_1]
+## [@object-ref: x_1 in where_1 as ref_1]
+## [@object-ref: x_1 as ref_1]
 ```
 
 Actual examples
@@ -51,27 +51,27 @@ setReactiveS3(id = "x_1", value = 10)
 
 ## With curly brackets //
 setReactiveS3(id = "x_2", value = function() {
-    ## [@reactive-ref: x_1]
+    ## [@object-ref: x_1]
     x_1 * 2
   }
 )
 
 ## W/o curly brackets //
 setReactiveS3(id = "x_3", value = function()
-  ## [@reactive-ref: x_1]
+  ## [@object-ref: x_1]
   x_1 * 2
 )
 
 ## With '{ref-id}' //
 setReactiveS3(id = "x_4", value = function()
-  ## [@reactive-ref: x_1 as ref_1]
+  ## [@object-ref: x_1 as ref_1]
   ref_1 * 2
 )
 
 ## Multiple //
 setReactiveS3(id = "x_5", value = function()
-  ## [@reactive-ref: x_1 in where as ref_1]
-  ## [@reactive-ref: x_2 as ref_2]
+  ## [@object-ref: x_1 in where as ref_1]
+  ## [@object-ref: x_2 as ref_2]
   ref_1 + ref_2
 )
 ```
@@ -82,8 +82,8 @@ This is a limitation that is hopefully relaxed in future releases
 ```{r, eval=TRUE}
 try(
   setReactiveS3(id = "x_6", value = function()
-    ## [@reactive-ref: x_1 as ref_1 in where]
-    ## [@reactive-ref: x_2 as ref_2]
+    ## [@object-ref: x_1 as ref_1 in where]
+    ## [@object-ref: x_2 as ref_2]
     ref_1 + ref_2
   )
 )

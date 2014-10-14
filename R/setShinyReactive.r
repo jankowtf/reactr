@@ -82,7 +82,7 @@
 setShinyReactive <- function(
     id,
     value = NULL,
-    where = .GlobalEnv,
+    where = parent.frame(),
     ...
   ) {
 

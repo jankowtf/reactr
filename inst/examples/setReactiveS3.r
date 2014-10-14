@@ -20,26 +20,26 @@ setReactiveS3(id = "x_2",
     ## Reference specification #
     ############################
     
-    ## [@reactive-ref: x_1 in where as ref_1]
+    ## object-ref: {id: x_1, where: where, as: ref_1}
     
     ## NOTE
     ## All these are valid ways to specify the references after the part
-    ## '@reactive-ref:' (obmitting the closing bracket)
+    ## 'object-ref:' (obmitting the closing bracket)
     ##
-    ##    {id}
+    ##    {id: {id}}
     ##    --> default 'where' is used, i.e. 'parent.frame()' is used
-    ##    Example: [@reactive-ref: x_1]
+    ##    Example: object-ref: {id: x_1}
     ##
-    ##    {id} in {where}
+    ##    {id: {id}}, where: {where}}
     ##    --> explicit 'where'. Can be the name of any environment object
     ##    that is accessible, i.e. that exists under this name when calling
     ##    'setReactive()'
-    ##    Example: x_1 in where_1
+    ##    Example: {id: x_1, where: where_1}
     ##
-    ##    {id} in {where} as {ref-name}
+    ##    {id: {id}, where: {where}, as: {ref-id}}
     ##    --> additional specification of the name/id to use inside *this* 
     ##    function if it should differ from {id}.
-    ##    Example: x_1 in where_1 as my_ref
+    ##    Example: {id: x_1, where: where_1, as: my_ref}
     ##    --> you would then use objec 'my_ref' in the remainder of this 
     ##    function
     
@@ -49,7 +49,7 @@ setReactiveS3(id = "x_2",
     
     ## As we used the markup 
     ##
-    ##                      x_1 in where as ref_1
+    ##                {id: x_1, where: where, as: ref_1}
     ##
     ## `setReactiveS3()` expects us to use 'ref_1' in the remainder 
     
@@ -90,7 +90,7 @@ resetHashRegistry()
 setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
@@ -134,7 +134,7 @@ setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(
   id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1
   }
 )
@@ -160,7 +160,7 @@ getReactive("x_2") ## cached value
 setReactiveS3(
   id = "x_3", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
@@ -185,15 +185,15 @@ setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(
   id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
 setReactiveS3(
   id = "x_3", 
   value = function() {
-    ## [@reactive-ref: x_1]
-    ## [@reactive-ref: x_2]
+    ## object-ref: {id: x_1}
+    ## object-ref: {id: x_2}
     x_1 + x_2 + 100
   }
 )
@@ -226,12 +226,12 @@ resetHashRegistry()
 ##------------------------------------------------------------------------------
 
 setReactiveS3(id = "x_1", value = function() {
-  ## [@reactive-ref: x_2]
+  ## object-ref: {id: x_2}
   x_2
   }
 )
 setReactiveS3(id = "x_2", value = function() {
-  ## [@reactive-ref: x_1]
+  ## object-ref: {id: x_1}
   x_1
   }
 )
@@ -269,12 +269,12 @@ resetHashRegistry()
 ##------------------------------------------------------------------------------
 
 setReactiveS3(id = "x_1", value = function() {
-  ## [@reactive-ref: x_2]
+  ## object-ref: {id: x_2}
   x_2 * 2
   }
 )
 setReactiveS3(id = "x_2", value = function() {
-  ## [@reactive-ref: x_1]
+  ## object-ref: {id: x_1}
   x_1 / 2
   }
 )
@@ -306,12 +306,12 @@ resetHashRegistry()
 ##------------------------------------------------------------------------------
 
 setReactiveS3(id = "x_1", value = function() {
-  ## [@reactive-ref: x_2]
+  ## object-ref: {id: x_2}
   x_2
   }
 )
 setReactiveS3(id = "x_2", value = function() {
-  ## [@reactive-ref: x_1]
+  ## object-ref: {id: x_1}
   x_1 * 2
   }
 )
@@ -357,14 +357,14 @@ setReactiveS3(
 ## Set variable with bindings //
 setReactiveS3(id = "field_1", 
   value = function() {
-    ## [@reactive-ref: field_1 in x_1]
+    ## object-ref: {id: field_1,  where: x_1}
     !field_1
   },
   where = x_2
 )
 setReactiveS3(id = "field_2", 
   value = function() {
-    ## [@reactive-ref: field_2 in x_1]
+    ## object-ref: {id: field_2}, where: x_1}
     field_2[,-1,drop = FALSE]
   },
   where = x_2
@@ -435,7 +435,7 @@ hash_x_1[[uid_x_1]]
 setReactiveS3(
   id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
@@ -470,7 +470,7 @@ res <- microbenchmark(
   "set x_2" = setReactiveS3(
     id = "x_2", 
     value = function() {
-      ## [@reactive-ref: x_1]
+      ## object-ref: {id: x_1}
       x_1 * 2
     }
   ),

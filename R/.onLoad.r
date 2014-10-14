@@ -9,7 +9,11 @@
 #' @template references
 #' @export .onLoad
 .onLoad <- function(libname, pkgname) {
-  setOldClass("BindingContractObserved.S3")
-  setOldClass("BindingContractObserving.S3")
-  setOldClass("BindingContractMutual.S3")
+#   setOldClass("BindingContractObserved.S3")
+#   setOldClass("BindingContractObserving.S3")
+#   setOldClass("BindingContractMutual.S3")
+  
+  envir <- new.env()
+  envir$.hash <- new.env()
+  options("reactr" = envir)
 }

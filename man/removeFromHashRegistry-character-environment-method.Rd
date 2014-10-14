@@ -2,40 +2,22 @@
 \docType{methods}
 \name{removeFromHashRegistry,character,environment-method}
 \alias{removeFromHashRegistry,character,environment-method}
-\title{Remove From Hash Registry}
+\title{Remove From Hash Registry (char-env-method)}
 \usage{
-\S4method{removeFromHashRegistry}{character,environment}(id,
-  watch = character(), where, .hash_id = "._HASH", ...)
-
-\S4method{removeFromHashRegistry}{character,environment}(id,
-  watch = character(), where, .hash_id = "._HASH", ...)
+\S4method{removeFromHashRegistry}{character,environment}(id, where, ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.}
 
 \item{where}{\code{\link{environment}}.}
 
-\item{.hash_id}{\code{\link{character}}.
-Name of the auxiliary environment for caching hash values.
-Default: \code{"._HASH"}. Keep it unless this name is already taken in
-either \code{where} or \code{where_watch}.}
-
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
-
-\item{id}{\code{\link{character}}.}
-
-\item{where}{\code{\link{environment}}.}
 }
 \value{
-See method
-   \code{\link[reactr]{removeFromHashRegistry-character-character-environment-method}}
-
 \code{\link{logical}}. \code{TRUE}: successfully removed;
    \code{FALSE}: not removed because there was nothing to remove.
 }
 \description{
-See generic: \code{\link[reactr]{removeFromHashRegistry}}
-
 See generic: \code{\link[reactr]{removeFromHashRegistry}}
 }
 \examples{
@@ -45,66 +27,37 @@ See generic: \code{\link[reactr]{removeFromHashRegistry}}
 ## This function should typically only be called inside 'unsetReactive()'
 ## as it manages the internal hash registry!
 
-where <- new.env()
-setReactive(id = "x_1", value = 10, where = where)
-setReactive(id = "x_2", watch = "x_1", where = where)
-
-## Insepct hash registry before removal //
-ls(where[[.hash_id]])
-
-removeFromHashRegistry(id = "x_1", where = where)
-removeFromHashRegistry(id = "x_1", where = where)
-
-## Insepct hash registry before removal //
-ls(where$._HASH)
-
-## Sanity of actual values is not affected by this //
-where$x_1
-where$x_2
-
-
-}
-\dontrun{
-
-## NOTE //
-## This function should typically only be called inside 'unsetReactive()'
-## as it manages the internal hash registry!
+## Start with a clean hash registry //
+resetHashRegistry()
 
 where <- new.env()
-setReactive(id = "x_1", value = 10, where = where)
-setReactive(id = "x_2", watch = "x_1", where = where)
+setReactiveS3(id = id, value = 10, where = where)
+setReactiveS3(id = id_2, 
+  value = function() .ref_1 <- get("x_1", envir = where),
+  where = where
+)
 
 ## Insepct hash registry before removal //
-ls(where[[.hash_id]])
+ls(getHashRegistry())
 
 removeFromHashRegistry(id = "x_1", where = where)
-removeFromHashRegistry(id = "x_1", where = where)
+ls(getHashRegistry())
+removeFromHashRegistry(id = "x_2", where = where)
+ls(getHashRegistry())
 
-## Insepct hash registry before removal //
-ls(where$._HASH)
-
-## Sanity of actual values is not affected by this //
+## Sanity of actual cached values is not affected by this //
 where$x_1
 where$x_2
-
 
 }
 }
 \author{
 Janko Thyson \email{janko.thyson@rappster.de}
-
-Janko Thyson \email{janko.thyson@rappster.de}
 }
 \references{
 \url{http://github.com/Rappster/reactr}
-
-\url{http://github.com/Rappster/reactr}
 }
 \seealso{
-\code{
-   \link[reactr]{removeFromHashRegistry}
-}
-
 \code{
    \link[reactr]{removeFromHashRegistry}
 }

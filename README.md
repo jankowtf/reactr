@@ -1,4 +1,4 @@
-reactr (v0.1.4)
+reactr
 ======
 
 Reactive object bindings with built-in caching

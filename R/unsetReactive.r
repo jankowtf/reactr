@@ -1,13 +1,22 @@
 #' @title
-#' Unset Reactive Object
+#' Unset Reactive Object (generic)
 #'
 #' @description 
-#' Removes the reactive binding from an object
+#' Removes the reactive \strong{character} from an object, i.e. its 
+#' binding(s) to other objects and the ability for other objects to have 
+#' bindings to it. It is equivalent to transforming the object to one that 
+#' has been assigned via \code{\link[base]{assign}} or \code{\link[base]{<-}} 
+#' instead of \code{\link[reactr]{setReactiveS3}} and thus in turn 
+#' by \code{\link[base]{makeActiveBinding}}. 
+#' 
+#' Note that it is \strong{not} equivalent to removing/deleting the object! 
+#' See \code{\link[reactr]{removeReactive}} for this purpose.
 #' 
 #' @section Implications with respect to observing variables:
+#' 
 #' If other reactive variables have been observing the reactive variable that
 #' has been unset, from this point on they will simply return the last value
-#' that has been cached.
+#' that has been cached. \strong{So there is no actual reactive binding anymore}.
 #' 
 #' @note
 #' The main S4 method is 
@@ -17,15 +26,6 @@
 #'    Object containing path-like ID information.
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
-#' @param .hash_id \code{\link{character}}.
-#'    Name of the auxiliary environment for caching hash values. 
-#'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
-#'    either \code{where} or \code{where_watch}.
-#' @param .tracelevel \code{\link{numeric}}.
-#'    Verbosity level for tracing purposes. Value of \code{0} means 
-#'    \emph{no tracing} whereas values of \code{> 0} can be used to fine 
-#'    control tracing. The trace level can also be set as a global option when
-#'    using package \code{tracer} (\strong{not functional yet}).
 #' @template threedot
 #' @example inst/examples/unsetReactive.r
 #' @seealso \code{
@@ -42,9 +42,7 @@ setGeneric(
   ),
   def = function(
     id,
-    where = .GlobalEnv,
-    .hash_id = "._HASH",
-    .tracelevel = 0,
+    where = parent.frame(),
     ...
   ) {
     standardGeneric("unsetReactive")       
@@ -52,7 +50,7 @@ setGeneric(
 )
 
 #' @title
-#' Unset Reactive Object
+#' Unset Reactive Object (char-miss-method)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{unsetReactive}}
@@ -82,16 +80,12 @@ setMethod(
   definition = function(
     id,
     where,
-    .hash_id,
-    .tracelevel,
     ...
   ) {
   
   return(unsetReactive(
     id = id,
     where = where,
-    .hash_id = .hash_id,
-    .tracelevel = .tracelevel,
     ...
   ))
   
@@ -99,7 +93,7 @@ setMethod(
 )
 
 #' @title
-#' Unset Reactive Object
+#' Unset Reactive Object (char-env-method)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{unsetReactive}}
@@ -107,10 +101,8 @@ setMethod(
 #' @inheritParams unsetReactive
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
-#'    Internal argument that should not be set explicitly.
-#'    The value at runtime will correspond to the function that has been 
-#'    provided via argument \code{binding}.
-#' @return \code{\link{logical}}. \code{TRUE}.
+#' @return \code{\link{logical}}. \code{TRUE}: success; \code{FALSE}: object
+#'    was not a reactive one or failure to unset.
 #' @example inst/examples/unsetReactive.r
 #' @seealso \code{
 #'    Generic: \link[reactr]{unsetReactive}
@@ -128,26 +120,33 @@ setMethod(
   definition = function(
     id,
     where,
-    .hash_id,
-    .tracelevel,
     ...
   ) {
 
+  out <- FALSE
+  if (!length(id)) {
+    stop(paste0("Provide an ID"))
+  }
+  uid <- getReactiveUid(id = id, where = where)    
+    
   if (exists(id, envir = where, inherits = FALSE)) {
     has_binding <- try(bindingIsActive(id, where))
     if (inherits(has_binding, "try-error")) {
       has_binding <- FALSE
     } 
     if (has_binding) {
+      ## Get last cache value //
       tmp <- get(id, envir = where, inherits = FALSE)
+      ## Remove reactive //
       rm(list = id, envir = where, inherits = FALSE)
+      ## Reset as standard //
       assign(id, tmp, where)
       ## Remove hash registry entry //
-      removeFromHashRegistry(id = id, where = where, .hash_id = .hash_id, ...)
+      out <- removeFromHashRegistryByUid(uid = uid)
     }
   }
     
-  return(TRUE)
+  return(out)
   
   }
 )

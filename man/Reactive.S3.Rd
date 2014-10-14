@@ -5,8 +5,7 @@
 \usage{
 Reactive.S3(.x, id = character(), uid = character(), value = character(),
   where = parent.frame(), hash = getHashRegistry(),
-  dependees = new.env(parent = emptyenv()), dependencies = new.env(parent =
-  emptyenv()), condition = NULL)
+  references = new.env(parent = emptyenv()), condition = NULL)
 }
 \arguments{
 \item{.x}{\code{\link{ANY}}. An object of an arbitrary class whose class
@@ -49,15 +48,9 @@ Initial: \code{parent.frame()}.}
 Environment for hash value storage.
 Initial: \code{getHashRegistry()}.}
 
-\item{\code{dependees}}{\code{\link{environment}}.
-Environment storing information of objects that depend on this object.
-Initial: \code{new.env(parent = emptyenv())}.
-\strong{Not used currently, for potential future use only}.}
-
-\item{\code{dependencies}}{\code{\link{environment}}.
-Environment storing information of objects that this object depends on.
-Initial: \code{new.env(parent = emptyenv())}.
-\strong{Not used currently, for potential future use only}.}
+\item{\code{references}}{\code{\link{environment}}.
+Environment storing information of referenced objects.
+Initial: \code{new.env(parent = emptyenv())}.}
 
 \item{\code{condition}}{\code{\link{condition}} (at least by inheritance).
 If a condition has been signaled, this field is assigned a respectiv

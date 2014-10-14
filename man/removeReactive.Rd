@@ -3,7 +3,7 @@
 \alias{removeReactive}
 \title{Remove Reactive Object (generic)}
 \usage{
-removeReactive(id, where = .GlobalEnv, ...)
+removeReactive(id, where = parent.frame(), ...)
 }
 \arguments{
 \item{id}{\strong{Signature argument}.

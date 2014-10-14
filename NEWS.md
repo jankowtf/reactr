@@ -4,7 +4,13 @@
 
 ## BUG FIXES
 
+- fixed: #1
+- fixed: #2
+- fixed: #4
 - fixed: #5
+- fixed: #6
+- fixed: #7
+- fixed: #8
 
 ## MAJOR CHANGES
 

@@ -49,7 +49,6 @@
 #'      }
 #'      \item{\code{1}: } {Warning is issued and object value is not changed}
 #'      \item{\code{2}: } {Error is issued and object value is not changed}
-#'      }
 #'    }
 #' @template threedot
 #' @example inst/examples/setReactiveS3.r

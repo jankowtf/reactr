@@ -5,7 +5,8 @@
 \alias{removeReactive-method_main}
 \title{Remove Reactive Object (char-env-method)}
 \usage{
-\S4method{removeReactive}{character,environment}(id, where = .GlobalEnv, ...)
+\S4method{removeReactive}{character,environment}(id, where = parent.frame(),
+  ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.}

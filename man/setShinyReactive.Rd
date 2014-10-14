@@ -3,7 +3,7 @@
 \alias{setShinyReactive}
 \title{Set Reactive Object with Shiny Functionality}
 \usage{
-setShinyReactive(id, value = NULL, where = .GlobalEnv, ...)
+setShinyReactive(id, value = NULL, where = parent.frame(), ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.

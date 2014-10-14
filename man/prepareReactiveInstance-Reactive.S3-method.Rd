@@ -5,7 +5,8 @@
 \title{Prepare Reactive Instance (Reactive.S3-method)}
 \usage{
 \S4method{prepareReactiveInstance}{Reactive.S3}(input = NULL,
-  id = character(), value = NULL, where = parent.frame(), ...)
+  id = character(), value = NULL, where = parent.frame(),
+  references = character(), ...)
 }
 \arguments{
 \item{input}{\code{\link{Reactive.S3}}.}

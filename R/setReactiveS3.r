@@ -1,3 +1,6 @@
+## fix: github #11
+##      Inconsistency for initial values
+
 #' @title
 #' Set Reactive Object (shiny)
 #'
@@ -11,16 +14,41 @@
 #' @param where \code{\link{environment}}.
 #'    Environment to create the object in.
 #' @param strict \code{\link{numeric}}.
-#'    Relevant if a referenced object has been removed thus breaking the 
+#'    Relevant when initially setting a reactive object
+#'    \itemize{
+#'      \item{\code{0}: } {no checks are performed}
+#'      \item{\code{1}: } {warning if object is already a non-reactive or 
+#'      reactive object}
+#'      \item{\code{2}: } {error if object is already a non-reactive or 
+#'      reactive object}
+#'    }
+#' @param strict_get \code{\link{numeric}}.
+#'    Relevant if retrieving object when reactive reference has been broken
+#'    (i.e. one of the referenced objects does not exist anymore).
 #'    reactive relationship.
-#'    \itemiz{
-#'      \item{\code{0}: } {function returns last cached value}
+#'    \itemize{
+#'      \item{\code{0}: } {return last cached value}
 #'      \item{\code{1}: } {object value is set to \code{NULL} and is returned}
 #'      \item{\code{2}: } {object value is set to an instance of condition class 
-#'          \code{BrokenReactiveBinding} and this condition is triggered whenever
+#'          \code{BrokenReactiveReference} and this condition is triggered whenever
 #'          the object's value is requested by \code{\link[base]{get}} or 
 #'          its syntactical surgars \code{{obj-name} or \code{}}
 #'      }
+#'    }
+#' @param strict_set \code{\link{numeric}}.
+#'    Relevant if assigning an explicit value to an object with reactive 
+#'    dependency on other objects.
+#'    reactive relationship.
+#'    \itemize{
+#'      \item{\code{0}: } {
+#'      
+#'      Value that is actually determined by reactive binding is 
+#'      overwritten and cached until on of the referenced objects is updated
+#'      (this also triggers an updated of the object and thus reactivity is 
+#'      then completely restored)
+#'      }
+#'      \item{\code{1}: } {Warning is issued and object value is not changed}
+#'      \item{\code{2}: } {Error is issued and object value is not changed}
 #'    }
 #' @template threedot
 #' @example inst/examples/setReactiveS3.r
@@ -31,17 +59,24 @@
 #' @template references
 #' @export 
 #' @import shiny
+#' @import yamlr
 setReactiveS3 <- function(
     id,
     value = NULL,
     where = parent.frame(),
     strict = 0,
+    strict_get = 0,
+    strict_set = 0,
     .debug = FALSE,
     ...
   ) {
   
   ## Argument checks //
   strict <- as.numeric(match.arg(as.character(strict), 
+                                 as.character(c(0, 1, 2))))
+  strict_get <- as.numeric(match.arg(as.character(strict_get), 
+                                 as.character(c(0, 1, 2))))
+  strict_set <- as.numeric(match.arg(as.character(strict_set), 
                                  as.character(c(0, 1, 2))))
 
   ## Check if regular value assignment or reactive function //
@@ -56,261 +91,23 @@ setReactiveS3 <- function(
     is_reactive <- TRUE
     
     ##--------------------------------------------------------------------------
-    ## Local functions //
-    ##--------------------------------------------------------------------------
-    
-    ## TODO: GitHub #1
-    ## Refactor local functions
-    
-    .getReferencesFromArguments <- function(expr, where) {
-      arglist <- formals(value)
-      refs <- NULL
-      if ("refs" %in% names(arglist)) {
-        refs <- arglist["refs"]
-        tmp <- lapply(arglist$refs, function(ii) ii)[-1]
-        if (is.null(tmp[[1]])) {
-          tmp[[1]] <- where
-        }
-        refs <- list(list(id = names(tmp), where = tmp[[1]]))
-        names(refs) <- names(tmp)
-        refs
-      }
-    }
-    .getReferences <- function(expr, where) {
-      buffer <- new.env()
-      buffer$out <- list()
-# expr_2=expr[[1]]      
-# expr_2 <- lapply(expr, function(ii) ii)[[1]]
-      lapply(expr, function(expr_2) {
-        if (is.call(expr_2)) {
-          ## Catch brackets //
-          if (expr_2[[1]] == "{") {
-            expr_2 <- expr_2[[2]]
-          }
-          if (class(expr_2) == "<-") {
-            if (grepl("\\.ref_", as.character(expr_2[[2]]))) {
-#               return(expr_2[[3]])
-              tmp <- expr_2[[3]]
-#               expr <- substitute(digest::digest(list(id = ID, where = WHERE)), 
-#                 list(ID = tmp$x, WHERE = tmp$envir))
-# print(tmp$envir)
-# print(eval(tmp$envir))
-# print(eval(eval(tmp$envir)))
-#               return(eval(expr))
-              if (is.null(tmp$envir)) {
-#                 tmp$envir <- eval(where)
-                expr_2[[3]]$envir <- eval(where)
-              }
-#               return(getReactiveUid(id = tmp$x, where = eval(tmp$envir)))
-#               buffer$out <<- c(buffer$out, tmp)
-              buffer$out <<- c(buffer$out, expr_2)
-              
-            }
-          }
-        }
-      })
-      buffer$out
-    }
-    .transformReactiveFunction <- function(refs, fun) {
-      idx <- if (!is.null(names(refs))) {
-        names(refs)
-      } else {
-        seq(along = refs)
-      }
-# ref <- refs[[1]]      
-      expr <- lapply(idx, function(ii) {
-        ref <- refs[[ii]]
-        if (is.call(ref)) {
-          return(ref)
-        }
-        
-        id <- if (!is.null(ref$as)) {
-          as.name(ref$as)
-        } else {
-          as.name(ii)
-        }
-        
-        code <- capture.output(body(fun))
-        ## "Actual code before markup" principle //
-        ## Make sure that we don't overwrite explicitly stated code 
-        ## with potentially erroneous markup information
-        ## TODO: GitHub #3
-        ## Make sure that erroneous/diverging markup does not cause any 
-        ## trouble
-        if (any(grepl(paste0(id, "\\s?<-"), code))) {
-          out <- NULL
-        } else {
-          out <- substitute(ID <- get(X, envir = ENVIR, inherits = FALSE), 
-            list(
-              ID = id, 
-              X = ii, 
-              ENVIR = if (!is.null(ref$where)) {
-                ref$where
-              } else {
-                refs[[ii]]
-              }
-            )
-          )
-        }
-        out
-      })
-      
-      ## Transform body //
-      ## Ensure brackets:
-      bdy <- body(fun)
-      body_scope <- length(bdy)
-      if (body_scope > 1) {
-        if (bdy[[1]] != "{") {
-          bdy <- substitute({BODY}, list(BODY = bdy))
-        }
-      } else {
-        bdy <- substitute({BODY}, list(BODY = bdy))        
-      }
-      body_scope <- length(bdy)
-
-      expr_list <- if (body_scope > 0 && body_scope <= 1) {
-        body(fun) 
-      } else {
-        lapply(2:body_scope, function(ii) bdy[[ii]])
-      }
-      
-      ##------------------------------------------------------------------------
-      ## Patch to ensure default 'where' if it has not been specified //
-      ##------------------------------------------------------------------------
-      ## Reeeally dirty, but seems to work ;-)
-      
-      ## TODO: GitHub #4
-      ## Improve reference recognition/specification
-# ii_sub=1
-# ii_expr=1
-      for (ii_sub in seq(along = expr)) {
-        sub_this <- expr[[ii_sub]]
-        if (class(sub_this) == "<-") {
-          sub_this <- sub_this[[3]]
-        } else if (class(sub_this) == "call" && sub_this[[1]] == "get") {
-#           sub_this <- sub_this
-        }
-        if (sub_this[[1]] == "get") {
-          for (ii_expr in seq(along = expr_list)) {
-            expr_this <- expr_list[[ii_expr]]
-#             deparse(expr_this)
-            if (any(grepl(paste0("get\\(.*", sub_this$x), expr_this))) {
-              if (expr_this[[1]] == "<-") {
-              ## Assignment with get expression //
-                expr_list[[ii_expr]][[3]]$envir <- sub_this$envir
-              } else if (expr_this[[1]] == "get") {
-              ## Get expression //
-                expr_list[[ii_expr]][[1]]$envir <- sub_this$envir
-              }
-              expr[[ii_sub]] <- NULL
-            }
-          }    
-        }
-      }
-      
-      ## Filter out 'NULL' //
-      idx_null <- sapply(expr, is.null)
-      if (any(idx_null)) {
-        expr <- expr[-which(idx_null)]
-      }
-      
-      body(fun) <- substitute(
-        {
-          eval(E1)
-          ## --> Not all that pretty especially when 'expr' is 'NULL',
-          ## but it works
-          eval(E2)
-        },
-        list(
-          E1 = if (length(expr)) as.expression(expr) else NULL,
-          E2 = as.expression(expr_list)
-        )
-      )
-      fun
-    }
-    .getReferenceMarkup <- function(expr) {
-      pattern_1 <- "\\[@reactive-ref:"
-      code <- capture.output(expr)
-      grep(pattern_1, code, value = TRUE)
-    }
-    .getReferencesFromMarkup <- function(markup, where) {
-      pattern_1 <- "^.*\\[@reactive-ref:\\s?|\\]$"      
-      has_where <- grepl("\\s?in\\s?\\w+", markup)
-      has_as <- grepl("\\s?as\\s?\\w+", markup)
-      refs <- gsub(pattern_1, "", markup)
-      refs <- strsplit(refs, split = "\\s?in\\s?|\\s?as\\s?", perl = TRUE)
-      ## Remove whitespace //
-      refs <- lapply(refs, function(ref) {
-        gsub("\\s", "", ref)
-      })
-      
-      ids <- sapply(refs, "[[", 1)
-# ii=1      
-      refs <- lapply(seq(along = refs), function(ii) {
-        has_where <- has_where[ii]
-        has_as <- has_as[ii]
-        
-        ref <- refs[[ii]]
-        out <- list()
-        out[["id"]] <- ref[1]
-        if (length(ref) >= 2) {
-          
-          out[["where"]] <- if (has_where) {
-            tryCatch(
-              eval(as.name(ref[2])),
-              error = function(cond) {
-              ## This means that wrong 'where' value or wrong order 
-              ## of elements in markup code
-              ## TODO: github #
-                conditionr::signalCondition(
-                  condition = "InvalidReferenceMarkupStructure",
-                  msg = c(
-                    "Invalid reference markup structure",
-                    Error = conditionMessage(cond),
-                    "Most likely reason" = "missspecified markup code",
-                    "Your markup" = gsub("^.*#+", "", markup[ii]),
-                    "Expected markup" = "[@reactive-ref: {id} in {where} as {ref-id}",
-                    Note = "{where} and {ref-id} are optional, but if they are provided it must be in the stated order"
-                  ),
-                  ns = "reactr",
-                  type = "error"
-                )
-              }
-            )
-          } else {
-            if (has_as) {
-              out[["as"]] <- as.name(ref[2])
-            }
-            where
-          }
-        } else {
-#           quote(parent.frame())
-#           quote(where)
-          out[["where"]] <- where
-        } 
-        if (length(ref) == 3) {
-          out[["as"]] <- ref[3]
-        }
-        out
-      })
-      names(refs) <- ids
-      refs
-    }
-
-    ##--------------------------------------------------------------------------
     ## Recognition of references //
     ##--------------------------------------------------------------------------
     ## In order of preferred specification in 'value'
-
+# where =environment()
     ## 1) Recognize via markup in comments //
-    refs <- .getReferenceMarkup(expr = value)
-    if (length(refs)) { 
-      refs <- .getReferencesFromMarkup(markup = refs, where = where)
-      references <- unname(sapply(names(refs), function(ii) {
-        getReactiveUid(id = ii, where = refs[[ii]]$where)
+    yaml <- yamlr::processYaml(
+      from = value, 
+      ctx = yamlr::YamlContext.ObjectReference.S3(),
+      where = where
+    )
+# where=environment()      
+    if (length(yaml$original)) { 
+      refs <- yaml
+      references <- unname(sapply(names(yaml$parsed), function(ii) {
+        getReactiveUid(id = ii, where = eval(yaml$parsed[[ii]]$where))
       }))
-# refs <<- refs      
-      value <- .transformReactiveFunction(refs = refs, fun = value)
+      value <- yaml$src
       if (.debug) {
         message("Updated binding function:")
         print(value)
@@ -318,16 +115,20 @@ setReactiveS3 <- function(
     } else {
       refs <- NULL
     }
-
+# where=parent.frame()
     ## 2) Recognize via argument 'refs' //
     if (is.null(refs)) {
-      refs <- .getReferencesFromArguments(expr = formals(value), where = where)
+      refs <- .getReferencesFromArguments(
+        arguments = formals(value), 
+        where = where
+      )
       if (!is.null(refs)) {
         value <- .transformReactiveFunction(refs = refs, fun = value)
         if (.debug) {
           message("Updated binding function:")
           print(value)
         }
+        ii="x_1"
         references <- unname(sapply(names(refs), function(ii) {
           getReactiveUid(id = ii, where = eval(refs[[ii]]$where))
         }))
@@ -338,75 +139,33 @@ setReactiveS3 <- function(
     if (is.null(refs)) {
 #       references <- as.character(unlist(.getReferences(expr = body(value))))
 #       refs <- .getReferences(expr = body(value), where = where)
-      refs <- .getReferences(expr = value, where = where)
-# print(refs)
-# ref=refs[[1]]
-# ref=refs[[1]][[3]]
-      references <- sapply(refs, function(ref) {
-        if (class(ref) == "<-") {
-          ref_this <- ref[[3]]
-        } else if (class(ref) == "call" && ref[[1]] == "get") {
-          ref_this <- ref 
-        }
-        id_this <- ifelse(is.null(ref_this$x), ref_this[[2]], ref_this$x)
-# ref_this <<- ref_this
-        ## Decompose //
-        ref_this_dec <- lapply(ref_this, function(ii) ii)
-
-        ## Recognize 'x' and 'envir' even though they might not have 
-        ## been named //
-        ## TODO: GitHub #7
-        ## --> fixed
-        id_this <- if ("x" %in% names(ref_this_dec)) {
-          ref_this_dec$x
-        } else {
-          idx_id <- which(sapply(ref_this_dec, is.character))
-          if (!length(idx_id)) {
-            stop(paste0("No name/ID found (argument 'x' of 'get()')"))
-          }
-          ref_this_dec[[idx_id]]
-        }
-        envir_this <- if ("envir" %in% names(ref_this_dec)) {
-          ref_this_dec$envir
-        } else {
-          ## Throw out potential entry for 'value' //
-          if (length(idx_out <- which(names(ref_this_dec) %in% "value"))) {
-            ref_this_dec <- ref_this_dec[-idx_out]
-          }
-          idx_envir <- which(sapply(ref_this_dec, is.environment))
-          if (!length(idx_envir)) {
-            stop(paste0("No environment found (argument 'envir' of 'get()')"))
-          }
-          ref_this_dec[[max(idx_envir)]]
-        }
-        
-        ## UIDs //
-        getReactiveUid(
-          id = id_this, 
-          where = envir_this
-        )
-      })
-
-      value <- .transformReactiveFunction(refs = refs, fun = value)
+      res <- .getReferencesFromBody2(expr = value, where = where)
+      refs <- res$refs
+      value <- res$fun
       if (.debug) {
         message("Updated binding function:")
         print(value)
       }
-
+      references <- .getActualReferencesFromBody(refs = refs, where = where)
     }
+
     value_initial <- tryCatch(value(), error = function(cond) NULL)
     value_expr <- quote(obj$value <<- value())
   }
 
   ## Instance of class 'Reactive.S3' //
   obj <- reactr::Reactive.S3()
-
+  
   obj <- prepareReactiveInstance(
     input = obj, 
     id = id,
     value = value_initial,
-    where = where
+    where = where,
+    references = references
   )
+# ref_uids <- ls(obj$references)
+# ls(obj$references[[ref_uids[1]]])
+# obj$hasReferences()
 
   ## Check prerequisites //
   checkReactivityPrerequisites(input = obj, strict = strict)
@@ -419,27 +178,7 @@ setReactiveS3 <- function(
         OBJ
         assign(obj$uid, digest::digest(obj$value), envir = obj$hash[[obj$uid]])      
         function(v) {
-          if (!missing(v)) {
-            
-          ##--------------------------------------------------------------------
-          ## Handler for 'set' (i.e. 'assign()' or '<-') //
-          ##--------------------------------------------------------------------            
-            
-            ## Set //
-            obj$value <<- v
-            ## TODO: GitHub #5
-            ## Implement strictness levels when setting values of 
-            ## objects that have an "observing-only" character with 
-            ## respect to the reactive bindings to others.
-            ## In a very strict interpretation, setting an value for such
-            ## objects would not be considered valid as they are only supposed
-            ## to "observe and react".
-            ## Possible catch this in 'checkReactivityPrerequistes()` already.
-            ## Might involve some new "helper fields" in class 'Reactive.S3' 
-          
-            ## Update hash //
-            assign(obj$uid, digest::digest(v), envir = obj$hash[[obj$uid]]) 
-          } else {
+          if (missing(v)) {
             
           ##--------------------------------------------------------------------
           ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
@@ -469,15 +208,35 @@ setReactiveS3 <- function(
                   if (!is.null(own_ref_hash)) {
                   ## This can only be the case if there has been a reactive 
                   ## binding that was valid/working at one time
-                    if (strict == 0) {
+                    if (strict_get == 0) {
                       ## Do nothing //
-                    } else if (strict == 1) {                    
-                      obj$value <<- NULL
-                    } else if (strict == 2) {
-                      cond <- conditionr::signalCondition(
-                        condition = "BrokenReactiveBinding",
+                    } else if (strict_get == 1) {                    
+                      conditionr::signalCondition(
+                        call = substitute(
+                          get(x= ID, envir = WHERE, inherits = FALSE),
+                          list(ID = obj$id, WHERE = obj$where)
+                        ),
+                        condition = "BrokenReactiveReference",
                         msg = c(
-                          "Broken reactive binding",
+                          Reason = "broken reactive reference",
+                          ID = obj$id,
+                          UID = obj$uid,
+                          Location = capture.output(where),
+                          "Reference UID" = ref_uid
+                        ),
+                        ns = "reactr",
+                        type = "warning"
+                      )
+                      obj$value <<- NULL
+                    } else if (strict_get == 2) {
+                      cond <- conditionr::signalCondition(
+                        call = substitute(
+                          get(x= ID, envir = WHERE, inherits = FALSE),
+                          list(ID = obj$id, WHERE = obj$where)
+                        ),
+                        condition = "BrokenReactiveReference",
+                        msg = c(
+                          Reason = "broken reactive reference",
                           ID = id,
                           UID = obj$uid,
                           Location = capture.output(where),
@@ -526,7 +285,7 @@ setReactiveS3 <- function(
                     hash <- getHashRegistry()
                     ## Custom condition //
                     cond <- conditionr::signalCondition(
-                      condition = "ReactiveUpdateFailed",
+                      condition = "AbortedReactiveUpdateWithError",
                       msg = c(
                         "Update failed",
                         ID = obj$id,
@@ -551,13 +310,70 @@ setReactiveS3 <- function(
                   envir = obj$hash[[obj$uid]])      
               }
             }
+
+          } else {
+          
+          ##--------------------------------------------------------------------
+          ## Handler for 'set' (i.e. 'assign()' or '<-') //
+          ##--------------------------------------------------------------------            
+            
+            ## Set //
+            if (obj$hasReferences()) {
+              if (strict_set == 0) {
+                obj$value <<- v    
+              } else if (strict_set == 1) {
+                conditionr::signalCondition(
+                  call = substitute(
+                    assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
+                    list(ID = obj$id, VALUE = v, WHERE = obj$where)
+                  ),
+                  condition = "AbortedWithReactiveDependencyWarning",
+                  msg = c(
+                    Reason = "trying to set value of object with reactive dependency",
+                    ID = obj$id,
+                    UID = obj$uid,
+                    Location = capture.output(where),
+                    References = paste(ls(obj$references, all.names = TRUE), collapse = ", ")
+                  ),
+                  ns = "reactr",
+                  type = "warning"
+                )
+              } else if (strict_set == 2) {
+                conditionr::signalCondition(
+                  call = substitute(
+                    assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
+                    list(ID = obj$id, VALUE = v, WHERE = obj$where)
+                  ),
+                  condition = "AbortedWithReactiveDependencyError",
+                  msg = c(
+                    Reason = "trying to set value of object with reactive dependency",
+                    ID = obj$id,
+                    UID = obj$uid,
+                    Location = capture.output(where),
+                    References = paste(ls(obj$references, all.names = TRUE), collapse = ", ")
+                  ),
+                  ns = "reactr",
+                  type = "error"
+                )
+              }
+            } else {
+              obj$value <<- v 
+            }
+            
+            ## Update hash //
+            assign(obj$uid, digest::digest(v), envir = obj$hash[[obj$uid]])   
+            
+          
           }
           
           ## Condition handling //
-          if (!is.null(obj$condition)) {
-            obj$value <- stop(obj$condition)
+          if (!is.null(obj$condition)) {           
+            if (inherits(obj$condition, "BrokenReactiveReference")) {
+              obj$value <- stop(obj$condition)
+            } else {            
+              obj$value <- stop(obj$condition)
+            }
           }
-
           ## Return value //
           if (.debug) {
             obj

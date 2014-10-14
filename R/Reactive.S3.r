@@ -32,14 +32,9 @@
 #' @field hash \code{\link{environment}}.
 #'    Environment for hash value storage.
 #'    Initial: \code{getHashRegistry()}.
-#' @field dependees \code{\link{environment}}.
-#'    Environment storing information of objects that depend on this object.
+#' @field references \code{\link{environment}}.
+#'    Environment storing information of referenced objects.
 #'    Initial: \code{new.env(parent = emptyenv())}.
-#'    \strong{Not used currently, for potential future use only}.
-#' @field dependencies \code{\link{environment}}.
-#'    Environment storing information of objects that this object depends on.
-#'    Initial: \code{new.env(parent = emptyenv())}.
-#'    \strong{Not used currently, for potential future use only}.
 #' @field condition \code{\link{condition}} (at least by inheritance).
 #'    If a condition has been signaled, this field is assigned a respectiv 
 #'    condition object that is triggered when \code{.self$value} is requested.
@@ -61,8 +56,7 @@ Reactive.S3 <- function(
   value = character(),
   where = parent.frame(),
   hash = getHashRegistry(),
-  dependees = new.env(parent = emptyenv()),
-  dependencies = new.env(parent = emptyenv()),
+  references = new.env(parent = emptyenv()),
   condition = NULL
 ) {
   if (!missing(.x)) {
@@ -74,13 +68,18 @@ Reactive.S3 <- function(
     out$value <- value
     out$where <- where
     out$hash <- hash
-    out$dependees <- dependees
-    out$dependencies <- dependencies
+    out$references <- references
     if (length(id)) {
       out$uid <- eval(substitute(digest::digest(list(id = ID, where = WHERE)), 
         list(ID = id, WHERE = where)))
     }
     out$condition <- condition
+    
+    ## Methods //
+    out$hasReferences <- function(self = out) {
+      length(ls(self$references, all.names = TRUE)) > 0
+    }
+    
     class(out) <- c("Reactive.S3", class(out))
   }
   return(out)

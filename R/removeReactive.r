@@ -46,7 +46,7 @@ setGeneric(
   ),
   def = function(
     id,
-    where = .GlobalEnv,
+    where = parent.frame(),
     ...
   ) {
     standardGeneric("removeReactive")       

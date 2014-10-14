@@ -4,7 +4,7 @@
 \title{Prepare Reactive Instance (generic)}
 \usage{
 prepareReactiveInstance(input = NULL, id = character(), value = NULL,
-  where = parent.frame(), ...)
+  where = parent.frame(), references = character(), ...)
 }
 \arguments{
 \item{input}{\strong{Signature argument}.
@@ -13,6 +13,9 @@ Typically, this corresponds to the instance of class
 \code{\link[reactr]{Reactive.S3}}.}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
+
+\item{input}{\code{\link{character}}.
+UIDs of references if there exist any.}
 }
 \description{
 Prepares a suitable instance of a class governing the establishment of

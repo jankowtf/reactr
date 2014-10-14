@@ -20,26 +20,26 @@ setReactiveS3(id = "x_2",
     ## Reference specification #
     ############################
     
-    ## [@reactive-ref: x_1 in where as ref_1]
+    ## object-ref: {id: x_1, where: where, as: ref_1}
     
     ## NOTE
     ## All these are valid ways to specify the references after the part
-    ## '@reactive-ref:' (obmitting the closing bracket)
+    ## 'object-ref:' (obmitting the closing bracket)
     ##
-    ##    {id}
+    ##    {id: {id}}
     ##    --> default 'where' is used, i.e. 'parent.frame()' is used
-    ##    Example: [@reactive-ref: x_1]
+    ##    Example: object-ref: {id: x_1}
     ##
-    ##    {id} in {where}
+    ##    {id: {id}}, where: {where}}
     ##    --> explicit 'where'. Can be the name of any environment object
     ##    that is accessible, i.e. that exists under this name when calling
     ##    'setReactive()'
-    ##    Example: x_1 in where_1
+    ##    Example: {id: x_1, where: where_1}
     ##
-    ##    {id} in {where} as {ref-name}
+    ##    {id: {id}, where: {where}, as: {ref-id}}
     ##    --> additional specification of the name/id to use inside *this* 
     ##    function if it should differ from {id}.
-    ##    Example: x_1 in where_1 as my_ref
+    ##    Example: {id: x_1, where: where_1, as: my_ref}
     ##    --> you would then use objec 'my_ref' in the remainder of this 
     ##    function
     
@@ -49,7 +49,7 @@ setReactiveS3(id = "x_2",
     
     ## As we used the markup 
     ##
-    ##                      x_1 in where as ref_1
+    ##                {id: x_1, where: where, as: ref_1}
     ##
     ## `setReactiveS3()` expects us to use 'ref_1' in the remainder 
     
@@ -90,7 +90,7 @@ resetHashRegistry()
 setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
@@ -134,7 +134,7 @@ setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(
   id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1
   }
 )
@@ -160,7 +160,7 @@ getReactive("x_2") ## cached value
 setReactiveS3(
   id = "x_3", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
@@ -185,15 +185,15 @@ setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(
   id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
 setReactiveS3(
   id = "x_3", 
   value = function() {
-    ## [@reactive-ref: x_1]
-    ## [@reactive-ref: x_2]
+    ## object-ref: {id: x_1}
+    ## object-ref: {id: x_2}
     x_1 + x_2 + 100
   }
 )
@@ -226,12 +226,12 @@ resetHashRegistry()
 ##------------------------------------------------------------------------------
 
 setReactiveS3(id = "x_1", value = function() {
-  ## [@reactive-ref: x_2]
+  ## object-ref: {id: x_2}
   x_2
   }
 )
 setReactiveS3(id = "x_2", value = function() {
-  ## [@reactive-ref: x_1]
+  ## object-ref: {id: x_1}
   x_1
   }
 )
@@ -269,12 +269,12 @@ resetHashRegistry()
 ##------------------------------------------------------------------------------
 
 setReactiveS3(id = "x_1", value = function() {
-  ## [@reactive-ref: x_2]
+  ## object-ref: {id: x_2}
   x_2 * 2
   }
 )
 setReactiveS3(id = "x_2", value = function() {
-  ## [@reactive-ref: x_1]
+  ## object-ref: {id: x_1}
   x_1 / 2
   }
 )
@@ -306,12 +306,12 @@ resetHashRegistry()
 ##------------------------------------------------------------------------------
 
 setReactiveS3(id = "x_1", value = function() {
-  ## [@reactive-ref: x_2]
+  ## object-ref: {id: x_2}
   x_2
   }
 )
 setReactiveS3(id = "x_2", value = function() {
-  ## [@reactive-ref: x_1]
+  ## object-ref: {id: x_1}
   x_1 * 2
   }
 )
@@ -357,14 +357,14 @@ setReactiveS3(
 ## Set variable with bindings //
 setReactiveS3(id = "field_1", 
   value = function() {
-    ## [@reactive-ref: field_1 in x_1]
+    ## object-ref: {id: field_1,  where: x_1}
     !field_1
   },
   where = x_2
 )
 setReactiveS3(id = "field_2", 
   value = function() {
-    ## [@reactive-ref: field_2 in x_1]
+    ## object-ref: {id: field_2}, where: x_1}
     field_2[,-1,drop = FALSE]
   },
   where = x_2
@@ -435,7 +435,7 @@ hash_x_1[[uid_x_1]]
 setReactiveS3(
   id = "x_2", 
   value = function() {
-    ## [@reactive-ref: x_1]
+    ## object-ref: {id: x_1}
     x_1 * 2
   }
 )
@@ -462,24 +462,44 @@ resetHashRegistry()
 ##------------------------------------------------------------------------------
 
 require("microbenchmark")
-    
-res_bt_1 <- microbenchmark(
+require("shiny")    
+where <- environment()
+res <- microbenchmark(
   "set x_1" = setReactiveS3(id = "x_1", value = 10, where = where),
-  "set x_3" = assign("x_3", 10),
   "get x_1" = get("x_1"),
-  "get x_3" = get("x_3"),
   "set x_2" = setReactiveS3(
     id = "x_2", 
     value = function() {
-      ## [@reactive-ref: x_1]
+      ## object-ref: {id: x_1}
       x_1 * 2
     }
   ),
   "get x_2" = get("x_2"),
   "change x_1" = assign("x_1", 100),
   "get x_2 (2)" = get("x_2"),
+  "set x_3" = setShinyReactive(id = "x_3", value = 10, where = where),
+  "get x_3" = get("x_3"),
+  "set x_4" = setShinyReactive(id = "x_4", value = reactive(x_3 * 2), where = where),
+  "get x_4" = get("x_4"),
+  "set x_5" = assign("x_3", 10),
+  "get x_5" = get("x_3"),
   control = list(order = "inorder")
 )
-res_bt_1
+res
+
+# Unit: microseconds
+#         expr      min       lq       mean   median        uq      max neval
+#      set x_1 1025.184 1163.771 1304.73738 1286.662 1406.5925 2784.756   100
+#      get x_1   18.952   20.729   25.82828   21.322   27.8360  130.887   100
+#      set x_2 3474.727 3891.671 4149.34659 4093.332 4244.9475 5124.734   100
+#      get x_2   92.392  101.275  117.46108  104.828  123.4845  261.775   100
+#   change x_1  145.101  159.908  183.49688  174.122  196.0350  294.349   100
+#  get x_2 (2)  840.402  937.531 1039.03075 1024.888 1082.6320 2476.787   100
+#      set x_3 1216.481 1358.324 1561.13406 1432.651 1574.4950 6664.582   100
+#      get x_3    4.738    5.330    5.87540    5.331    5.9230   13.622   100
+#      set x_4 1849.003 2086.198 2279.68636 2211.163 2308.5880 5186.327   100
+#      get x_4  944.046 1066.938 1202.07100 1155.478 1236.3210 2681.113   100
+#      set x_5    5.330    6.515   20.75265    6.515    7.4035 1305.318   100
+#      get x_5    2.962    3.554    5.70957    4.146    4.7380   85.284   100
 
 }

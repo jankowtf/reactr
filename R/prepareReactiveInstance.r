@@ -17,6 +17,8 @@
 #'    Object containing a suitable object for preparation. 
 #'    Typically, this corresponds to the instance of class 
 #'    \code{\link[reactr]{Reactive.S3}}.
+#' @param input \code{\link{character}}.
+#'    UIDs of references if there exist any.
 #' @template threedot
 #' @example inst/examples/prepareReactiveInstance.r
 #' @seealso \code{
@@ -36,6 +38,7 @@ setGeneric(
     id = character(),
     value = NULL,
     where = parent.frame(), ## TODO: verify this!!!
+    references = character(),
     ...
   ) {
     standardGeneric("prepareReactiveInstance")       
@@ -60,6 +63,7 @@ setGeneric(
 #' @template author
 #' @template references
 #' @export
+#' @import digest
 setMethod(
   f = "prepareReactiveInstance", 
   signature = signature(
@@ -69,6 +73,7 @@ setMethod(
     input,
     value,
     where,
+    references,
     ...
   ) {
     
@@ -90,6 +95,17 @@ setMethod(
   assign("uid", input$uid, envir = input$hash[[input$uid]])      
   ## Ensure 'where' entry in hash registry //
   assign("where", where, envir = input$hash[[input$uid]])     
+
+  ## References //
+  if (length(references)) {
+    sapply(references, function(ref) {
+      if (!exists(ref, envir = input$hash)) {
+        assign(ref, new.env(parent = emptyenv()), envir = input$hash)      
+        assign("checksum", digest::digest(NULL), envir = input$hash[[ref]])      
+      }
+      assign(ref, input$hash[[ref]], envir = input$references)
+    })
+  }
   
   return(input)
   

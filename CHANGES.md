@@ -1,3 +1,20 @@
+# Version 0.1.5
+ - included yamlr but not finished yet
+ - removeHashRegistry()
+ - worked on vignette
+ - Major commit - refactoring in 'setReactiveS3()' - reference markup - 'setShinyReactive()' - updated examples - first vignette
+ - setShinyReactive()
+ - some cleanup (tests etc.)
+ - setReactiveS3
+ - intermediate commit (working on cloned shiny project)
+ - Merge branch 'develop' into feature-shinyReactive
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.4'
+ - build commit
+ - bump commit
+
+----------
+
 # Version 0.1.4
  - Merge branch 'feat-classes' into develop
  - feature classes

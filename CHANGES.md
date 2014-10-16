@@ -1,3 +1,10 @@
+# Version 0.1.7
+ - minor README corrections
+ - Merge branch 'release-0.1.6'
+ - build commit v0.1.6
+
+----------
+
 # Version 0.1.6
  - Merge branch 'feat-push' into develop
  - push paradigm

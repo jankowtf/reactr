@@ -6,11 +6,11 @@
 ## Thus not all aspects can be properly illustrated if not used in its default
 ## context
 
-## Start with a fresh hash registry state //
-resetHashRegistry()
+## Start with a fresh registry state //
+resetRegistry()
 
 suppressWarnings(rm(x_1))
-input <- reactr::Reactive.S3()
+input <- reactr::ReactiveObject.S3()
 input <- prepareReactiveInstance(
   input = input, 
   id = "x_1",

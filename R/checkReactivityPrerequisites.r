@@ -9,11 +9,11 @@
 #' @param input \strong{Signature argument}.
 #'    Object containing a suitable object for the check. 
 #'    Typically, this corresponds to the instance of class 
-#'    \code{\link[reactr]{Reactive.S3}}.
+#'    \code{\link[reactr]{ReactiveObject.S3}}.
 #' @param strict \code{\link{numeric}}.
 #'    Relevant if a referenced object has been removed thus breaking the 
 #'    reactive relationship.
-#'    \itemiz{
+#'    \itemize{
 #'      \item{\code{0}: } {function returns last cached value}
 #'      \item{\code{1}: } {object value is set to \code{NULL} and is returned}
 #'      \item{\code{2}: } {object value is set to an instance of condition class 
@@ -22,10 +22,10 @@
 #'          its syntactical surgars \code{{obj-name} or \code{}}
 #'      }
 #'    }
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/checkReactivityPrerequisites.r
 #' @seealso \code{
-#'   	\link[reactr]{checkReactivityPrerequisites-Reactive.S3-method},
+#'   	\link[reactr]{checkReactivityPrerequisites-ReactiveObject.S3-method},
 #'     \link[reactr]{setReactiveS3}
 #' }
 #' @template author
@@ -45,14 +45,15 @@ setGeneric(
 )
 
 #' @title
-#' Check Prerequisits for Setting Reactive Objects (Reactive.S3-method) 
+#' Check Prerequisits for Setting Reactive Objects (ReactiveObject.S3) 
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{checkReactivityPrerequisites}}
 #'      
 #' @inheritParams checkReactivityPrerequisites
-#' @param input \code{\link{Reactive.S3}}.
-#' @return \code{\link{logical}}. \code{TRUE}: check passed; 
+#' @param input \code{\link{ReactiveObject.S3}}.
+#' @return \code{\link{logical}}. 
+#'    \code{TRUE}: check passed; 
 #'    \code{FALSE}: check not passed.
 #' @example inst/examples/checkReactivityPrerequisites.r
 #' @seealso \code{
@@ -62,10 +63,11 @@ setGeneric(
 #' @template author
 #' @template references
 #' @export
+#' @aliases checkReactivityPrerequisity-ReactiveObject.S3-method
 setMethod(
   f = "checkReactivityPrerequisites", 
   signature = signature(
-    input = "Reactive.S3"
+    input = "ReactiveObject.S3"
   ), 
   definition = function(
     input,

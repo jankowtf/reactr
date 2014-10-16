@@ -1,11 +1,8 @@
 context("checkReactivityPrerequisites-A")
 test_that("checkReactivityPrerequisites: default", {
   
-  resetHashRegistry()
-  
-  input <- reactr::Reactive.S3()
-  input <- prepareReactiveInstance(
-    input = input, 
+  resetRegistry()
+  input <- ReactiveObject.S3(
     id = "x_1",
     value = NULL,
     where = environment()
@@ -17,8 +14,5 @@ test_that("checkReactivityPrerequisites: default", {
   expect_error(checkReactivityPrerequisites(input = input, strict = 2))
   
   expect_true(checkReactivityPrerequisites(input = input))
-  
-  
-  
   
 })

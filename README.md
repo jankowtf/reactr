@@ -7,535 +7,649 @@ Reactive object bindings with built-in caching
 
 ```
 require("devtools")
+devtools::install_github("Rappster/yamlr")
 devtools::install_github("Rappster/reactr")
 require("reactr")
 ```
-
 ## Overview 
 
-See `?reactr`
+The package tries to make a contribution with respect to Reactive Programming in R. It allows to dynamically link objects so that if one object changes, the objects referencing that objecst (in whatever way) are updated as well in a very similar way than how reactivity is implemented in the [shiny](http://shiny.rstudio.com) framework. 
 
-## Example environment
+### Quick Example
 
-The default location that objects are set to is `.GlobalEnv`.
-
-However, in order not to mess up things in `.GlobalEnv`, we will use 
-an example environment:
+Set object 'x_1' that others can reference:
 
 ```
-where <- new.env()
-```
+setReactiveS3(id = "x_1", value = 10)
 
-## Binding scenario 1: simple observing (identical values)
-
-Set an object that can be observed:
-
-```
-setReactive(id = "x_1", value = 10, where = where)
 # [1] 10
 ```
 
-Set an object that observes `x_1` and has a reactive binding to it:
+Set object that references `x_1` and has the reactive binding `x_1 * 2` to it:
 
 ```
-setReactive(id = "x_2", watch = "x_1", where = where)
+setReactiveS3(id = "x_2", value = function() {
+  "object-ref: {id: x_1}"
+  x_1 * 2
+})
+
+# Initializing ...
+# [1] 20
+
+x_1 
+# [1] 10
+
+x_2
+# [1] 20
+```
+
+Whenever `x_1` changes, `x_2` changes accordingly:
+
+
+```
+(x_1 <- 100)
+# [1] 100
+
+x_2
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
+# [1] 200
+
+x_2
+# [1] 200
+## --> cached value is used as `x_1` has not changed, so executing the 
+## binding function would be unnecessary
+```
+
+### Things to notice at this point
+
+1. The preferred way to specify the reference is via [YAML](http://www.yaml.org/) markup as done above. However, there also exist two other ways to specify references. See vignette [Specifying Reactive References]() for details.
+
+2. Strictness levels can be defined for 
+
+  - the creation process itself in `setReactiveS3()`: argument `strict`
+  - *getting* the value of a reactive object: argument `strict_get`
+  - *setting* the value of a reactive object: argument `strict_set`
+  
+  See vignette [Strictness]() for details.
+  
+3. The environment in which to set a reactive object can be chosen via argument `where`
+
+4. The package implements a caching mechanism: the binding functions are only executed when one of the referenced objects has actually changed. Otherwise a cached value is returned.
+
+  While this may cost more than it actually helps in scenarios where the binding functions are quite simple, such a mechanism *may* significantly reduce computation times in case of more complex binding functions that take very long to run. See vignette [Caching]() for details.
+  
+5. You can choose between a *pull* and a *push* paradigm with respect to how changes are propagated through the system. 
+
+  When using *pull* paradigm (the default), objects referencing an object that has changed are not informed of this change until they are explicitly requested (by `get()` or its syntactical sugars).
+  
+  When using a *push* paradigm, an object that changed informs all objects that have a reference to it about the change by implicitly calling the `$get()` method of their `ReactiveObject.S3` class instance which translates to an actual `get()` of the respective reactive objects. 
+  
+  See vignette [Pushing]() for details on this.
+
+-----
+
+## Scenario 1: one-directional (1)
+
+### Scenario explanation
+
+- Type/Direction: 
+
+  `A` references `B` 
+  
+- Binding/Relationship: 
+
+  `A` uses value of `B` "as is", i.e. value of `A` identical to value of `B`
+
+### Example
+
+Set object 'x_1' that others can reference:
+
+```
+setReactiveS3(id = "x_1", value = 10)
+
+# [1] 10
+```
+
+Set object that references `x_1` and has a reactive binding to it:
+
+```
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+
+# Initializing ...
+# [1] 10
+
+x_1 
+# [1] 10
+
+x_2
 # [1] 10
 ```
 
 Whenever `x_1` changes, `x_2` changes accordingly:
 
+
 ```
-where$x_1 
-# [1] 10
-where$x_2
-# [1] 10
-where$x_1 <- 100 
-where$x_1 
+(x_1 <- 100)
 # [1] 100
-where$x_2
+
+x_2
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
 # [1] 100
-```
 
-### NOTE
-
-Using this approach, you can only set `x_1`. Object `x_2` is a mere
-"observing" object. Trying to set it via `<-`, `assign()` or `setReactive()` is
-disregarded:
-
-```
-where$x_2 <- 1000
-where$x_2
+x_2
 # [1] 100
+## --> cached value as 'x_1' has not changed; no update until 'x_1' 
+## changes again
 ```
-
-See scenario *Binding scenario: mutual binding* for an alternative
-to this!
-
 -----
 
-## Binding scenario 2: simple observing (arbitrary functional relationship)
+## Scenario 2: one-directional (2)
 
-Set an object that observes `x_1` and has a reactive binding to it:
+### Scenario explanation
+
+- Type/Direction: 
+
+  `A` references `B` 
+  
+- Binding/Relationship: 
+
+  `A` transforms value of `B` , i.e. value of `A` is the result of applying a function on the value of `B`
+
+### Example
 
 ```
-setReactive(id = "x_3", watch = "x_1", where = where, 
-  binding = function(x) {x * 2})
-# [1] 200  
-```
+setReactiveS3(id = "x_3", value = function() {
+  "object-ref: {id: x_1, as: ref_1}"
+  ref_1 * 2
+})
 
-Note how `x_3` changes according to its binding contract based on the provided
-`binding` (`x * 2`):
-
-```
-where$x_1 
-# [1] 100
-where$x_2
-# [1] 100
-where$x_3
+# Initializing ...
 # [1] 200
-where$x_1 <- 500
-where$x_2
+```
+
+Note how `x_3` changes according to its binding relationship `ref_1 * 2` (which is just a translation for `x_1 * 2`):
+
+```
+x_1 
+# [1] 100
+
+x_2
+# [1] 100
+
+x_3
+# [1] 200
+## --> x_1 * 2
+
+(x_1 <- 500)
+x_2
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
 # [1] 500
-where$x_3
+
+x_3
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
 # [1] 1000
 ```
 
 -----
 
-## Binding scenario 3: mutual binding (identical values)
+## Scenario 3: one-directional (3)
 
-Set two objects that have a mutual binding.
-The main difference to *Binding scenario 1* is, that you can set 
-both `x_1` **and** `x_4` and have the changes reflected.
+### Scenario explanation
 
-In order to do that, it is necessary to reset the binding for `x_1` as well 
-with `mutual = TRUE`:
+- Type/Direction: 
 
-```
-setReactive(id = "x_1", watch = "x_4", where = where, mutual = TRUE)
-# NULL
-setReactive(id = "x_4", watch = "x_1", where = where, mutual = TRUE)
-# NULL
-```
+  `A` references `B` and `C`, `B` references `C`
+  
+- Binding/Relationship: 
 
-Note that objects with mutual bindings are merely initialized by `setReactive()` 
-and have a default value of `NULL`. You must actually assign a value to either 
-one of them via `<-` **after** establishing the binding:
+  `A` transforms value of `B` , i.e. value of `A` is the result of applying a function on the value of `B`
+
+### Example
 
 ```
-## Default value //
-where$x_1
+setReactiveS3(id = "x_4", value = function() {
+  "object-ref: {id: x_1, as: ref_1}"
+  "object-ref: {id: x_2, as: ref_2}"
+  ref_1 + ref_2 * 2
+})
+
+# Initializing ...
+# [1] 1500
+```
+
+Note how each object that is involved changes according to its binding relationships:
+
+```
+x_4
+# [1] 1500
+
+(x_1 <- 10)
+
+x_4
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
+## --> corresponds to the update of 'x_2' due to a change of 'x_1'
+
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
+## --> corresponds to the update of 'x_4' due to a change of 'x_1'
+[1] 30
+
+(x_2 <- 100)
+## --> NOTE
+## this is only allowed due to 'strict_set = 0'! By doing so, we temporariliy 
+## break/disable or pause the reactive binding of 'x_2' on 'x_2'.
+## As long as 'x_1' is not updated, 'x_2' is "out of sync" with respect to 'x_1'
+
+x_4
+# Modified reference: ab22808532ff42c87198461640612405
+# Updating ...
+# [1] 210
+## --> corresponds to the update of 'x_4' due to a change of 'x_2' 
+
+(x_1 <- 50)
+x_2
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
+# [1] 50
+## --> reactive binding reestablished again; 'x_2' is now in-sync again 
+## with respect to 'x_1'
+
+x_4
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Modified reference: ab22808532ff42c87198461640612405
+# Updating ...
+# [1] 150
+## --> update as both 'x_1' and 'x_2' have changed
+```
+
+## Scenario 4: bi-directional (1)
+
+### Scenario explanation
+
+- Type/Direction: 
+
+  `A` references `B` and `B` references `A` --> bidirectional binding type
+  
+- Binding/Relationship: 
+
+  `A` uses value of `B` "as is" and `B` uses value of `A` "as is". This results in a steady state. 
+
+### Example
+
+A cool feature of this binding type is that you are free to alter the values of *both* objects and still keep everything "in sync"
+
+```
+setReactiveS3(id = "x_5", function() "object-ref: {id: x_6}")
+
+# Initializing ...
 # NULL
-where$x_4
+
+setReactiveS3(id = "x_6", function() "object-ref: {id: x_5}")
+
+# Initializing ...
+# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
+# Updating ...
+# Initializing ...
+# NULL
+```
+
+Note that the call to `setReactiveS3()` merely initializes objects with bidirectional bindings to the value `NULL`.
+
+You must actually assign a value to either one of them via `<-` **after** establishing the binding:
+
+```
+## Default values //
+x_5
+# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
+# Updating ...
+# NULL
+
+x_6
 # NULL
 
 ## Set actual initial value to either one of the objects //
-where$x_1 <- 100
-where$x_1
+(x_5 <- 100)
 # [1] 100
-where$x_4
-# [1] 100
-where$x_2
-# [1] 100
-where$x_3
-# [1] 200
 
-where$x_4 <- 1000
-where$x_4
+x_6
+# Modified reference: 25165b8d029c31f694793c3c13fbbee1
+# Updating ...
+# [1] 100
+
+x_5
+# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
+# Updating ...
+# [1] 100
+
+## Changing the other one of the two objects //
+(x_6 <- 1000)
 # [1] 1000
-where$x_1
+
+x_5
+# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
+# Updating ...
 # [1] 1000
-where$x_2
-# [1] 1000
-where$x_3
-# [1] 2000
 ```
 
------
+## Scenario 4: bi-directional (2)
 
-## Binding scenario 4: mutual binding (valid bi-directional relationship)
+### Scenario explanation
 
-The binding contract for objects with mutual bindings does not have to 
-be based on the standard binding definition of 
-(`function(x) {x}` set automatically inside `setReactive()`). You should just make
-sure that it is a valid bi-directional relationship that you define:
+- Type/Direction: 
+
+  `A` references `B` and `B` references `A` --> bidirectional binding type
+  
+- Binding/Relationship: 
+
+  `A` uses transformed value of `B` and `B` uses transformed value of `A`. 
+  
+  The binding functions used result in a **steady** state.
+
+### Example
+
+As the binding functions are "inversions"" of each other, we still stay at a steady state.
 
 ```
-setReactive(id = "x_5", watch = "x_6", where = where, 
-  binding = function(x) {x * 2}, mutual = TRUE)
-# NULL
-setReactive(id = "x_6", watch = "x_5", where = where, 
-  binding = function(x) {x / 2}, mutual = TRUE)
+setReactiveS3(id = "x_6", function() {
+  "object-ref: {id: x_7}"
+  x_7 * 2
+})
+
+# Initializing ...
 # NULL
 
-## Initial default values //
-where$x_5
-# NULL
-where$x_6
-# NULL
+setReactiveS3(id = "x_7", function() {
+  "object-ref: {id: x_6}"
+  x_6 / 2
+})
 
-## Actual initial value //
-where$x_5 <- 100
-where$x_5
+# Initializing ...
+# Modified reference: d02321209550bf005cbade3bf09fdd85
+# Updating ...
+# Initializing ...
+# numeric(0)
+```
+
+Note that `x_7` is is not initialized to `NULL` but to `numeric()` and that this also alters the initial value of `x_6` to `numeric()`. 
+
+This is a minor inconsistency due to the actual structure of these specific binding functions that will be removed in future releases.
+
+```
+x_6
+# Modified reference: d02321209550bf005cbade3bf09fdd85
+# Updating ...
+# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
+# Updating ...
+# numeric(0)
+
+x_7
+# numeric(0)
+
+## Set actual initial value to either one of the objects //
+(x_6 <- 100)
 # [1] 100
-where$x_6
+
+x_7
+# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
+# Updating ...
 # [1] 50
 
-where$x_6 <- 500
-where$x_6
-# [1] 500
-where$x_5
+x_6
+# Modified reference: d02321209550bf005cbade3bf09fdd85
+# Updating ...
+# [1] 100
+
+## Changing the other one of the two objects //
+(x_7 <- 1000)
+# [1] 1000
+
+x_6
+# Modified reference: d02321209550bf005cbade3bf09fdd85
+# Updating ...
+# [1] 2000
+
+x_7
+# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
+# Updating ...
 # [1] 1000
 ```
 
------
+## Scenario 4: bi-directional (3)
 
-## Tracing what's actually going on
+### Scenario explanation
 
-To understand what's going on behind the scenes, I've include a `.tracelevel`
-argument that you can use:
+- Type/Direction: 
+
+  `A` references `B` and `B` references `A` --> bidirectional binding type
+  
+- Binding/Relationship: 
+
+  `A` uses transformed value of `B` and `B` uses transformed value of `A`. 
+  
+  The binding functions used result in a **non-steady** state.
+
+### Example
+
+As the binding functions are **not** "inversions"" of each other, we never reach/stay at a steady state. Cached values are/can never be used as by the definition of the binding functions the two objects are constantly updating each other.
 
 ```
-setReactive(id = "x_7", watch = "x_8", where = where, mutual = TRUE, .tracelevel = 1)
-# ----- INIT START -----
-# id:
-# x_7
-# watch:
-# x_8
-# ----- INIT END -----
-# ----- BINDING CONTRACT START -----
-# id:
-# x_7
-# watch:
-# x_8
-# hash id/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash id/watch:
+setReactiveS3(id = "x_8", function() {
+  "object-ref: {id: x_9}"
+  x_9 * 2
+})
+
+# Initializing ...
 # NULL
-# hash watch/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# ----- BINDING CONTRACT END -----
-# NULL
+
+setReactiveS3(id = "x_9", function() {
+  "object-ref: {id: x_8}"
+  x_8 * 10
+})
+
+# Initializing ...
+# Modified reference: 794daff29ee5d00144e3dc00ef18107b
+# Updating ...
+# Initializing ...
+# numeric(0)
 ```
 
-```
-setReactive(id = "x_8", watch = "x_7", where = where, mutual = TRUE, .tracelevel = 1)
-# ----- INIT START -----
-# id:
-# x_8
-# watch:
-# x_7
-# ----- BINDING CONTRACT START -----
-# id:
-# x_7
-# watch:
-# x_8
-# hash id/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash id/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# ----- BINDING CONTRACT END -----
-# ----- INIT END -----
-# ----- BINDING CONTRACT START -----
-# id:
-# x_8
-# watch:
-# x_7
-# hash id/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash id/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# retrieve (x_8 watching x_7)
-# in sync (x_8 watching: x_7)
-# ----- BINDING CONTRACT END -----
-# NULL
-```
+Illustration of "non-steady-state" behavior:
 
 ```
-where$x_7 <- Sys.time()
-# ----- BINDING CONTRACT START -----
-# id:
-# x_7
-# watch:
-# x_8
-# hash id/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash id/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# setting x_7
-# new hash id/id:
-# [1] "330bf68a5152022e9d08b995d6bb3d88"
-# ----- BINDING CONTRACT END -----
-```
+x_8
+# Modified reference: 794daff29ee5d00144e3dc00ef18107b
+# Updating ...
+# Modified reference: 49f6edc9dcf9dc2d4afa65bc5a008fdd
+# Updating ...
+# numeric(0)
 
-```
-where$x_7
-# ----- BINDING CONTRACT START -----
-# id:
-# x_7
-# watch:
-# x_8
-# hash id/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash id/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# retrieve (x_7 watching x_8)
-# in sync (x_7 watching: x_8)
-# ----- BINDING CONTRACT END -----
-# [1] "2014-09-22 14:40:21 CEST"
-```
+x_9
+# numeric(0)
 
-```
-where$x_8
-# ----- BINDING CONTRACT START -----
-# id:
-# x_8
-# watch:
-# x_7
-# hash id/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash id/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# retrieve (x_8 watching x_7)
-# update based on contract (x_8 watching x_7)
-# hash watch/watch old: 91c8bc5b91169b03e8405d78132e8f00
-# hash watch/id old: f9e884084b84794d762a535f3facec85
-# ----- BINDING CONTRACT START -----
-# id:
-# x_7
-# watch:
-# x_8
-# hash id/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash id/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/watch:
-# [1] "f9e884084b84794d762a535f3facec85"
-# hash watch/id:
-# [1] "f9e884084b84794d762a535f3facec85"
-# retrieve (x_7 watching x_8)
-# in sync (x_7 watching: x_8)
-# ----- BINDING CONTRACT END -----
-# hash watch/watch new: 91c8bc5b91169b03e8405d78132e8f00
-# hash watch/id new: 91c8bc5b91169b03e8405d78132e8f00
-# ----- BINDING CONTRACT END -----
-# [1] "2014-09-22 14:40:21 CEST"
-```
+## Set actual initial value to either one of the objects //
+(x_8 <- 1)
+# [1] 1
 
-```
-where$x_8 <- Sys.time()
-# ----- BINDING CONTRACT START -----
-# id:
-# x_8
-# watch:
-# x_7
-# hash id/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash id/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# setting x_8
-# new hash id/id:
-# [1] "d3e83df21e0f7b4da01f6ba2e215bb43"
-# ----- BINDING CONTRACT END -----
-```
+x_9
+# Modified reference: 49f6edc9dcf9dc2d4afa65bc5a008fdd
+# Updating ...
+# [1] 10
+## --> `x_8` * 10
 
+x_8
+# Modified reference: 794daff29ee5d00144e3dc00ef18107b
+# Updating ...
+# [1] 20
+## --> x_9 * 2
+
+x_9
+# Modified reference: 49f6edc9dcf9dc2d4afa65bc5a008fdd
+# Updating ...
+# [1] 200
+## --> `x_8` * 10
+
+## Changing the other one of the two objects //
+(x_9 <- 1)
+# [1] 1
+
+x_8
+# Modified reference: 794daff29ee5d00144e3dc00ef18107b
+# Updating ...
+# [1] 2
+
+x_9
+# Modified reference: 49f6edc9dcf9dc2d4afa65bc5a008fdd
+# Updating ...
+# [1] 20
+
+x_8
+# Modified reference: 794daff29ee5d00144e3dc00ef18107b
+# Updating ...
+# [1] 40
 ```
-where$x_8
-# ----- BINDING CONTRACT START -----
-# id:
-# x_8
-# watch:
-# x_7
-# hash id/id:
-# [1] "d3e83df21e0f7b4da01f6ba2e215bb43"
-# hash id/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# retrieve (x_8 watching x_7)
-# in sync (x_8 watching: x_7)
-# ----- BINDING CONTRACT END -----
-# [1] "2014-09-22 14:41:18 CEST"
-```
-
-```
-where$x_7
-# ----- BINDING CONTRACT START -----
-# id:
-# x_7
-# watch:
-# x_8
-# hash id/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash id/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/watch:
-# [1] "d3e83df21e0f7b4da01f6ba2e215bb43"
-# hash watch/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# retrieve (x_7 watching x_8)
-# update based on contract (x_7 watching x_8)
-# hash watch/watch old: d3e83df21e0f7b4da01f6ba2e215bb43
-# hash watch/id old: 91c8bc5b91169b03e8405d78132e8f00
-# ----- BINDING CONTRACT START -----
-# id:
-# x_8
-# watch:
-# x_7
-# hash id/id:
-# [1] "d3e83df21e0f7b4da01f6ba2e215bb43"
-# hash id/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/watch:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# hash watch/id:
-# [1] "91c8bc5b91169b03e8405d78132e8f00"
-# retrieve (x_8 watching x_7)
-# in sync (x_8 watching: x_7)
-# ----- BINDING CONTRACT END -----
-# hash watch/watch new: d3e83df21e0f7b4da01f6ba2e215bb43
-# hash watch/id new: d3e83df21e0f7b4da01f6ba2e215bb43
-# ----- BINDING CONTRACT END -----
-# [1] "2014-09-22 14:41:18 CEST"
-```
-
-----
-
-## Further examples
-
-See `?setReactive` and `?setReactive_bare`.
-
 
 ----
 
 ## Unsetting reactive objects
 
-```
-where <- new.env()  
+This turns reactive objects (that are, even though hidden from the user, instances of class `ReactiveObject.S3`) into regular or non-reactive objects again. 
 
-setReactive(id = "x_1", value = 10, where = where)
-setReactive(id = "x_2", watch = "x_1", where = where)
+**Note that it does not mean the a reactive object is removed! See `removeReactive()` for that purpose**
+
+```
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 ## Illustrate reactiveness //
-where$x_1
-where$x_2
-where$x_1 <- 50
-where$x_1 
-where$x_2
+x_1
+x_2
+(x_1 <- 50)
+x_2
 
 ## Unset reactive --> turn it into a regular object again //
-unsetReactive(id = "x_1", where = where)
+unsetReactive(id = "x_1")
+```
+Illustration of removed reactiveness: 
 
-## Illustrate removed reactiveness //
-where$x_1
-where$x_2
-where$x_1 <- 10
-where$x_1
-where$x_2
+```
+x_1
+x_2
+(x_1 <- 10)
+x_2
 ## --> 'x_1' is not a reactive object anymore; from now on, 'x_2' simply returns
 ## the last value that has been cached
 ```
 
+### NOTE
+What happens when a reactive relationship is broken or removed depends on how you set argument `strictness_get` in the call to `setReactiveS3()`. Also refer to vignette [Strictness]() for more details.
+
 ## Removing reactive objects
 
-This means deleting the object alltogether. 
+This deletes the object alltogether. 
 
 ```
-where <- new.env()  
-
-setReactive(id = "x_1", value = 10, where = where)
-setReactive(id = "x_2", watch = "x_1", where = where)
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 ## Remove reactive --> remove it from 'where' //
-removeReactive(id = "x_1", where = where)
+removeReactive(id = "x_1")
 
-exists("x_1", envir = where, inherits = FALSE)
+exists("x_1", inherits = FALSE)
 ```
 
-### Implications on observing objects
+## Caching mechanism (overview)
 
-The implications of removing a reactive object depends on the value of 
-`strict` when setting them via `setReactive()`
+The package implements a caching mechanism that (hopefully) contributes to an efficient implementation of reactivity in R in the respect that binding functions are only executed when they actually need to.
 
-Compare:
+As mentioned above, this *might* be unnecessary or even counter-productive in situations where the runtime of binding functions is negligible, but help in situations where unnecessary executions of binding functions is not desired due to their specific nature or long runtimes.
 
-```
-where <- new.env()  
+A second reason why the caching mechanism was implemented is to offer the possibility to specify *bi-directional* reactive bindings. AFAICT, you need some sort of caching mechanism in order to avoid infinite recursions.
 
-setReactive(id = "x_1", value = 10, where = where)
+See vignette [Caching]() for details on this.
 
-## Non-strict --> observing object will return last cached value //
-setReactive(id = "x_2", watch = "x_1", where = where)
+### The registry
 
-## Strict --> observing object will return 'NULL' //
-setReactive(id = "x_3", watch = "x_1", where = where, strict = TRUE)
+Caching is implemented by storing references of the "hidden parts" of an reactive object (the hidden instances of class `ReactiveObject.S3`) in a registry that is an `environment` and lives in `getOption("reactr")$.registry`.
 
-removeReactive(id = "x_1", where = where)
-where$x_2  
-where$x_3 
-```
+### Convenience function
 
-## Resetting removed reactive objects
+Ensuring example content in registry:
 
 ```
-where <- new.env()  
-
-setReactive(id = "x_1", value = 10, where = where)
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 ```
 
-Non-strict:
+### Get the registry object
 
 ```
-setReactive(id = "x_2", watch = "x_1", where = where)
+registry <- getRegistry()
 ```
 
-Strict :
+### Show registry content
 
 ```
-setReactive(id = "x_3", watch = "x_1", where = where, strict = TRUE)
-```
+showRegistryContent()
+`` 
 
-Reset without notifying `x_2` or `x_3` (i.e. "cold reset"):
+The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `getObjectUid()` for the details of the computation of object UIDs.
 
-```
-removeReactive(id = "x_1", where = where)
-setReactive(id = "x_1", value = 100, where = where)
-```
-
-Implications:
-
+### Retrieve from registry
 
 ```
-where$x_2
-## --> 'x_2' re-establishes the reactive binding
-where$x_3
-## --> error
+x_1_hidden <- getFromRegistry(id = "x_1")
+x_2_hidden <- getFromRegistry(id = "x_2")
+
+## Via UID //
+getFromRegistry(getObjectUid("x_1"))
+getFromRegistry(getObjectUid("x_2"))
+
 ```
+
+This object corresponds to the otherwise "hidden part"" of `x_1` that was implicitly created by the call to `setReactiveS3()`.
+
+```
+class(x_1_hidden)
+ls(x_1_hidden)
+
+## Some interesting fields //
+x_1_hidden$id
+x_1_hidden$where
+x_1_hidden$uid
+x_1_hidden$value
+x_1_hidden$hasReferences()
+
+x_2_hidden$id
+x_2_hidden$where
+x_2_hidden$uid
+x_2_hidden$value
+x_2_hidden$has_cached
+x_2_hidden$hasReferences()
+ls(x_2_hidden$references)
+x_2_hidden$references[[x_1_hidden$uid]]
+```
+### Remove from registry
+
+```
+## Via ID (and 'where') //
+removeFromRegistry(id = "x_1")
+## --> notice that entry '2fc2e352f72008b90a112f096cd2d029' has been removed
+
+## Via UID //
+removeFromRegistry(getObjectUid("x_2"))
+## --> notice that entry 'ab22808532ff42c87198461640612405' has been removed
+```
+
+### Reset from registry
+
+```
+showRegistryContent()
+resetRegistry()
+showRegistryContent()
+```
+

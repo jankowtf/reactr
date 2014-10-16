@@ -1,0 +1,12 @@
+```{r, echo=FALSE}
+require("reactr")
+```
+
+---
+title: "Strictness"
+author: "Janko Thyson"
+date: "Thursday, October 16, 2014"
+output: html_document
+---
+
+To be added

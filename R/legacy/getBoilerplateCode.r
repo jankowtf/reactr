@@ -13,7 +13,7 @@
 #' 			\link[reactr]{BindingContractObserving.S3},
 #' 			\link[reactr]{BindingContractMutual.S3}
 #' 		}
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/getBoilerplateCode.r
 #' @seealso \code{
 #'   	\link[reactr]{getBoilerplateCode-missing-method}

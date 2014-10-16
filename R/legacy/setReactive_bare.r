@@ -66,7 +66,7 @@
 #'    \emph{no tracing} whereas values of \code{> 0} can be used to fine 
 #'    control tracing. The trace level can also be set as a global option when
 #'    using package \code{tracer} (\strong{not functional yet}).
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/setReactive_bare.r
 #' @seealso \code{
 #'   	\link[reactr]{setReactive-character-ANY-environment-character-call-method}

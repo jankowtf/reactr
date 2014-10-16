@@ -3,10 +3,9 @@
 \name{removeReactive,character,missing-method}
 \alias{removeReactive,character,missing-method}
 \alias{removeReactive-method_main}
-\title{Remove Reactive Object (char-missing-method)}
+\title{Remove Reactive Object (character-missing)}
 \usage{
-\S4method{removeReactive}{character,missing}(id, where, .hash_id, .tracelevel,
-  ...)
+\S4method{removeReactive}{character,missing}(id, where = parent.frame(), ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.}
@@ -28,8 +27,8 @@ See generic: \code{\link[reactr]{removeReactive}}
 \examples{
 \dontrun{
 
-## Start with fresh hash registry //
-resetHashRegistry()
+## Start with fresh registry //
+resetRegistry()
 
 ## Non-strict //
 where <- new.env()  

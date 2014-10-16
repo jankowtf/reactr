@@ -11,8 +11,8 @@ setReactive(id = "x_2", watch = "x_1", where = where)
 ## Insepct hash registry before removal //
 ls(where[[.hash_id]])
 
-removeFromHashRegistry(id = "x_1", where = where)
-removeFromHashRegistry(id = "x_1", where = where)
+removeFromRegistry(id = "x_1", where = where)
+removeFromRegistry(id = "x_1", where = where)
 
 ## Insepct hash registry before removal //
 ls(where$._HASH)

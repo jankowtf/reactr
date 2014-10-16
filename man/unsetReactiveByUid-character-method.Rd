@@ -3,7 +3,7 @@
 \name{unsetReactiveByUid,character-method}
 \alias{unsetReactiveByUid,character-method}
 \alias{unsetReactiveByUid-method_main}
-\title{Unset Reactive Object}
+\title{Unset Reactive Object (character)}
 \usage{
 \S4method{unsetReactiveByUid}{character}(uid, ...)
 }
@@ -14,15 +14,11 @@ Object containing UID information.}
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 
 \item{id}{\code{\link{character}}.}
-
-\item{where}{\code{\link{missing}}.
-Internal argument that should not be set explicitly.
-The value at runtime will correspond to the function that has been
-provided via argument \code{binding}.}
 }
 \value{
-See method
-   \code{\link[reactr]{unsetReactiveByUid-character-method}}
+\code{\link{logical}}.
+   \code{TRUE}: successfully unset;
+   \code{FALSE}: failed to unset.
 }
 \description{
 See generic: \code{\link[reactr]{unsetReactiveByUid}}
@@ -31,27 +27,8 @@ See generic: \code{\link[reactr]{unsetReactiveByUid}}
 \dontrun{
 
 setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(
-  id = "x_2", 
-  value = function(refs = list(x_1 = .GlobalEnv)) {x_1}
-)
-unsetReactiveByUid(uid = getReactiveUid("x_1", .GlobalEnv))
-x_1
-identical(x_2, x_1)
-x_1 <- 20
-x_1
-x_2
-## --> no reactive binding to 'x_1' anymore; last-cached value is returned
-
-## Reset again //
-setReactiveS3(id = "x_1", value = 10)
-x_1
-x_2
-## --> cached value still at '10' --> reactivity is revealed only after 
-## changing 'x_1'
-x_1 <- 20
-x_1
-x_2
+unsetReactiveByUid(uid = getObjectUid("x_1"))
+isReactive("x_1")
 
 }
 }
@@ -63,7 +40,8 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-   Generic: \link[reactr]{unsetReactiveByUid}
+   Generic: \link[reactr]{unsetReactiveByUid},
+    \link[reactr]{unsetReactive}
 }
 }
 

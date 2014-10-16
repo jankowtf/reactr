@@ -25,49 +25,55 @@
   refs
 }
 # .getReferencesFromArguments(arguments = formals(value), where = where)
-.getReferencesFromBody2 <- function(expr, where) {
+.getReferencesFromBody2 <- function(fun, where) {
   buffer <- new.env()
   buffer$refs <- list()
-# expr_2=expr[[1]]      
-# expr_2 <- lapply(expr, function(ii) ii)[[1]]
-  bdy <- body(expr)
-  bdy_length <- length(bdy)
+# fun_2=fun[[1]]      
+# fun_2 <- lapply(fun, function(ii) ii)[[1]]
+  bdy <- body(fun)
+  if (class(bdy) != "{") {
+    bdy <- substitute({BODY}, list(BODY = bdy))
+    body(fun) <- bdy    
+  }
 ii=2
-  lapply(seq(along = body(expr)), function(ii) {
-    expr_this <- bdy[[ii]]
-    if (class(expr_this) == "<-" && any(grepl("\\.ref_", expr_this))) {
-      tmp <- expr_this[[3]]  
-      if (is.null(tmp$envir)) {
-        expr_this[[3]]$envir <- eval(where)
-        body(expr)[[ii]][[3]]$envir <<- eval(where)
+  lapply(seq(along = body(fun)), function(ii) {
+    bdy_el <- bdy[[ii]]
+    if (class(bdy_el) %in% c("<-", "=") && any(grepl("\\.ref_", bdy_el))) {
+      tmp <- bdy_el[[3]]  
+      if (any(grepl("get", tmp))) {
+        if (is.null(tmp$envir)) {
+          bdy_el[[3]]$envir <- eval(where)
+          body(fun)[[ii]][[3]]$envir <<- eval(where)
+        }
+        if (is.null(tmp$inherits)) {
+          bdy_el[[3]]$inherits <- FALSE
+          body(fun)[[ii]][[3]]$inherits <<- FALSE
+        }
+        buffer$refs <<- c(buffer$refs, bdy_el)
       }
-      if (is.null(tmp$inherits)) {
-        expr_this[[3]]$inherits <- FALSE
-        body(expr)[[ii]][[3]]$inherits <<- FALSE
-      }
-      buffer$refs <<- c(buffer$refs, expr_this)
     }
   })
 #   buffer$refs
-  list(refs = buffer$refs, fun = expr)
+  list(refs = buffer$refs, fun = fun)
 }
 .getActualReferencesFromBody <- function(refs, where) {
   references <- sapply(refs, function(ref) {
-    if (class(ref) == "<-") {
+    if (class(ref) %in% c("<-", "=")) {
       ref_this <- ref[[3]]
     } else if (class(ref) == "call" && ref[[1]] == "get") {
       ref_this <- ref 
     }
-    id_this <- ifelse(is.null(ref_this$x), ref_this[[2]], ref_this$x)
+#     id_this <- eval(ifelse(is.null(ref_this$x), ref_this[[2]], ref_this$x))
 # ref_this <<- ref_this
     ## Decompose //
+
     ref_this_dec <- lapply(ref_this, function(ii) ii)
 
     ## Recognize 'x' and 'envir' even though they might not have 
     ## been named //
     ## TODO: GitHub #7
     ## --> fixed
-    id_this <- if ("x" %in% names(ref_this_dec)) {
+    id_this <- eval(if ("x" %in% names(ref_this_dec)) {
       ref_this_dec$x
     } else {
       idx_id <- which(sapply(ref_this_dec, is.character))
@@ -75,8 +81,8 @@ ii=2
         stop(paste0("No name/ID found (argument 'x' of 'get()')"))
       }
       ref_this_dec[[idx_id]]
-    }
-    envir_this <- if ("envir" %in% names(ref_this_dec)) {
+    })
+    envir_this <- eval(if ("envir" %in% names(ref_this_dec)) {
       ref_this_dec$envir
     } else {
       ## Throw out potential entry for 'value' //
@@ -88,12 +94,12 @@ ii=2
         stop(paste0("No environment found (argument 'envir' of 'get()')"))
       }
       ref_this_dec[[max(idx_envir)]]
-    }
+    })
 
     ## UIDs //
-    getReactiveUid(
+    getObjectUid(
       id = id_this, 
-      where = eval(envir_this)
+      where = envir_this
     )
   })
 }
@@ -250,7 +256,7 @@ ii=2
 # #                 tmp$envir <- eval(where)
 #             expr_2[[3]]$envir <- eval(where)
 #           }
-# #               return(getReactiveUid(id = tmp$x, where = eval(tmp$envir)))
+# #               return(getObjectUid(id = tmp$x, where = eval(tmp$envir)))
 # #               buffer$out <<- c(buffer$out, tmp)
 #           buffer$out <<- c(buffer$out, expr_2)
 #           

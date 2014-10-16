@@ -10,15 +10,15 @@
 #'    Object containing monitored variable information.
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
-#' @template threedot
-#' @example inst/examples/resetHashRegistryState.r
+#' @template threedots
+#' @example inst/examples/resetRegistryState.r
 #' @seealso \code{
-#'   	\link[reactr]{resetHashRegistryState-missing-method}
+#'   	\link[reactr]{resetRegistryState-missing-method}
 #' }
 #' @template author
 #' @template references
 setGeneric(
-  name = "resetHashRegistryState",
+  name = "resetRegistryState",
   signature = c(
     "id",
     "watch",
@@ -31,7 +31,7 @@ setGeneric(
     .hash_id = "._HASH",
     ...
   ) {
-    standardGeneric("resetHashRegistryState")       
+    standardGeneric("resetRegistryState")       
   }
 )
 
@@ -39,23 +39,23 @@ setGeneric(
 #' Reset Hash Registry State
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{resetHashRegistryState}}
+#' See generic: \code{\link[reactr]{resetRegistryState}}
 #'      
-#' @inheritParams resetHashRegistryState
+#' @inheritParams resetRegistryState
 #' @param id \code{\link{character}}.
 #' @param watch \code{\link{missing}}.
 #' @param where \code{\link{environment}}.
 #' @return See method
-#'    \code{\link[reactr]{resetHashRegistryState-character-character-environment-method}}
-#' @example inst/examples/resetHashRegistryState.r
+#'    \code{\link[reactr]{resetRegistryState-character-character-environment-method}}
+#' @example inst/examples/resetRegistryState.r
 #' @seealso \code{
-#'    \link[reactr]{resetHashRegistryState}
+#'    \link[reactr]{resetRegistryState}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "resetHashRegistryState", 
+  f = "resetRegistryState", 
   signature = signature(
     id = "character",
     watch = "missing",
@@ -69,7 +69,7 @@ setMethod(
     ...
   ) {
     
-  return(resetHashRegistryState(
+  return(resetRegistryState(
     id = id,
     watch = watch,
     where = where,
@@ -84,22 +84,22 @@ setMethod(
 #' Reset Hash Registry State
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{resetHashRegistryState}}
+#' See generic: \code{\link[reactr]{resetRegistryState}}
 #'   	 
-#' @inheritParams resetHashRegistryState
+#' @inheritParams resetRegistryState
 #' @param id \code{\link{character}}.
 #' @param watch \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return \code{\link{logical}}. \code{TRUE}.
-#' @example inst/examples/resetHashRegistryState.r
+#' @example inst/examples/resetRegistryState.r
 #' @seealso \code{
-#'    \link[reactr]{resetHashRegistryState}
+#'    \link[reactr]{resetRegistryState}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "resetHashRegistryState", 
+  f = "resetRegistryState", 
   signature = signature(
     id = "character",
     watch = "character",

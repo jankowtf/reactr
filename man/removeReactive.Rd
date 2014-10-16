@@ -16,7 +16,7 @@ Object containing location information.}
 }
 \description{
 Removes a reactive object from its environment. This implies that the
-hash registry (see \code{\link[reactr]{getHashRegistry}}) is also updated
+registry (see \code{\link[reactr]{getRegistry}}) is also updated
 accordingly.
 }
 \details{
@@ -42,8 +42,8 @@ In case it was \code{TRUE}, the function returns error condition
 \examples{
 \dontrun{
 
-## Start with fresh hash registry //
-resetHashRegistry()
+## Start with fresh registry //
+resetRegistry()
 
 ## Non-strict //
 where <- new.env()  

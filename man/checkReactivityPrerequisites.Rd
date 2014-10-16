@@ -9,12 +9,12 @@ checkReactivityPrerequisites(input = NULL, strict = 0, ...)
 \item{input}{\strong{Signature argument}.
 Object containing a suitable object for the check.
 Typically, this corresponds to the instance of class
-\code{\link[reactr]{Reactive.S3}}.}
+\code{\link[reactr]{ReactiveObject.S3}}.}
 
 \item{strict}{\code{\link{numeric}}.
 Relevant if a referenced object has been removed thus breaking the
 reactive relationship.
-\itemiz{
+\itemize{
   \item{\code{0}: } {function returns last cached value}
   \item{\code{1}: } {object value is set to \code{NULL} and is returned}
   \item{\code{2}: } {object value is set to an instance of condition class
@@ -40,11 +40,11 @@ imposed via \code{strict}.
 ## Thus not all aspects can be properly illustrated if not used in its default
 ## context
 
-## Start with a fresh hash registry state //
-resetHashRegistry()
+## Start with a fresh registry state //
+resetRegistry()
 
 suppressWarnings(rm(x_1))
-input <- reactr::Reactive.S3()
+input <- reactr::ReactiveObject.S3()
 input <- prepareReactiveInstance(
   input = input, 
   id = "x_1",
@@ -75,7 +75,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-  	\link[reactr]{checkReactivityPrerequisites-Reactive.S3-method},
+  	\link[reactr]{checkReactivityPrerequisites-ReactiveObject.S3-method},
     \link[reactr]{setReactiveS3}
 }
 }

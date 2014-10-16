@@ -3,7 +3,7 @@
 \name{removeReactive,character,environment-method}
 \alias{removeReactive,character,environment-method}
 \alias{removeReactive-method_main}
-\title{Remove Reactive Object (char-env-method)}
+\title{Remove Reactive Object (character-environment)}
 \usage{
 \S4method{removeReactive}{character,environment}(id, where = parent.frame(),
   ...)
@@ -25,8 +25,8 @@ See generic: \code{\link[reactr]{removeReactive}}
 \examples{
 \dontrun{
 
-## Start with fresh hash registry //
-resetHashRegistry()
+## Start with fresh registry //
+resetRegistry()
 
 ## Non-strict //
 where <- new.env()  

@@ -15,7 +15,7 @@ require("reactr")
 
 The package tries to make a contribution with respect to ways for *Reactive Programming* or *Reactivity* in R. It allows to dynamically link objects so that if one object changes, the objects referencing that object (in whatever way) are updated as well. 
 
-The implementation was greatly inspired by and is very similar to that of [shiny](http://shiny.rstudio.com) framework. 
+The implementation is greatly inspired by and is very similar to that of the [shiny](http://shiny.rstudio.com) framework. 
 
 ### Quick Example
 
@@ -63,7 +63,9 @@ x_2
 
 ### Things to notice at this point
 
-1. The preferred way to specify the reference is via [YAML](http://www.yaml.org/) markup as in the example above. However, there also exist two other ways to specify references. See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/specifying_reactive_references.Rmd) for details.
+1. The preferred way to specify the reference is via [YAML](http://www.yaml.org/) markup as in the example above. However, there also exist two other ways to specify references. 
+
+See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/specifying_reactive_references.Rmd) for details.
 
 2. Strictness levels can be defined for 
 
@@ -75,9 +77,11 @@ x_2
   
 3. The environment in which to set a reactive object can be chosen via argument `where`
 
-4. The package implements a **caching mechanism**: the binding functions are only executed when they need to be, i.e. only if one of the referenced objects has actually changed. Otherwise a cached value that has been stored from the last update run is returned.
+4. The package implements a **caching mechanism**: the binding functions are only executed if they need to be, i.e. only if one of the referenced objects has actually changed. Otherwise a cached value that has been stored from the last update run is returned.
 
-  While this may cost more than it actually helps in scenarios where the binding functions are quite simple and thus don't take long to run, such a mechanism *may* significantly reduce computation times in case of more complex binding functions that take very long to run. See vignette [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.Rmd) for details.
+  While this may cost more than it actually helps in scenarios where the binding functions are quite simple and thus don't take long to run, such a mechanism *may* significantly reduce computation times in case of more complex binding functions that take very long to run. 
+  
+  See vignette [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.Rmd) for details.
   
 5. You can choose between a **pull** and a **push** paradigm with respect to how changes are propagated through the system. 
 

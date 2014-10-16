@@ -1,18 +1,16 @@
+```{r, echo=FALSE}
+require("reactr")
+```
+
+
 ---
-title: "Specification of reactive functions"
+title: "Specifying Reactive References"
 author: "Janko Thyson"
 date: "Saturday, October 11, 2014"
 output:
   html_document:
     self_contained: no
 ---
-
-```{r, echo=FALSE, cache=FALSE}
-require(knitr)
-# knitr::opts_chunk$set(cache=FALSE)
-require("reactr")
-opts_chunk$set(cache=TRUE, cache.path = 'reactive_functions_cache/', fig.path='img/')
-```
 
 Currently, the main function in order to set reactive bindings that offer the most flexibility is `setReactiveS3()`.
 

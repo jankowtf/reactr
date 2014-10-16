@@ -68,8 +68,8 @@ test_that("setReactiveS3/explicit 'where'", {
     uid_2 <- getObjectUid(id = "x_2", where = where)
     expect_is(regobj_2 <- getRegistry()[[uid_2]], "ReactiveObject.S3")
     expect_equal(regobj_2$id, "x_2")
-    expect_true(exists(uid_1, regobj_2$references))
-    expect_equal(regobj_2$references[[uid_1]], regobj_1)
+    expect_true(exists(uid_1, regobj_2$references_pull))
+    expect_equal(regobj_2$references_pull[[uid_1]], regobj_1)
     expect_equal(regobj_2$checksum, digest::digest(x_1 + 60*60*24))
     
     (x_1 <- Sys.time())
@@ -583,7 +583,8 @@ test_that("setReactiveS3: strictness (get)", {
     value = function() {
       .ref_1 <- get(x = "x_1") 
       .ref_1 * 2
-    })
+    }
+  )
   
   if (FALSE) {
     x_1 <- 20
@@ -593,7 +594,7 @@ test_that("setReactiveS3: strictness (get)", {
     uid <- getObjectUid(id = "x_2", where)
     ls(registry[[uid]][[uid]])
   }
-  
+  expect_equal(x_2, 20)
   removeReactive("x_1")
   expect_equal(x_2, 20)
   expect_equal(x_2, 20)
@@ -609,6 +610,7 @@ test_that("setReactiveS3: strictness (get)", {
       .ref_1 * 2
     }, strict_get = 0)
   
+  expect_equal(x_2, 20)
   removeReactive("x_1")
   expect_equal(x_2, 20)
   expect_equal(x_2, 20)
@@ -624,6 +626,7 @@ test_that("setReactiveS3: strictness (get)", {
       .ref_1 * 2
     }, strict_get = 1)
   
+  expect_equal(x_2, 20)
   removeReactive("x_1")
   expect_warning(expect_equal(x_2, NULL))
   expect_warning(expect_equal(x_2, NULL))
@@ -639,6 +642,7 @@ test_that("setReactiveS3: strictness (get)", {
       .ref_1 * 2
     }, strict_get = 2)
   
+  expect_equal(x_2, 20)
   removeReactive("x_1")
   expect_error(x_2)
   expect_error(x_2)
@@ -1014,7 +1018,7 @@ test_that("setReactiveS3/recognition/args", {
 })
 
 ##------------------------------------------------------------------------------
-context("setReactiveS3/recognition/yaml*")
+context("setReactiveS3/recognition/yaml")
 ##------------------------------------------------------------------------------
 
 test_that("setReactiveS3/recognition/yaml", {
@@ -1094,4 +1098,104 @@ test_that("setReactiveS3/recognition/yaml", {
   resetRegistry()
   
 })
+
+##------------------------------------------------------------------------------
+context("setReactiveS3/push")
+##------------------------------------------------------------------------------
+
+test_that("setReactiveS3/push", {
+  
+  expect_equal(
+    setReactiveS3(id = "x_1", value = 10),
+    10
+  )
+  path_testfile <- file.path(tempdir(), "pushtest.txt")
+  suppressWarnings(file.remove(path_testfile))
+  
+  expect_equal(
+    setReactiveS3(id = "x_2", value = function() {
+      "object-ref: {id: x_1}"
+      msg <- paste0("[", Sys.time(), 
+        "] I'm simulating a database update or something like that")
+      write(msg, file = file.path(tempdir(), "pushtest.txt"), append = TRUE)
+      x_1
+    }, strict_get = 2, push = TRUE),
+    10
+  )
+  
+  ## Actual push //
+  (x_1 <- 100)
+  uid_1 <- getObjectUid("x_1")
+  uid_2 <- getObjectUid("x_2")
+  reg_1 <- getFromRegistryByUid(uid_1)
+  reg_2 <- getFromRegistryByUid(uid_2)
+  expect_false(reg_2$is_running_push)
+  expect_false(reg_2$has_pushed)
+  expect_true(exists(uid_2, reg_1$references_push, inherits = FALSE))
+  expect_equal(length(readLines(path_testfile)), 2)
+  
+  (x_1 <- 200)
+  expect_equal(length(readLines(path_testfile)), 3)
+  
+  (x_1 <- 100)
+  expect_equal(length(readLines(path_testfile)), 4)
+  
+  unsetReactive("x_1")
+  expect_error(x_2)
+
+  ## Clean up //
+  rm(x_1)
+  rm(x_2)
+  resetRegistry()
+  
+})
+
+##------------------------------------------------------------------------------
+context("setReactiveS3/integrity")
+##------------------------------------------------------------------------------
+
+test_that("ensureIntegrity", {
+
+  resetRegistry()
+  setReactiveS3(id = "x_1", value = 10)
+  setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", strict_get = 1)
+  x_2
+  setReactiveS3(id = "x_1", value = 20)
+  expect_equal(x_2, 20)
+  uid_1 <- getObjectUid("x_1")
+  expect_equal(
+    getFromRegistry("x_2")$references_pull[[uid_1]],
+    getFromRegistry("x_1")
+  )
+  
+  if (FALSE) {
+    require(microbenchmark)
+    microbenchmark(
+      "update" = x_2,
+      "cache 1" = x_2,
+      "cache 2" = x_2
+    )
+    
+    resetRegistry()
+    setReactiveS3(id = "x_1", value = 10)
+    setReactiveS3(id = "x_2", integrity = FALSE, 
+                  value = function() "object-ref: {id: x_1}", strict_get = 1)
+    x_2
+    x_1 <- 100
+    x_2
+    setReactiveS3(id = "x_1", value = 20)
+    (47 - 24)/10^9
+    require(microbenchmark)
+    microbenchmark(
+      "update" = x_2,
+      "cache 1" = x_2,
+      "cache 2" = x_2
+    )
+  }
+  ## Clean up //
+  resetRegistry()
+  
+})
+
+
 })

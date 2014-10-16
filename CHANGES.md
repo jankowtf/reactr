@@ -1,3 +1,16 @@
+# Version 0.1.6
+ - Merge branch 'feat-push' into develop
+ - push paradigm
+ - Merge branch 'feat-registry' into develop
+ - registry
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.5'
+ - build commit v0.1.5
+ - fixes #1
+ - Merge branch 'feature-internalHash' into develop
+
+----------
+
 # Version 0.1.5
  - included yamlr but not finished yet
  - removeHashRegistry()

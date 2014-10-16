@@ -1,3 +1,19 @@
+# CHANGES IN reactr VERSION 0.1.7
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+- some corrections in `REAMDE.md`
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.6
 
 ## NEW FEATURES

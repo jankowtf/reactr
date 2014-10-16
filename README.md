@@ -11,12 +11,83 @@ devtools::install_github("Rappster/yamlr")
 devtools::install_github("Rappster/reactr")
 require("reactr")
 ```
-
 ## Overview 
 
-See `?reactr`
+The package tries to make a contribution with respect to Reactive Programming in R. It allows to dynamically link objects so that if one object changes, the objects referencing that objecst (in whatever way) are updated as well in a very similar way than how reactivity is implemented in the [shiny](http://shiny.rstudio.com) framework. 
 
-## Example environment
+### Quick Example
+
+Set object 'x_1' that others can reference:
+
+```
+setReactiveS3(id = "x_1", value = 10)
+
+# [1] 10
+```
+
+Set object that references `x_1` and has the reactive binding `x_1 * 2` to it:
+
+```
+setReactiveS3(id = "x_2", value = function() {
+  "object-ref: {id: x_1}"
+  x_1 * 2
+})
+
+# Initializing ...
+# [1] 20
+
+x_1 
+# [1] 10
+
+x_2
+# [1] 20
+```
+
+Whenever `x_1` changes, `x_2` changes accordingly:
+
+
+```
+(x_1 <- 100)
+# [1] 100
+
+x_2
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+# Updating ...
+# [1] 200
+
+x_2
+# [1] 200
+## --> cached value is used as `x_1` has not changed, so executing the 
+## binding function would be unnecessary
+```
+
+### Things to notice at this point
+
+1. The preferred way to specify the reference is via [YAML](http://www.yaml.org/) markup as done above. However, there also exist two other ways to specify references. See vignette [Specifying Reactive References]() for details.
+
+2. Strictness levels can be defined for 
+
+  - the creation process itself in `setReactiveS3()`: argument `strict`
+  - *getting* the value of a reactive object: argument `strict_get`
+  - *setting* the value of a reactive object: argument `strict_set`
+  
+  See vignette [Strictness]() for details.
+  
+3. The environment in which to set a reactive object can be chosen via argument `where`
+
+4. The package implements a caching mechanism: the binding functions are only executed when one of the referenced objects has actually changed. Otherwise a cached value is returned.
+
+  While this may cost more than it actually helps in scenarios where the binding functions are quite simple, such a mechanism *may* significantly reduce computation times in case of more complex binding functions that take very long to run. See vignette [Caching]() for details.
+  
+5. You can choose between a *pull* and a *push* paradigm with respect to how changes are propagated through the system. 
+
+  When using *pull* paradigm (the default), objects referencing an object that has changed are not informed of this change until they are explicitly requested (by `get()` or its syntactical sugars).
+  
+  When using a *push* paradigm, an object that changed informs all objects that have a reference to it about the change by implicitly calling the `$get()` method of their `ReactiveObject.S3` class instance which translates to an actual `get()` of the respective reactive objects. 
+  
+  See vignette [Pushing]() for details on this.
+
+-----
 
 ## Scenario 1: one-directional (1)
 
@@ -47,17 +118,18 @@ setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 # Initializing ...
 # [1] 10
-```
 
-Whenever `x_1` changes, `x_2` changes accordingly:
-
-```
 x_1 
 # [1] 10
 
 x_2
 # [1] 10
+```
 
+Whenever `x_1` changes, `x_2` changes accordingly:
+
+
+```
 (x_1 <- 100)
 # [1] 100
 
@@ -65,33 +137,12 @@ x_2
 # Modified reference: 2fc2e352f72008b90a112f096cd2d029
 # Updating ...
 # [1] 100
-```
 
-### Things to notice at this point
-
-1. The preferred way to specify the reference is via [YAML](http://www.yaml.org/) markup as done above. However, there also exist two other ways to specify references. See vignette [Specifying References]() for details.
-
-2. Strictness levels can be defined for 
-
-  - the creation process itself in `setReactiveS3()`: argument `strict`
-  - *getting* the value of a reactive object: argument `strict_get`
-  - *setting* the value of a reactive object: argument `strict_set`
-  
-  See vignette [Strictness]() for details.
-  
-3. The environment in which to set a reactive object can be chosen via argument `where`
-
-4. The package implements a caching mechanism: the binding functions are only executed when one of the referenced objects has actually changed. Otherwise a cached value is returned.
-
-  While this may cost more than it actually helps in scenarios where the binding functions are quite simple, such a mechanism *may* significantly reduce computation times in case of more complex binding functions that take very long to run. See vignette [Caching]() for details.
-  
-```
 x_2
-# [1] 50
+# [1] 100
 ## --> cached value as 'x_1' has not changed; no update until 'x_1' 
 ## changes again
 ```
-
 -----
 
 ## Scenario 2: one-directional (2)

@@ -57,7 +57,7 @@
 #'    Reference to the registry environment. Important for retrieving and 
 #' 		comparing checksum values.
 #'    Initial: \code{getRegistry()}.
-#' @field references \code{\link{environment}}.
+#' @field references_pull \code{\link{environment}}.
 #'    Environment storing information of referenced objects.
 #'    Initial: \code{new.env(parent = emptyenv())}.
 #' @field func \code{\link{function}}.
@@ -99,7 +99,12 @@ ReactiveObject.S3 <- function(
   registry = getRegistry(),
   
   ## References //
-  references = new.env(parent = emptyenv()),
+  references_pull = new.env(parent = emptyenv()),
+  references_push = new.env(parent = emptyenv()),
+  has_pull_refs = FALSE,
+  has_push_refs = FALSE,
+  has_pushed = FALSE,
+  is_running_push = FALSE,
   func = NULL,
   checksums_ref = new.env(parent = emptyenv()),
   
@@ -113,7 +118,10 @@ ReactiveObject.S3 <- function(
   } else {
     this <- new.env()
     
-    ## Fields //
+    ##--------------------------------------------------------------------------
+    ## Fields and initialization //
+    ##--------------------------------------------------------------------------
+
     this$checksum <- checksum
     this$checksums_ref <- checksums_ref
     this$condition <- condition
@@ -127,12 +135,19 @@ ReactiveObject.S3 <- function(
     this$id <- id
     this$is_invalid <- is_invalid
     
-    this$references <- references
+    this$references_pull <- references_pull
+    this$references_push <- references_push
+    this$has_pull_refs <- has_pull_refs
+    this$has_push_refs <- has_push_refs
+    this$has_pushed <- has_pushed
+    this$is_running_push <- is_running_push 
     this$value <- value
     this$where <- where
     
-    
+    ##--------------------------------------------------------------------------
     ## Methods //
+    ##--------------------------------------------------------------------------
+    
     this$computeChecksum <- function(self = this) {
       cs <- digest::digest(self$value)
       self$checksum <- cs
@@ -161,11 +176,47 @@ ReactiveObject.S3 <- function(
         FALSE
       }
     }
-    this$hasReferences <- function(self = this) {
-      length(ls(self$references, all.names = TRUE)) > 0
+    this$ensureIntegrity <- function(self = this, ref_uid) {
+      if (exists(ref_uid, envir = self$registry, inherits = FALSE)) {     
+        assign(ref_uid, 
+          get(ref_uid, envir = self$registry, inherits = FALSE), 
+          envir = self$references_pull
+        )      
+      }
+      TRUE
     }
-    this$register <- function(self = this) {
-      out <- if (!exists(self$uid, envir = self$registry)) {     
+    this$get <- function(self = this) {
+      get(self$id, self$where, inherits = FALSE)
+    }
+    this$hasPullReferences <- function(self = this) {
+      res <-length(ls(self$references_pull, all.names = TRUE)) > 0
+      self$has_pull_refs <- res
+      res
+    }
+    this$hasPushReferences <- function(self = this) {
+      res <- length(ls(self$references_push, all.names = TRUE)) > 0
+      self$has_push_refs <- res
+      res
+    }
+    this$pushToReferences <- function(self = this) {
+      self$is_running_push <- TRUE
+      push_refs_env <- self$references_push
+      push_refs <- ls(push_refs_env)
+      out <- if (length(push_refs)) {
+        sapply(push_refs, function(ref) {
+          message(paste0("Pushing to: ", ref))
+          push_refs_env[[ref]]$get()
+        })
+        TRUE
+      } else {
+        FALSE
+      }
+      self$is_running_push <- FALSE
+      self$has_pushed <- TRUE
+      out
+    }
+    this$register <- function(self = this, overwrite = FALSE) {
+      out <- if (!exists(self$uid, envir = self$registry) || overwrite) {     
         assign(self$uid, self, envir = self$registry)      
         TRUE
       } else {
@@ -185,11 +236,11 @@ ReactiveObject.S3 <- function(
             ref_inst$register(self = ref_inst)
           }
           ## Pointer //
-          assign(ref, self$registry[[ref]], envir = self$references)
+          assign(ref, self$registry[[ref]], envir = self$references_pull)
           ## Cached checksums //
           this$updateReferenceChecksum(
             ref = ref, 
-            checksum = self$references[[ref]]$checksum
+            checksum = self$references_pull[[ref]]$checksum
           )
         })
         TRUE
@@ -253,8 +304,10 @@ ReactiveObject.S3 <- function(
       assign(ref, checksum, envir = self$checksums_ref)
     }
     
+    ##--------------------------------------------------------------------------
+    ## Initialize rest //
+    ##--------------------------------------------------------------------------
 
-    ## Initialize //
     this$computeChecksum()
     this$computeUid()
     if (length(.references)) {

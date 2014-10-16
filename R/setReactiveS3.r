@@ -7,12 +7,58 @@
 #' @description 
 #' Creates an reactive object.
 #' 
+#' @details
+#' Implicitly, an instance of class 
+#' \code{\link[reactr]{ReactiveObject.S3}} is created of which only field
+#' \code{value} will be visible to the outside. The rest of the object is
+#' stored in a hidden way.
+#' 
+#' In order to keep the hidden object accessible and also due to the 
+#' implementation of the caching mechanism, the hidden object is also stored
+#' in a registry (see \code{\link[reactr]{getRegistry}}).
+#' 
+#' @section Self-contained reactivity:
+#' 
+#' The package strives to make the reactive nature of reactive objects as 
+#' self-contained as possible. So, ideally, there would be no need for an
+#' explicit registry. In order to realize this goal at least partially, 
+#' each reactive object instance of class \code{\link[reactr]{ReactiveObject.S3}}
+#' also hold \strong{references} to the respective objects in the registry.
+#' As instances of class \code{\link[reactr]{ReactiveObject.S3}} are eventually
+#' nothing but objects of class \code{\link{environment}}, the reference 
+#' should mostly have a \emph{pass-by-reference} nature and thus lead to 
+#' minimal overhead only. 
+#' 
+#' However, \strong{removing} or \strong{reassigning} (as opposed to merely
+#' \strong{altering} an instance from the \strong{registry}
+#' does \strong{not} change the referenced environment in the \strong{actual instances} 
+#' itself (see illustration \emph{"References to environment"} in examples).
+#' This is a potential risk for inconsistencies and thus class 
+#' \code{\link[reactr]{ReactiveObject.S3}} offers a method that takes care 
+#' that the registry instance references are equal to the actual registry 
+#' instances. This comes at the cost of a minimal overhead of about 2.3e-08
+#' seconds for each request of an reactive object. 
+#' 
 #' @param id \code{\link{character}}.
 #'    Name of the object to set.
 #' @param value \code{\link{ANY}}.
 #'    Variable value or binding.
 #' @param where \code{\link{environment}}.
 #'    Environment to create the object in.
+#' @param integrity \code{\link{logical}}.
+#'    \code{TRUE}: ensures structural integrity of underlying reactive object
+#'    (instance of class \code{\link[reactr]{ReactiveObject.S3}}).
+#'    \code{FALSE}: no integrity measures are carried out.
+#'    Note that \code{TRUE} adds a minimal overhead of 2.3e-08 seconds 
+#'    to the runtime. See details.
+#' @param push \code{\link{logical}}.
+#'    \code{TRUE}: immediately propagate changes to objects referencing this 
+#'    object by implicitly calling/requesting them and thus executing their 
+#'    binding functions (corresponds to a \strong{push paradigm});
+#'    \code{FALSE}: objects referencing this object will only know of the change
+#'    in this object if they are called/requested themselves as this would 
+#'    then trigger the execution of their binding functions 
+#'    (corresponds to a \strong{pull paradigm}).
 #' @param strict \code{\link{numeric}}.
 #'    Relevant when initially setting a reactive object
 #'    \itemize{
@@ -65,6 +111,8 @@ setReactiveS3 <- function(
     id,
     value = NULL,
     where = parent.frame(),
+    integrity = TRUE,
+    push = FALSE,
     strict = 0,
     strict_get = 0,
     strict_set = 0,
@@ -85,7 +133,7 @@ setReactiveS3 <- function(
     is_reactive <- FALSE
     references <- character()
     
-    value_initial <- substitute(VALUE, list(VALUE = value))
+#     value_initial <- value
 #     value_expr <- quote(obj$value <<- value)
     value_expr <- NULL
     func <- NULL
@@ -153,7 +201,7 @@ setReactiveS3 <- function(
 #       references <- "abcd"
     }
 
-    value_initial <- tryCatch(value(), error = function(cond) NULL)
+#     value_initial <- tryCatch(value(), error = function(cond) NULL)
     value_expr <- quote(obj$value <<- value())
     func <- value
   }
@@ -161,15 +209,20 @@ setReactiveS3 <- function(
   ## Instance of class 'ReactiveObject.S3' //
   obj <- reactr::ReactiveObject.S3(
     id = id,
-    value = value,
+#     value = value_initial,
+    value = if (!is_reactive) value,
     where = where,
     .references = references,
     has_cached = FALSE,
     func = func,
     exists_visible = TRUE
   )
-  reg_res <- obj$register()
-  if (any(references == obj$uid) && !reg_res ) {
+#   reg_res <- obj$register()
+  reg_res <- obj$register(overwrite = TRUE)
+
+  ## No self-references //
+#   if (any(references == obj$uid) && !reg_res) {
+  if (any(references == obj$uid)) {    
     conditionr::signalCondition(
       condition = "NoSelfReferenceAllowed",
       msg = c(
@@ -182,12 +235,24 @@ setReactiveS3 <- function(
       type = "error"
     )
   }
-# obj$uid
-# ls(getRegistry())
-# getObjectUid(id = id, where = eval(where))
-# ref_uids <- ls(obj$references)
-# ls(obj$references[[ref_uids[1]]])
-# obj$hasReferences()
+
+  ## Push //
+# push <- FALSE
+  if (push && length(references)) {
+    sapply(references, function(ref_uid) {
+# print(ref_uid)
+# print(obj$references_pull[[ref_uid]])
+# print(ls(obj$references_pull[[ref_uid]]))
+      if (!exists(obj$uid, envir = obj$references_pull[[ref_uid]]$references_push)) {
+      ## Ensure a push reference is created //
+        assign(obj$uid, obj, obj$references_pull[[ref_uid]]$references_push)
+        obj$references_pull[[ref_uid]]$has_push_refs <- TRUE
+        TRUE
+      } else {
+        FALSE
+      }
+    })        
+  }
 
   ## Check prerequisites //
   checkReactivityPrerequisites(input = obj, strict = strict)
@@ -215,6 +280,11 @@ setReactiveS3 <- function(
               do_update <- sapply(references, function(ref_uid) {
                 do_update <- FALSE
                 
+                ## Ensure integrity //
+                if (integrity) {
+                  obj$ensureIntegrity(ref_uid = ref_uid)
+                }
+                
                 ## Handle invalidation of referenced objects //
                 ## Ensures that "in-object" reference (as compared to the 
                 ## "in-registry" reference) is updated once a reference has 
@@ -223,21 +293,21 @@ setReactiveS3 <- function(
 # print(obj$references)
 # print(ls(obj$references))
 # print(ls(obj$references[[ref_uid]]))
-                if (  is.null(obj$references[[ref_uid]]) ||
-                      obj$references[[ref_uid]]$is_invalid
-                ) {
-                  obj$references[[ref_uid]] <- obj$registry[[ref_uid]]
+                if (  is.null(obj$references_pull[[ref_uid]]) ||
+                      obj$references_pull[[ref_uid]]$is_invalid
+                ) {                 
+                  obj$references_pull[[ref_uid]] <- obj$registry[[ref_uid]]
                 }
                 ## TODO: fix #14 (strictness for invalidation)
                           
                 ## Get last-known reference checksum //
                 ref_chk_own <- obj$checksums_ref[[ref_uid]]
-                if (  !is.null(obj$references[[ref_uid]]$checksum) 
+                if (  !is.null(obj$references_pull[[ref_uid]]$checksum) 
                       ## --> due to invalidation
-#                       !is.null(ref_chk <- obj$references[[ref_uid]]$checksum)
+#                       !is.null(ref_chk <- obj$references_pull[[ref_uid]]$checksum)
                       ## --> can't be anymore
                 ) {
-                  ref_chk <- obj$references[[ref_uid]]$checksum
+                  ref_chk <- obj$references_pull[[ref_uid]]$checksum                 
                   if (is.null(ref_chk_own) || ref_chk != ref_chk_own) {
                   ## Hash reference missing or reference has changed 
                   ## --> update                    
@@ -356,16 +426,12 @@ setReactiveS3 <- function(
                     NULL
                   }
                 )
-                ## Update own value checksum //
-#                 assign(obj$uid, digest::digest(obj$value), 
-#                   envir = obj$registry[[obj$uid]])  
+                ## Update fields //
                 obj$computeChecksum()
                 obj$has_cached <- TRUE
                 obj$condition <- NULL
-                
               }
             } 
-
           } else {
           
           ##--------------------------------------------------------------------
@@ -373,7 +439,7 @@ setReactiveS3 <- function(
           ##--------------------------------------------------------------------            
             
             ## Set //
-            if (obj$hasReferences()) {
+            if (obj$hasPullReferences()) {
               if (strict_set == 0) {
                 obj$value <<- v    
               } else if (strict_set == 1) {
@@ -390,7 +456,7 @@ setReactiveS3 <- function(
                     ID = obj$id,
                     UID = obj$uid,
                     Location = capture.output(where),
-                    References = paste(ls(obj$references, all.names = TRUE), collapse = ", ")
+                    References = paste(ls(obj$references_pull, all.names = TRUE), collapse = ", ")
                   ),
                   ns = "reactr",
                   type = "warning"
@@ -407,7 +473,7 @@ setReactiveS3 <- function(
                     ID = obj$id,
                     UID = obj$uid,
                     Location = capture.output(where),
-                    References = paste(ls(obj$references, all.names = TRUE), collapse = ", ")
+                    References = paste(ls(obj$references_pull, all.names = TRUE), collapse = ", ")
                   ),
                   ns = "reactr",
                   type = "error"
@@ -420,6 +486,18 @@ setReactiveS3 <- function(
             ## Update checksum //
 #             assign(obj$uid, digest::digest(v), envir = obj$registry[[obj$uid]])   
             obj$computeChecksum()
+
+            ## Push //
+            if (	obj$hasPushReferences() && 
+                  !obj$has_pushed && 
+                  !obj$is_running_push
+            ) {
+              message("Pushing ...")
+              obj$pushToReferences()
+              ## Reset value of push control field //
+              obj$has_pushed <- FALSE
+            }
+
           }
 
           ## Condition handling //
@@ -449,9 +527,10 @@ setReactiveS3 <- function(
   }
   eval(expr)
 
-  ## Return value //
+  ## Initialize and return value //
   if (is_reactive) {
     out <- get(id, envir = where, inherits = FALSE)
+#     out <- obj$value
   } else {
     out <- value
   }

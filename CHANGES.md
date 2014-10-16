@@ -1,3 +1,11 @@
+# Version 0.1.8
+ - modified README.md
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.7'
+ - build commit v0.1.7
+
+----------
+
 # Version 0.1.7
  - minor README corrections
  - Merge branch 'release-0.1.6'

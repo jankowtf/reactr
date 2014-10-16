@@ -40,7 +40,7 @@ that has been cached. \strong{So there is no actual reactive binding anymore}.
 \dontrun{
 
 ## Start with a fresh hash registry //
-resetHashRegistry()
+resetRegistry()
 
 setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(id = "x_2", 
@@ -68,7 +68,7 @@ x_2
 
 ## Implications with respect to hash registry //
 ## Entry corresponding to 'x_1' set in 'environment()' has been removed
-exists(getReactiveUid(id = "x_1", where = where, getHashRegistry()))
+exists(getObjectUid(id = "x_1", where = where, getRegistry()))
 ## [1] FALSE
 
 }

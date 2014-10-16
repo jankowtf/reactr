@@ -1,11 +1,14 @@
-context("setShinyReactive-A")
-test_that("setShinyReactive: in parent environment", {
+##------------------------------------------------------------------------------
+context("setShinyReactive/in parent environment")
+##------------------------------------------------------------------------------
 
-  skip("manual-only due to issues with environments")
+test_that("setShinyReactive/two", {
+
   require("shiny")
   
   ## In .GlobalEnv //
   ## Make sure 'x_1' and 'x_2' are removed:
+#   rm(list = ls(environment()))
   suppressWarnings(rm(x_1))
   suppressWarnings(rm(x_2))
   
@@ -15,9 +18,10 @@ test_that("setShinyReactive: in parent environment", {
   value_2 <- Sys.time()
   expect_equal(x_1 <- value_2, value_2)
   expect_equal(x_1, value_2)
-
-  expect_equal(setShinyReactive(id = "x_2", value = reactive(x_1 + 60*60*24)),
-                          value_2 + 60*60*24)
+#   where=environment()
+  expect_equal(
+    setShinyReactive(id = "x_2", value = reactive(x_1 + 60*60*24)),
+    value_2 + 60*60*24)
   expect_equal(x_2, value_2 + 60*60*24)
   ## --> 'x_1' + one day
   x_1 <- Sys.time()
@@ -28,7 +32,9 @@ test_that("setShinyReactive: in parent environment", {
   suppressWarnings(rm(x_1))
   suppressWarnings(rm(x_2))
   
-  ##----------
+})
+
+test_that("setShinyReactive/three", {
   
   x_1 <- setShinyReactive("x_1", 10)
   x_2 <- setShinyReactive("x_2", 20)
@@ -46,7 +52,12 @@ test_that("setShinyReactive: in parent environment", {
   
 })
 
-test_that("setShinyReactive: in custom environment", {
+##------------------------------------------------------------------------------
+context("setShinyReactive/in custom environment")
+##------------------------------------------------------------------------------
+
+
+test_that("setShinyReactive/two", {
   
   ## In custom environment //
   where <- new.env()

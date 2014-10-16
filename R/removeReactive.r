@@ -3,7 +3,7 @@
 #'
 #' @description 
 #' Removes a reactive object from its environment. This implies that the 
-#' hash registry (see \code{\link[reactr]{getHashRegistry}}) is also updated 
+#' registry (see \code{\link[reactr]{getRegistry}}) is also updated 
 #' accordingly. 
 #' 
 #' @details
@@ -30,7 +30,7 @@
 #'    Object containing path-like ID information.
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/removeReactive.r
 #' @seealso \code{
 #'   	\link[reactr]{removeReactive-character-environment-method}
@@ -54,7 +54,7 @@ setGeneric(
 )
 
 #' @title
-#' Remove Reactive Object (char-missing-method)
+#' Remove Reactive Object (character-missing)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{removeReactive}}
@@ -75,6 +75,7 @@ setGeneric(
 #' @template references
 #' @aliases removeReactive-method_main 
 #' @export
+#' @aliases removeReactive-character-missing-method
 setMethod(
   f = "removeReactive", 
   signature = signature(
@@ -84,8 +85,6 @@ setMethod(
   definition = function(
     id,
     where,
-    .hash_id,
-    .tracelevel,
     ...
   ) {
   
@@ -99,7 +98,7 @@ setMethod(
 )
 
 #' @title
-#' Remove Reactive Object (char-env-method)
+#' Remove Reactive Object (character-environment)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{removeReactive}}
@@ -117,6 +116,7 @@ setMethod(
 #' @template references
 #' @aliases removeReactive-method_main 
 #' @export
+#' @aliases removeReactive-character-environment-method
 setMethod(
   f = "removeReactive", 
   signature = signature(
@@ -133,7 +133,7 @@ setMethod(
   if (!length(id)) {
     stop(paste0("Provide an ID"))
   }
-  uid <- getReactiveUid(id = id, where = where)    
+  uid <- getObjectUid(id = id, where = where)    
   
   if (exists(id, envir = where, inherits = FALSE)) {
     has_binding <- try(bindingIsActive(id, where))

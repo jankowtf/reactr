@@ -13,7 +13,5 @@
 #   setOldClass("BindingContractObserving.S3")
 #   setOldClass("BindingContractMutual.S3")
   
-  envir <- new.env()
-  envir$.hash <- new.env()
-  options("reactr" = envir)
+  initializeOptionContainer(id = "reactr")
 }

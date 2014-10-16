@@ -1,5 +1,5 @@
 #' @title
-#' Set Reactive Object with Shiny Functionality
+#' Set Reactive Object with Shiny Functionality (S3)
 #'
 #' @description 
 #' Creates an reactive object as the ones created by the 
@@ -70,7 +70,7 @@
 #'    Value or reactive binding.
 #' @param where \code{\link{environment}}.
 #'    Environment in which to create the object.
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/setShinyReactive.r
 #' @seealso \code{
 #'   	\link[reactr]{setReactiveS3}
@@ -98,9 +98,12 @@ setShinyReactive <- function(
     ## Register as an object that other objects can have reactive
     ## bindings to //
     shiny::makeReactiveBinding(symbol = id, env = where)
-    value_expr <- substitute(VALUE, list(VALUE = value))
+#     value_expr <- substitute(VALUE, list(VALUE = value))
+    value_expr <- quote(value)
+#     this <- value
   } else {
     is_reactive <- TRUE
+#     this <- NULL
     ## Putting together the "line of lines" //
     
     ## Trying the most obvious way //
@@ -108,9 +111,14 @@ setShinyReactive <- function(
 #     value_expr <- substitute(value <<- VALUE(), list(VALUE = value))
     ## --> works initially but seems to be static
     ## --> seems like the call to 'local()' needs to contain the *actual*
-    ## "literate" expression (i.e. 'reactive(...)'). Evaluation the line above 
-    ## results in the reactive object "behind" 'reactive(()' to be assigned
-    ## and that seems to make it static.
+    ## "literate" expression (i.e. 'reactive(...)') in order to grab the entire
+    ## invisible object created by `reactive()`. Evaluating the line above 
+    ## results in only the visible part being assigned and that seems to make 
+    ## it static.
+    ## UDATE: with the current structure, it seems like to assignment of 
+    ## 'id' in 'where' is taking place at all anymore
+#     value_expr <- quote(this <<- value())
+    ## --> works but is static
   
     ## Approach 2: via 'capture.output()' --------------------------------------
     ## Workarounds based character strings and re-parsing:
@@ -120,34 +128,59 @@ setShinyReactive <- function(
 #     reactive_expr <- gsub(") $", ", env = where)", capture.output(value))
 
     ## Approach 3: via attributes ----------------------------------------------
-    ## --> about 40 times faster than approach 2!
+    ## --> about 40 times faster than approach 2 (not considering function 
+    ## environment substitution part)!
+#     reactive_expr <- attributes(value)$observable$.label
+#     reactive_expr <- gsub(")$", ", env = where)", reactive_expr)
+#     value_expr <- substitute(value <<- eval(VALUE)(), 
+#       list(VALUE = parse(text = reactive_expr)))
+
+    ## Approach 4 --------------------------------------------------------------
+    
     reactive_expr <- attributes(value)$observable$.label
-    value_expr <- substitute(value <<- eval(VALUE)(), 
-      list(VALUE = parse(text = reactive_expr)))
+#     reactive_expr <- gsub(")$", ", env = where)", reactive_expr)
+    value_expr <- substitute(value <<- VALUE(), 
+      list(VALUE = parse(text = reactive_expr)[[1]]))
+#     value_expr <- substitute(this <<- VALUE(), 
+#       list(VALUE = parse(text = reactive_expr)[[1]]))
+    ## Pass on correct function environment of initial call to 'reactive()' //
+    fun_env <- environment(attributes(value)$observable$.func)
+    value_expr[[3]][[1]]$env <- fun_env
+
   }
 
   ## Call to 'makeActiveBinding' //
   expr <- substitute(
     makeActiveBinding(
       id,
+      env = WHERE,
       local({
-        value <- VALUE
+#         func <- VALUE
+#         value <- VALUE
+#         VALUE
+        value
+#         this
         function(v) {
           if (!missing(v)) {
               value <<- v
+#               this <<- v
           } else {
               VALUE_EXPR
           }
           value
+#           this
         }
-      }),
-      env = where
+      })
     ),
     list(
-      VALUE = value,
-      VALUE_EXPR = value_expr
+#       VALUE = if (!is_reactive) quote(value <- value) else quote(value),
+#       VALUE = if (!is_reactive) quote(value) else x_2(),
+      VALUE_EXPR = value_expr,
+      WHERE = where
      )
   )
+# print(expr)
+# print(ls(where))
   eval(expr)
 
   ## Return value //
@@ -156,7 +189,7 @@ setShinyReactive <- function(
   } else {
     out <- value
   }
-  
+ 
   return(out)
   
 }

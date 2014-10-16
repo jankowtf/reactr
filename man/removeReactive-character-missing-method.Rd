@@ -29,7 +29,7 @@ See generic: \code{\link[reactr]{removeReactive}}
 \dontrun{
 
 ## Start with fresh hash registry //
-resetHashRegistry()
+resetRegistry()
 
 ## Non-strict //
 where <- new.env()  

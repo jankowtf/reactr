@@ -26,10 +26,11 @@
 #'    Object containing path-like ID information.
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/unsetReactive.r
 #' @seealso \code{
-#'   	\link[reactr]{unsetReactive-character-environment-method}
+#'   	\link[reactr]{unsetReactive-character-environment-method},
+#'    \link[reactr]{unsetReactiveByUid}
 #' }
 #' @template author
 #' @template references
@@ -50,7 +51,7 @@ setGeneric(
 )
 
 #' @title
-#' Unset Reactive Object (char-miss-method)
+#' Unset Reactive Object (character-missing)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{unsetReactive}}
@@ -65,12 +66,14 @@ setGeneric(
 #'    \code{\link[reactr]{unsetReactive-character-environment-method}}
 #' @example inst/examples/unsetReactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{unsetReactive}
+#'    Generic: \link[reactr]{unsetReactive},
+#'    \link[reactr]{unsetReactiveByUid}
 #' }
 #' @template author
 #' @template references
 #' @aliases unsetReactive-method_main 
 #' @export
+#' @aliases unsetReactive-character-missing-method
 setMethod(
   f = "unsetReactive", 
   signature = signature(
@@ -93,7 +96,7 @@ setMethod(
 )
 
 #' @title
-#' Unset Reactive Object (char-env-method)
+#' Unset Reactive Object (character-environment)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{unsetReactive}}
@@ -105,12 +108,14 @@ setMethod(
 #'    was not a reactive one or failure to unset.
 #' @example inst/examples/unsetReactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{unsetReactive}
+#'    Generic: \link[reactr]{unsetReactive},
+#'    \link[reactr]{unsetReactiveByUid}
 #' }
 #' @template author
 #' @template references
 #' @aliases unsetReactive-method_main 
 #' @export
+#' @aliases unsetReactive-character-environment-method
 setMethod(
   f = "unsetReactive", 
   signature = signature(
@@ -126,24 +131,8 @@ setMethod(
   out <- FALSE
   if (!length(id)) {
     stop(paste0("Provide an ID"))
-  }
-  uid <- getReactiveUid(id = id, where = where)    
-    
-  if (exists(id, envir = where, inherits = FALSE)) {
-    has_binding <- try(bindingIsActive(id, where))
-    if (inherits(has_binding, "try-error")) {
-      has_binding <- FALSE
-    } 
-    if (has_binding) {
-      ## Get last cache value //
-      tmp <- get(id, envir = where, inherits = FALSE)
-      ## Remove reactive //
-      rm(list = id, envir = where, inherits = FALSE)
-      ## Reset as standard //
-      assign(id, tmp, where)
-      ## Remove hash registry entry //
-      out <- removeFromHashRegistryByUid(uid = uid)
-    }
+  } else {
+    out <- unsetReactiveByUid(uid = getObjectUid(id = id, where = where)    )
   }
     
   return(out)

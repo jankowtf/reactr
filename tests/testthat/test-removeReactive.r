@@ -1,28 +1,34 @@
-context("removeReactive-1")
-test_that("removeReactive: non-strict", {
+context("removeReactive/basics")
+test_that("removeReactive/strict_get=0", {
   
-  where = new.env()  
-  
-  setReactiveS3(id = "x_1", value = 10, where = where)
-  setReactiveS3(id = "x_2", value = function(refs = list(x_1 = where)) x_1, 
-                where = where)
+  where <- environment()
+  setReactiveS3(id = "x_1", value = 10)
+  setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 
-  expect_true(removeReactive(id = "x_1", where = where))
+  expect_true(removeReactive(id = "x_1"))
   expect_false(exists("x_1", envir = where, inherits = FALSE))
-  expect_equal(where$x_2, 10)
-  setReactiveS3(id = "x_1", value = 100, where = where)
-#   expect_equal(where$x_2, NULL)  
-#   expect_equal(where$x_2, 100)
+  expect_equal(x_2, 10)
+  setReactiveS3(id = "x_1", value = 100)
+  expect_equal(x_2, 100)
+  
 })
 
-test_that("removeReactive: non-strict", {
+test_that("removeReactive/strict_get=1", {
   
-  where = new.env()  
+  setReactiveS3(id = "x_1", value = 10)
+  setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
+                strict_get = 1)
+  expect_true(removeReactive(id = "x_1"))
+  expect_warning(x_2)
+
+})
+
+test_that("removeReactive/strict_get=2", {
   
-  setReactiveS3(id = "x_1", value = 10, where = where)
-  setReactiveS3(id = "x_2", value = function(refs = list(x_1 = where)) x_1, 
-                where = where, strict = TRUE)
-  expect_true(removeReactive(id = "x_1", where = where))
-#   expect_error(where$x_2)
+  setReactiveS3(id = "x_1", value = 10)
+  setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
+                strict_get = 2)
+  expect_true(removeReactive(id = "x_1"))
+  expect_error(x_2)
 
 })

@@ -19,7 +19,7 @@
 #'    Name of the auxiliary environment for caching hash values. 
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
 #'    either \code{where} or \code{where_watch}.
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/getReactive.r
 #' @seealso \code{
 #'   	\link[reactr]{getReactive-character-environment-method}

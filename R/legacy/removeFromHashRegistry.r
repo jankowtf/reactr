@@ -13,15 +13,15 @@
 #'    Name of the auxiliary environment for caching hash values. 
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
 #'    either \code{where} or \code{where_watch}.
-#' @template threedot
-#' @example inst/examples/removeFromHashRegistry.r
+#' @template threedots
+#' @example inst/examples/removeFromRegistry.r
 #' @seealso \code{
-#'   	\link[reactr]{removeFromHashRegistry-character-environment-method}
+#'   	\link[reactr]{removeFromRegistry-character-environment-method}
 #' }
 #' @template author
 #' @template references
 setGeneric(
-  name = "removeFromHashRegistry",
+  name = "removeFromRegistry",
   signature = c(
     "id",
     "where"
@@ -33,7 +33,7 @@ setGeneric(
     .hash_id = "._HASH",
     ...
   ) {
-    standardGeneric("removeFromHashRegistry")       
+    standardGeneric("removeFromRegistry")       
   }
 )
 
@@ -41,22 +41,22 @@ setGeneric(
 #' Remove From Hash Registry
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeFromHashRegistry}}
+#' See generic: \code{\link[reactr]{removeFromRegistry}}
 #'      
-#' @inheritParams removeFromHashRegistry
+#' @inheritParams removeFromRegistry
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return See method
-#'    \code{\link[reactr]{removeFromHashRegistry-character-character-environment-method}}
-#' @example inst/examples/removeFromHashRegistry.r
+#'    \code{\link[reactr]{removeFromRegistry-character-character-environment-method}}
+#' @example inst/examples/removeFromRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{removeFromHashRegistry}
+#'    \link[reactr]{removeFromRegistry}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "removeFromHashRegistry", 
+  f = "removeFromRegistry", 
   signature = signature(
     id = "character",
     where = "environment"
@@ -69,7 +69,7 @@ setMethod(
     ...
   ) {
     
-  return(removeFromHashRegistry(
+  return(removeFromRegistry(
     id = id,
     where = where,
     .hash_id = .hash_id,
@@ -83,22 +83,22 @@ setMethod(
 #' Remove From Hash Registry
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeFromHashRegistry}}
+#' See generic: \code{\link[reactr]{removeFromRegistry}}
 #'   	 
-#' @inheritParams removeFromHashRegistry
+#' @inheritParams removeFromRegistry
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return \code{\link{logical}}. \code{TRUE}: successfully removed; 
 #'    \code{FALSE}: not removed because there was nothing to remove.
-#' @example inst/examples/removeFromHashRegistry.r
+#' @example inst/examples/removeFromRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{removeFromHashRegistry}
+#'    \link[reactr]{removeFromRegistry}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "removeFromHashRegistry", 
+  f = "removeFromRegistry", 
   signature = signature(
     id = "character",
     where = "environment"

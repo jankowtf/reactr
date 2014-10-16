@@ -49,11 +49,12 @@ reactive relationship.
 
      Value that is actually determined by reactive binding is
      overwritten and cached until on of the referenced objects is updated
-     (this also triggers an updated of the object and thus reactivity is
-     then completely restored)
+     again (which then also triggers an updated of the object and thus a
+     complete restoring of the reactive relationship)
      }
-     \item{\code{1}: } {Warning is issued and object value is not changed}
-     \item{\code{2}: } {Error is issued and object value is not changed}
+     \item{\code{1}: } {ignore without warning}
+     \item{\code{2}: } {ignore with Warning}
+     \item{\code{3}: } {stop with error}
    }}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
@@ -142,7 +143,7 @@ where$x_2
 
 ## Clean up //
 suppressWarnings(rm(where))
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------  
 ## In custom parent environment (parent.frame()) //
@@ -184,7 +185,7 @@ x_2
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ################################################################################
 ## Reactive scenarios
@@ -238,7 +239,7 @@ x_3
 rm(x_1)
 rm(x_2)
 rm(x_3)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A, C observes B and A 
@@ -281,7 +282,7 @@ x_3
 rm(x_1)
 rm(x_2)
 rm(x_3)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A and A observers B
@@ -323,7 +324,7 @@ x_1
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A and A observers B 
@@ -360,7 +361,7 @@ x_1
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A and A observers B 
@@ -401,7 +402,7 @@ x_1
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: complex data structure (kind of like Reference Classes)
@@ -446,7 +447,7 @@ x_2$field_2
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## On a sidenote: cachiong mechanism
@@ -465,9 +466,9 @@ resetHashRegistry()
 ##
 ## The decision is based on a comparison of hash values as computed by 
 ## 'digest::digest()'. These are stored in option environment
-##                       'getOption(".reactr")$.hash'
+##                       'getOption(".reactr")$.registry'
 ## which is accessible via the convenience function 
-##                          'getHashRegistry()'
+##                          'getRegistry()'
 ## Besides the actual hash values, each entry - corresponding to a reactive 
 ## object - also contains some additional information:
 ## - id:    object ID as specified in call to 'setReactiveS3()'
@@ -482,12 +483,12 @@ resetHashRegistry()
 ##             used to determine if an update is necessary or not.
 
 ## Hash registry //
-hash <- getHashRegistry()
+hash <- getRegistry()
 ls(hash)
 
 setReactiveS3(id = "x_1", value = 10)
 ls(hash)
-uid_x_1 <- getReactiveUid(id = "x_1", where = environment())
+uid_x_1 <- getObjectUid(id = "x_1", where = environment())
 hash_x_1 <- hash[[uid_x_1]]
 ls(hash_x_1)
 hash_x_1$id
@@ -505,7 +506,7 @@ setReactiveS3(
 )
 ls(hash)
 
-uid_x_2 <- getReactiveUid(id = "x_2", where = environment())
+uid_x_2 <- getObjectUid(id = "x_2", where = environment())
 hash_x_2 <- hash[[uid_x_2]]
 ls(hash_x_2)
 hash_x_2$id
@@ -519,7 +520,7 @@ hash_x_2[[uid_x_1]]
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Profiling //

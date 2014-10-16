@@ -96,7 +96,7 @@ rm(x_1)
 rm(x_2)
 rm(x_3)
 rm(x_4)
-resetHashRegistry()
+resetRegistry()
 
 ```
 
@@ -132,7 +132,7 @@ rm(x_1)
 rm(x_2)
 rm(x_3)
 rm(x_4)
-resetHashRegistry()
+resetRegistry()
 ```
 
 ## Option 3: via explicit code 
@@ -185,5 +185,5 @@ rm(x_1)
 rm(x_2)
 rm(x_3)
 rm(x_4)
-resetHashRegistry()
+resetRegistry()
 ```

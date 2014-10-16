@@ -1,6 +1,6 @@
 \dontrun{
 
-## Ensure hash for variable only //
+## Ensure for variable only //
 .hash_id <- "._HASH"
 where <- new.env()
 

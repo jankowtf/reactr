@@ -78,7 +78,7 @@ where$x_2
 
 ## Clean up //
 suppressWarnings(rm(where))
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------  
 ## In custom parent environment (parent.frame()) //
@@ -120,7 +120,7 @@ x_2
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ################################################################################
 ## Reactive scenarios
@@ -174,7 +174,7 @@ x_3
 rm(x_1)
 rm(x_2)
 rm(x_3)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A, C observes B and A 
@@ -217,7 +217,7 @@ x_3
 rm(x_1)
 rm(x_2)
 rm(x_3)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A and A observers B
@@ -259,7 +259,7 @@ x_1
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A and A observers B 
@@ -296,7 +296,7 @@ x_1
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: B observes A and A observers B 
@@ -337,7 +337,7 @@ x_1
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Scenario: complex data structure (kind of like Reference Classes)
@@ -382,14 +382,14 @@ x_2$field_2
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## On a sidenote: cachiong mechanism
 ##------------------------------------------------------------------------------
 
 ## The caching mechanism implemented by this function relies on keeping
-## a hash registry that stores certain information that are either required
+## a registry that stores certain information that are either required
 ## or useful in deciding whether an update should be triggered or not.
 ##
 ## The rule of thumb is as follows:
@@ -399,12 +399,12 @@ resetHashRegistry()
 ##    --> execute the reactive binding function and thus also update 
 ##        the cached value
 ##
-## The decision is based on a comparison of hash values as computed by 
+## The decision is based on a comparison of checksum values as computed by 
 ## 'digest::digest()'. These are stored in option environment
-##                       'getOption(".reactr")$.hash'
+##                       'getOption(".reactr")$.registry'
 ## which is accessible via the convenience function 
-##                          'getHashRegistry()'
-## Besides the actual hash values, each entry - corresponding to a reactive 
+##                          'getRegistry()'
+## Besides the actual checksum values, each entry - corresponding to a reactive 
 ## object - also contains some additional information:
 ## - id:    object ID as specified in call to 'setReactiveS3()'
 ## - uid:   object UID computed as follows:
@@ -412,25 +412,25 @@ resetHashRegistry()
 ##          where '{where}' stands for the location provided via argument 
 ##          'where' in the call to 'setReactiveS3()'
 ## - {uid}: subenvironment corresponding to the object's UID. This contains
-##          the object's own hash 
+##          the object's own checksum 
 ## - {ref-uid} subenvironments for each referenced object should there exist
-##             any. These in turn contain the referenced object's hash that is
+##             any. These in turn contain the referenced object's checksum that is
 ##             used to determine if an update is necessary or not.
 
 ## Hash registry //
-hash <- getHashRegistry()
-ls(hash)
+registry <- getRegistry()
+ls(registry)
 
 setReactiveS3(id = "x_1", value = 10)
-ls(hash)
-uid_x_1 <- getReactiveUid(id = "x_1", where = environment())
-hash_x_1 <- hash[[uid_x_1]]
-ls(hash_x_1)
-hash_x_1$id
-hash_x_1$uid
-hash_x_1$where
-hash_x_1[[uid_x_1]]
-## --> contains own hash value
+ls(registry)
+uid_x_1 <- getObjectUid(id = "x_1", where = environment())
+registry_x_1 <- registry[[uid_x_1]]
+ls(registry_x_1)
+registry_x_1$id
+registry_x_1$uid
+registry_x_1$where
+registry_x_1[[uid_x_1]]
+## --> contains own registry value
 
 setReactiveS3(
   id = "x_2", 
@@ -439,23 +439,23 @@ setReactiveS3(
     x_1 * 2
   }
 )
-ls(hash)
+ls(registry)
 
-uid_x_2 <- getReactiveUid(id = "x_2", where = environment())
-hash_x_2 <- hash[[uid_x_2]]
-ls(hash_x_2)
-hash_x_2$id
-hash_x_2$uid
-hash_x_2$where
-hash_x_2[[uid_x_2]]
-## --> contains own hash value
-hash_x_2[[uid_x_1]]
-## --> contains hash value of 'x_1' in '.GlobalEnv'
+uid_x_2 <- getObjectUid(id = "x_2", where = environment())
+registry_x_2 <- registry[[uid_x_2]]
+ls(registry_x_2)
+registry_x_2$id
+registry_x_2$uid
+registry_x_2$where
+registry_x_2[[uid_x_2]]
+## --> contains own registry value
+registry_x_2[[uid_x_1]]
+## --> contains registry value of 'x_1' in '.GlobalEnv'
 
 ## Clean up //
 rm(x_1)
 rm(x_2)
-resetHashRegistry()
+resetRegistry()
 
 ##------------------------------------------------------------------------------
 ## Profiling //

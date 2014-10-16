@@ -1,5 +1,5 @@
 #' @title
-#' Remove Reactive Object
+#' Remove Reactive Object (generic)
 #'
 #' @description 
 #' Removes a reactive object from its environment. 
@@ -23,7 +23,7 @@
 #'     
 #' @param uid \strong{Signature argument}.
 #'    Object containing UID information.
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/removeReactiveByUid.r
 #' @seealso \code{
 #'   	\link[reactr]{removeReactiveByUid-character-method}
@@ -45,7 +45,7 @@ setGeneric(
 )
 
 #' @title
-#' Unset Reactive Object
+#' Remove Reactive Object (character)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{removeReactiveByUid}}
@@ -62,6 +62,7 @@ setGeneric(
 #' @template references
 #' @aliases removeReactiveByUid-method_main 
 #' @export
+#' @aliases removeReactiveByUid-character-method
 setMethod(
   f = "removeReactiveByUid", 
   signature = signature(
@@ -72,18 +73,18 @@ setMethod(
     ...
   ) {
     
-  ## Get actual location from hash registry //
-  subenv <- getHashRegistry()[[uid]]
+  ## Get actual location from registry //
+  subenv <- getRegistry()[[uid]]
   if (is.null(sub)) {
-    stop(paste0("No entry in registry hash for UID: ", uid))
+    stop(paste0("No entry in registry for UID: ", uid))
   }
   id <- subenv$id
   if (is.null(id)) {
-    stop(paste0("No ID stored in registry hash for UID: ", uid))
+    stop(paste0("No ID stored in registry for UID: ", uid))
   }
   where <- subenv$where
   if (is.null(where)) {
-    stop(paste0("No location stored in registry hash for UID: ", uid))
+    stop(paste0("No location stored in registry for UID: ", uid))
   }  
   
   out <- FALSE

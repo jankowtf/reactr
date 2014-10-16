@@ -1,7 +1,7 @@
 \dontrun{
 
-## Start with fresh hash registry //
-resetHashRegistry()
+## Start with fresh registry //
+resetRegistry()
 
 ## Non-strict //
 where <- new.env()  

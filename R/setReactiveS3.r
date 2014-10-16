@@ -2,7 +2,7 @@
 ##      Inconsistency for initial values
 
 #' @title
-#' Set Reactive Object (shiny)
+#' Set Reactive Object (S3)
 #'
 #' @description 
 #' Creates an reactive object.
@@ -44,13 +44,14 @@
 #'      
 #'      Value that is actually determined by reactive binding is 
 #'      overwritten and cached until on of the referenced objects is updated
-#'      (this also triggers an updated of the object and thus reactivity is 
-#'      then completely restored)
+#'      again (which then also triggers an updated of the object and thus a
+#'      complete restoring of the reactive relationship)
 #'      }
-#'      \item{\code{1}: } {Warning is issued and object value is not changed}
-#'      \item{\code{2}: } {Error is issued and object value is not changed}
+#'      \item{\code{1}: } {ignore without warning}
+#'      \item{\code{2}: } {ignore with Warning}
+#'      \item{\code{3}: } {stop with error}
 #'    }
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/setReactiveS3.r
 #' @seealso \code{
 #'   	\link[reactr]{setReactiveS3}
@@ -77,7 +78,7 @@ setReactiveS3 <- function(
   strict_get <- as.numeric(match.arg(as.character(strict_get), 
                                  as.character(c(0, 1, 2))))
   strict_set <- as.numeric(match.arg(as.character(strict_set), 
-                                 as.character(c(0, 1, 2))))
+                                 as.character(c(0, 1, 2, 3))))
 
   ## Check if regular value assignment or reactive function //
   if (!is.function(value)) {    
@@ -87,6 +88,7 @@ setReactiveS3 <- function(
     value_initial <- substitute(VALUE, list(VALUE = value))
 #     value_expr <- quote(obj$value <<- value)
     value_expr <- NULL
+    func <- NULL
   } else {
     is_reactive <- TRUE
     
@@ -94,18 +96,19 @@ setReactiveS3 <- function(
     ## Recognition of references //
     ##--------------------------------------------------------------------------
     ## In order of preferred specification in 'value'
+    
 # where =environment()
+
     ## 1) Recognize via markup in comments //
     yaml <- yamlr::processYaml(
       from = value, 
       ctx = yamlr::YamlContext.ObjectReference.S3(),
       where = where
     )
-# where=environment()      
     if (length(yaml$original)) { 
       refs <- yaml
       references <- unname(sapply(names(yaml$parsed), function(ii) {
-        getReactiveUid(id = ii, where = eval(yaml$parsed[[ii]]$where))
+        getObjectUid(id = ii, where = eval(yaml$parsed[[ii]]$where))
       }))
       value <- yaml$src
       if (.debug) {
@@ -115,7 +118,7 @@ setReactiveS3 <- function(
     } else {
       refs <- NULL
     }
-# where=parent.frame()
+
     ## 2) Recognize via argument 'refs' //
     if (is.null(refs)) {
       refs <- .getReferencesFromArguments(
@@ -130,7 +133,7 @@ setReactiveS3 <- function(
         }
         ii="x_1"
         references <- unname(sapply(names(refs), function(ii) {
-          getReactiveUid(id = ii, where = eval(refs[[ii]]$where))
+          getObjectUid(id = ii, where = eval(refs[[ii]]$where))
         }))
       } 
     }
@@ -139,7 +142,7 @@ setReactiveS3 <- function(
     if (is.null(refs)) {
 #       references <- as.character(unlist(.getReferences(expr = body(value))))
 #       refs <- .getReferences(expr = body(value), where = where)
-      res <- .getReferencesFromBody2(expr = value, where = where)
+      res <- .getReferencesFromBody2(fun = value, where = where)
       refs <- res$refs
       value <- res$fun
       if (.debug) {
@@ -147,22 +150,41 @@ setReactiveS3 <- function(
         print(value)
       }
       references <- .getActualReferencesFromBody(refs = refs, where = where)
+#       references <- "abcd"
     }
 
     value_initial <- tryCatch(value(), error = function(cond) NULL)
     value_expr <- quote(obj$value <<- value())
+    func <- value
   }
 
-  ## Instance of class 'Reactive.S3' //
-  obj <- reactr::Reactive.S3()
-  
-  obj <- prepareReactiveInstance(
-    input = obj, 
+  ## Instance of class 'ReactiveObject.S3' //
+  obj <- reactr::ReactiveObject.S3(
     id = id,
-    value = value_initial,
+    value = value,
     where = where,
-    references = references
+    .references = references,
+    has_cached = FALSE,
+    func = func,
+    exists_visible = TRUE
   )
+  reg_res <- obj$register()
+  if (any(references == obj$uid) && !reg_res ) {
+    conditionr::signalCondition(
+      condition = "NoSelfReferenceAllowed",
+      msg = c(
+        Reason = "tried to set a self-reference",
+        ID = obj$id,
+        UID = obj$uid,
+        Location = capture.output(where)
+      ),
+      ns = "reactr",
+      type = "error"
+    )
+  }
+# obj$uid
+# ls(getRegistry())
+# getObjectUid(id = id, where = eval(where))
 # ref_uids <- ls(obj$references)
 # ls(obj$references[[ref_uids[1]]])
 # obj$hasReferences()
@@ -176,38 +198,61 @@ setReactiveS3 <- function(
       id,
       local({
         OBJ
-        assign(obj$uid, digest::digest(obj$value), envir = obj$hash[[obj$uid]])      
         function(v) {
           if (missing(v)) {
             
           ##--------------------------------------------------------------------
           ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
           ##--------------------------------------------------------------------            
-            
+# print(references)            
             ## Process references //
             if (length(references)) {
               ## Update decision //
-              ## Compare hash values of all references with the ones in 
+              ## Compare checksum values of all references with the ones in 
               ## own cache; 
               ## - if any has changed --> update
               ## - if not --> return cached value
               do_update <- sapply(references, function(ref_uid) {
                 do_update <- FALSE
-                ## Get last-known stored hash value for reference //
-                own_ref_hash <- obj$hash[[obj$uid]][[ref_uid]]
-                if (!is.null(ref_hash <- obj$hash[[ref_uid]][[ref_uid]])) {
-                  if (is.null(own_ref_hash) || ref_hash != own_ref_hash) {
+                
+                ## Handle invalidation of referenced objects //
+                ## Ensures that "in-object" reference (as compared to the 
+                ## "in-registry" reference) is updated once a reference has 
+                ## become invalid
+# print(ref_uid)
+# print(obj$references)
+# print(ls(obj$references))
+# print(ls(obj$references[[ref_uid]]))
+                if (  is.null(obj$references[[ref_uid]]) ||
+                      obj$references[[ref_uid]]$is_invalid
+                ) {
+                  obj$references[[ref_uid]] <- obj$registry[[ref_uid]]
+                }
+                ## TODO: fix #14 (strictness for invalidation)
+                          
+                ## Get last-known reference checksum //
+                ref_chk_own <- obj$checksums_ref[[ref_uid]]
+                if (  !is.null(obj$references[[ref_uid]]$checksum) 
+                      ## --> due to invalidation
+#                       !is.null(ref_chk <- obj$references[[ref_uid]]$checksum)
+                      ## --> can't be anymore
+                ) {
+                  ref_chk <- obj$references[[ref_uid]]$checksum
+                  if (is.null(ref_chk_own) || ref_chk != ref_chk_own) {
                   ## Hash reference missing or reference has changed 
                   ## --> update                    
-                    message(paste0("Reference has changed: ", ref_uid))
-                    assign(ref_uid, ref_hash, obj$hash[[obj$uid]])
+                    message(paste0("Modified reference: ", ref_uid))
+                    obj$updateReferenceChecksum(
+                      ref = ref_uid, 
+                      checksum = ref_chk
+                    )
                     do_update <- TRUE
                   }
                 } else {
                 ## Check if 'broken-binding' condition exists //
-                  if (!is.null(own_ref_hash)) {
+                  if (!is.null(ref_chk_own)) {
                   ## This can only be the case if there has been a reactive 
-                  ## binding that was valid/working at one time
+                  ## binding that was valid/working at one point in time
                     if (strict_get == 0) {
                       ## Do nothing //
                     } else if (strict_get == 1) {                    
@@ -259,8 +304,14 @@ setReactiveS3 <- function(
               ## Actual update //
               ##----------------------------------------------------------------
 
-              if (any(do_update)) {
-                message("Updating ...")
+              if (any(do_update) || !obj$has_cached) {
+                if (!obj$has_cached) {
+                  message("Initializing ...")  
+                }
+                if (any(do_update)) {
+                  message("Updating ...")  
+                }
+                
                 ## Cache new value //
                 obj$value <<- withRestarts(
                   tryCatch(
@@ -282,7 +333,7 @@ setReactiveS3 <- function(
                     invokeRestart("muffleWarning")
                   },
                   ReactiveUpdateFailed = function(cond) {
-                    hash <- getHashRegistry()
+                    registry <- getRegistry()
                     ## Custom condition //
                     cond <- conditionr::signalCondition(
                       condition = "AbortedReactiveUpdateWithError",
@@ -305,11 +356,15 @@ setReactiveS3 <- function(
                     NULL
                   }
                 )
-                ## Update own hash //
-                assign(obj$uid, digest::digest(obj$value), 
-                  envir = obj$hash[[obj$uid]])      
+                ## Update own value checksum //
+#                 assign(obj$uid, digest::digest(obj$value), 
+#                   envir = obj$registry[[obj$uid]])  
+                obj$computeChecksum()
+                obj$has_cached <- TRUE
+                obj$condition <- NULL
+                
               }
-            }
+            } 
 
           } else {
           
@@ -322,6 +377,8 @@ setReactiveS3 <- function(
               if (strict_set == 0) {
                 obj$value <<- v    
               } else if (strict_set == 1) {
+                ## Do nothing //
+              } else if (strict_set == 2) {
                 conditionr::signalCondition(
                   call = substitute(
                     assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
@@ -338,7 +395,7 @@ setReactiveS3 <- function(
                   ns = "reactr",
                   type = "warning"
                 )
-              } else if (strict_set == 2) {
+              } else if (strict_set == 3) {
                 conditionr::signalCondition(
                   call = substitute(
                     assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
@@ -360,12 +417,11 @@ setReactiveS3 <- function(
               obj$value <<- v 
             }
             
-            ## Update hash //
-            assign(obj$uid, digest::digest(v), envir = obj$hash[[obj$uid]])   
-            
-          
+            ## Update checksum //
+#             assign(obj$uid, digest::digest(v), envir = obj$registry[[obj$uid]])   
+            obj$computeChecksum()
           }
-          
+
           ## Condition handling //
           if (!is.null(obj$condition)) {           
             if (inherits(obj$condition, "BrokenReactiveReference")) {
@@ -374,6 +430,7 @@ setReactiveS3 <- function(
               obj$value <- stop(obj$condition)
             }
           }
+
           ## Return value //
           if (.debug) {
             obj

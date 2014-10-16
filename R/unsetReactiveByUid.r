@@ -1,5 +1,5 @@
 #' @title
-#' Unset Reactive Object
+#' Unset Reactive Object (generic)
 #'
 #' @description 
 #' Removes the reactive \strong{character} from an object, i.e. its 
@@ -24,10 +24,11 @@
 #'     
 #' @param uid \strong{Signature argument}.
 #'    Object containing UID information.
-#' @template threedot
+#' @template threedots
 #' @example inst/examples/unsetReactiveByUid.r
 #' @seealso \code{
-#'   	\link[reactr]{unsetReactiveByUid-character-method}
+#'   	\link[reactr]{unsetReactiveByUid-character-method},
+#'     \link[reactr]{unsetReactive}
 #' }
 #' @template author
 #' @template references
@@ -46,27 +47,26 @@ setGeneric(
 )
 
 #' @title
-#' Unset Reactive Object
+#' Unset Reactive Object (character)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{unsetReactiveByUid}}
 #'      
 #' @inheritParams unsetReactiveByUid
 #' @param id \code{\link{character}}.
-#' @param where \code{\link{missing}}.
-#'    Internal argument that should not be set explicitly.
-#'    The value at runtime will correspond to the function that has been 
-#'    provided via argument \code{binding}.
-#' @return See method
-#'    \code{\link[reactr]{unsetReactiveByUid-character-method}}
+#' @return \code{\link{logical}}. 
+#'    \code{TRUE}: successfully unset;
+#'    \code{FALSE}: failed to unset.
 #' @example inst/examples/unsetReactiveByUid.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{unsetReactiveByUid}
+#'    Generic: \link[reactr]{unsetReactiveByUid},
+#'     \link[reactr]{unsetReactive}
 #' }
 #' @template author
 #' @template references
 #' @aliases unsetReactiveByUid-method_main 
 #' @export
+#' @aliases unsetReactiveByUid-character-method
 setMethod(
   f = "unsetReactiveByUid", 
   signature = signature(
@@ -75,35 +75,10 @@ setMethod(
   definition = function(
     uid,
     ...
-  ) {
-  
-  ## Get actual location from hash registry //
-  subenv <- getHashRegistry()[[uid]]
-  if (is.null(sub)) {
-    stop(paste0("No entry in registry hash for UID: ", uid))
-  }
-  id <- subenv$id
-  if (is.null(id)) {
-    stop(paste0("No ID stored in registry hash for UID: ", uid))
-  }
-  where <- subenv$where
-  if (is.null(where)) {
-    stop(paste0("No location stored in registry hash for UID: ", uid))
-  }
+  ) {  
     
-  if (exists(id, envir = where, inherits = FALSE)) {
-    has_binding <- try(bindingIsActive(id, where))
-    if (inherits(has_binding, "try-error")) {
-      has_binding <- FALSE
-    } 
-    if (has_binding) {
-      tmp <- get(id, envir = where, inherits = FALSE)
-      rm(list = id, envir = where, inherits = FALSE)
-      assign(id, tmp, where)
-      ## Remove hash registry entry //
-      removeFromHashRegistryByUid(uid = uid)
-    }
-  }  
+  reg_ref <- getFromRegistryByUid(uid = uid)
+  reg_ref$unset()
   
   }
 )

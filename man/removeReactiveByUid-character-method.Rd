@@ -3,7 +3,7 @@
 \name{removeReactiveByUid,character-method}
 \alias{removeReactiveByUid,character-method}
 \alias{removeReactiveByUid-method_main}
-\title{Unset Reactive Object}
+\title{Remove Reactive Object (character)}
 \usage{
 \S4method{removeReactiveByUid}{character}(uid, ...)
 }

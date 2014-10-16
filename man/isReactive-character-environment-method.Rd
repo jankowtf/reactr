@@ -2,6 +2,7 @@
 \docType{methods}
 \name{isReactive,character,environment-method}
 \alias{isReactive,character,environment-method}
+\alias{isReactive-character-environment-method}
 \title{Get From Registry (character-environment)}
 \usage{
 \S4method{isReactive}{character,environment}(id, where = parent.frame(), ...)
@@ -14,8 +15,9 @@
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{logical}}. \code{TRUE}: successfully removed;
-   \code{FALSE}: not removed because there was nothing to remove.
+\code{\link{logical}}.
+   \code{TRUE}: reactive object;
+   \code{FALSE}: regular/non-reactive object.
 }
 \description{
 See generic: \code{\link[reactr]{isReactive}}

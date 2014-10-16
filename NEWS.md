@@ -1,3 +1,49 @@
+# CHANGES IN reactr VERSION 0.1.7
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+- some corrections in `REAMDE.md`
+
+## MISC
+
+-----
+
+# CHANGES IN reactr VERSION 0.1.6
+
+## NEW FEATURES
+
+- push paradigm:
+  changes in object `A` can be actively propagated to all objects that are referencing `A` (argument `push` in `setReactiveS3()`)
+- ensured integrity:
+  Integrity of registry references ensured but can be optionally disabled
+  (argument `integrity` in `setReactiveS3()`)
+- added convenience function `showRegistryContent()`
+
+## BUG FIXES
+
+- fixed: #13
+- fixed: #14
+
+## MAJOR CHANGES
+
+- removed a couple of functions that are no longer needed
+
+## MINOR CHANGES
+
+- modified: unit tests
+- modified: examples
+- modified: `README.md`
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.5
 
 ## NEW FEATURES

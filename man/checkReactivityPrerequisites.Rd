@@ -14,7 +14,7 @@ Typically, this corresponds to the instance of class
 \item{strict}{\code{\link{numeric}}.
 Relevant if a referenced object has been removed thus breaking the
 reactive relationship.
-\itemiz{
+\itemize{
   \item{\code{0}: } {function returns last cached value}
   \item{\code{1}: } {object value is set to \code{NULL} and is returned}
   \item{\code{2}: } {object value is set to an instance of condition class
@@ -40,7 +40,7 @@ imposed via \code{strict}.
 ## Thus not all aspects can be properly illustrated if not used in its default
 ## context
 
-## Start with a fresh hash registry state //
+## Start with a fresh registry state //
 resetRegistry()
 
 suppressWarnings(rm(x_1))

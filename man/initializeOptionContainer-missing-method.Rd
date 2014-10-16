@@ -2,7 +2,8 @@
 \docType{methods}
 \name{initializeOptionContainer,missing-method}
 \alias{initializeOptionContainer,missing-method}
-\title{Initialize Option Container (missing-method)}
+\alias{initializeOptionContainer-missing-method}
+\title{Initialize Option Container (missing)}
 \usage{
 \S4method{initializeOptionContainer}{missing}(id, overwrite = FALSE, ...)
 }

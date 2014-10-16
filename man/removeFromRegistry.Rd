@@ -3,7 +3,7 @@
 \alias{removeFromRegistry}
 \title{Remove From Registry (generic)}
 \usage{
-removeFromRegistry(id, where, ...)
+removeFromRegistry(id, where = parent.frame(), ...)
 }
 \arguments{
 \item{id}{\strong{Signature argument}.
@@ -16,16 +16,16 @@ Object containing location information.}
 }
 \description{
 Removes entry of associated reactive object that has been unset via
-\code{\link[reactr]{unsetReactive}} from the hash registry.
+\code{\link[reactr]{unsetReactive}} from the registry.
 }
 \examples{
 \dontrun{
 
 ## NOTE //
 ## This function should typically only be called inside 'unsetReactive()'
-## as it manages the internal hash registry!
+## as it manages the internal registry!
 
-## Start with a clean hash registry //
+## Start with a clean registry //
 resetRegistry()
 
 where <- new.env()
@@ -35,7 +35,7 @@ setReactiveS3(id = id_2,
   where = where
 )
 
-## Insepct hash registry before removal //
+## Insepct registry before removal //
 ls(getRegistry())
 
 removeFromRegistry(id = "x_1", where = where)

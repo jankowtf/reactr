@@ -2,6 +2,7 @@
 \docType{methods}
 \name{initializeRegistry,character,environment-method}
 \alias{initializeRegistry,character,environment-method}
+\alias{initializeRegistry-character-environment-method}
 \title{Initialize Registry (character-environment)}
 \usage{
 \S4method{initializeRegistry}{character,environment}(id = ".registry", where,
@@ -15,7 +16,7 @@
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{logical}}. \code{TRUE}.
+\code{\link{environment}}. Initialized registry.
 }
 \description{
 See generic: \code{\link[reactr]{initializeRegistry}}

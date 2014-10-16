@@ -2,6 +2,7 @@
 \docType{methods}
 \name{initializePackageOptions,missing,environment-method}
 \alias{initializePackageOptions,missing,environment-method}
+\alias{initializePackageOptions-missing-environment-method}
 \title{Initialize Package Options (missing-environment)}
 \usage{
 \S4method{initializePackageOptions}{missing,environment}(id = "options",

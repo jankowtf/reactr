@@ -2,6 +2,7 @@
 \docType{methods}
 \name{initializeRegistry,missing,missing-method}
 \alias{initializeRegistry,missing,missing-method}
+\alias{initializeRegistry-missing-missing-method}
 \title{Initialize Registry (missing-missing)}
 \usage{
 \S4method{initializeRegistry}{missing,missing}(id = ".registry", where, ...)

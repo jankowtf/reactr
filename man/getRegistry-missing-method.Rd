@@ -2,7 +2,8 @@
 \docType{methods}
 \name{getRegistry,missing-method}
 \alias{getRegistry,missing-method}
-\title{Get Hash Registry (missing-method)}
+\alias{getRegistry-missing-method}
+\title{Get Registry (missing)}
 \usage{
 \S4method{getRegistry}{missing}(where = NULL, ...)
 }
@@ -21,14 +22,14 @@ See generic: \code{\link[reactr]{getRegistry}}
 \examples{
 \dontrun{
 
-## Set reactive so that there are elements in hash registry //  
+## Set reactive so that there are elements in registry //  
 resetRegistry()
 setReactiveS3(id = "x_1", value = Sys.time())  
   
-hash <- getRegistry()
-hash
-ls(hash)
-identical(hash, getOption("reactr")$.registry)
+registry <- getRegistry()
+registry
+ls(registry)
+identical(registry, getOption("reactr")$.registry)
 
 ## Clean up //
 resetRegistry()

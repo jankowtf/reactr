@@ -1,3 +1,19 @@
+# CHANGES IN reactr VERSION 0.1.8
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+- modified `README.md`
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.7
 
 ## NEW FEATURES

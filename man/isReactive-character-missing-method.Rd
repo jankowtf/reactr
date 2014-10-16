@@ -2,6 +2,7 @@
 \docType{methods}
 \name{isReactive,character,missing-method}
 \alias{isReactive,character,missing-method}
+\alias{isReactive-character-missing-method}
 \title{Get From Registry (character-missing)}
 \usage{
 \S4method{isReactive}{character,missing}(id, where = parent.frame(), ...)

@@ -2,7 +2,8 @@
 \docType{methods}
 \name{initializeOptionContainer,character-method}
 \alias{initializeOptionContainer,character-method}
-\title{Initialize Option Container (character-method)}
+\alias{initializeOptionContainer-missing-method}
+\title{Initialize Option Container (character)}
 \usage{
 \S4method{initializeOptionContainer}{character}(id, overwrite = FALSE, ...)
 }

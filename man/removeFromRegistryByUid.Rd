@@ -13,12 +13,13 @@ Object containing UID information.}
 }
 \description{
 Removes entry of associated reactive object that has been unset via
-\code{\link[reactr]{unsetReactiveByUid}} from hash registry \code{<where>[[.hash_id]]}.
+\code{\link[reactr]{unsetReactiveByUid}} from the registry
+\code{getOption("reactr")$.registry}.
 }
 \examples{
 \dontrun{
 
-## Set reactives so hash registry contains elements //  
+## Set reactives so registry contains elements //  
 id_1 <- "x_1"
 id_2 <- "x_2"
 where <- environment()
@@ -32,17 +33,17 @@ setReactiveS3(id = id_2, value = function() {
 uid_1 <- getObjectUid(id = id_1, where = where)
 uid_2 <- getObjectUid(id = id_2, where = where)
 
-## Inspect current state of hash registry //
-hash <- getRegistry()
-ls(hash)
-exists(uid_1, hash)
-exists(uid_2, hash)
+## Inspect current state of registry //
+registry <- getRegistry()
+ls(registry)
+exists(uid_1, registry)
+exists(uid_2, registry)
 
 ## Remove //
 removeFromRegistryByUid(uid = uid_1)
-exists(uid_1, hash)
+exists(uid_1, registry)
 removeFromRegistryByUid(uid = uid_2)
-exists(uid_2, hash)
+exists(uid_2, registry)
 
 }
 }

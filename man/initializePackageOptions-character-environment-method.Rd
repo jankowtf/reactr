@@ -2,6 +2,7 @@
 \docType{methods}
 \name{initializePackageOptions,character,environment-method}
 \alias{initializePackageOptions,character,environment-method}
+\alias{initializePackageOptions-character-environment-method}
 \title{Initialize Package Options (character-environment)}
 \usage{
 \S4method{initializePackageOptions}{character,environment}(id = "options",
@@ -15,7 +16,7 @@
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{logical}}. \code{TRUE}.
+\code{\link{environment}}. Environment containing the options.
 }
 \description{
 See generic: \code{\link[reactr]{initializePackageOptions}}

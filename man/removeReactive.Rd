@@ -42,7 +42,7 @@ In case it was \code{TRUE}, the function returns error condition
 \examples{
 \dontrun{
 
-## Start with fresh hash registry //
+## Start with fresh registry //
 resetRegistry()
 
 ## Non-strict //

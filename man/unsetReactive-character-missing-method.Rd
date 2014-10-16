@@ -3,7 +3,7 @@
 \name{unsetReactive,character,missing-method}
 \alias{unsetReactive,character,missing-method}
 \alias{unsetReactive-method_main}
-\title{Unset Reactive Object (char-miss-method)}
+\title{Unset Reactive Object (character-missing)}
 \usage{
 \S4method{unsetReactive}{character,missing}(id, where = parent.frame(), ...)
 }
@@ -27,37 +27,76 @@ See generic: \code{\link[reactr]{unsetReactive}}
 \examples{
 \dontrun{
 
-## Start with a fresh hash registry //
+##------------------------------------------------------------------------------  
+## Non-strict get behavior //  
+##------------------------------------------------------------------------------
+
+## Set example reactive objects //  
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+
+## Unset //
+## --> transforms objects into non-reactive/regular objects again
+unsetReactive("x_1")
+
+## Inspect //
+x_1
+identical(x_2, x_1)
+x_1 <- 20
+x_1
+x_2
+## --> no reactive relationship to 'x_1' anymore; last cached value returned
+isReactive("x_1")
+isReactive("x_2")
+
+## Reset referenced object again //
+setReactiveS3(id = "x_1", value = 50)
+x_1
+x_2 == x_1
+## --> reactive relationship re-established again
+
+## Clean up //
 resetRegistry()
+rm(x_2)
+rm(x_1)
+
+##------------------------------------------------------------------------------  
+## Strict get behavior level 1 //  
+##------------------------------------------------------------------------------
 
 setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", 
-  value = function(refs = list(x_1 = parent.frame())) x_1 * 2
-)
-
-## Illustrate reactiveness //
-x_1
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
+              strict_get = 1)
+unsetReactive("x_1")
+try(x_2)
+## --> warning and NULL
+setReactiveS3(id = "x_1", value = 50)
 x_2
-x_1 <- 50
-x_1 
-x_2
+## --> reactive relationship restored
 
-## Unset reactive --> turn it into a regular object again //
-unsetReactive(id = "x_1", where = where)
+## Clean up //
+resetRegistry()
+rm(x_2)
+rm(x_1)
 
-## Illustrate removed reactiveness //
-x_1
-x_2
-x_1 <- 10
-x_1
-x_2
-## --> 'x_1' is not a reactive object anymore; from now on, 'x_2' simply returns
-## the last value that has been cached
+##------------------------------------------------------------------------------  
+## Strict get behavior level 2 //  
+##------------------------------------------------------------------------------
 
-## Implications with respect to hash registry //
-## Entry corresponding to 'x_1' set in 'environment()' has been removed
-exists(getObjectUid(id = "x_1", where = where, getRegistry()))
-## [1] FALSE
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
+              strict_get = 2)
+unsetReactive("x_1")
+try(x_2)
+## --> error
+setReactiveS3(id = "x_1", value = 50)
+x_2
+## --> reactive relationship restored
+
+## Clean up //
+resetRegistry()
+rm(x_2)
+rm(x_1)
 
 }
 }
@@ -69,7 +108,8 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-   Generic: \link[reactr]{unsetReactive}
+   Generic: \link[reactr]{unsetReactive},
+   \link[reactr]{unsetReactiveByUid}
 }
 }
 

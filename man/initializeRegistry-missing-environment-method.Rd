@@ -2,6 +2,7 @@
 \docType{methods}
 \name{initializeRegistry,missing,environment-method}
 \alias{initializeRegistry,missing,environment-method}
+\alias{initializeRegistry-missing-environment-method}
 \title{Initialize Registry (missing-environment)}
 \usage{
 \S4method{initializeRegistry}{missing,environment}(id = ".registry", where,

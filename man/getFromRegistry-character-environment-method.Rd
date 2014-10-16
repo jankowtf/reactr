@@ -2,6 +2,7 @@
 \docType{methods}
 \name{getFromRegistry,character,environment-method}
 \alias{getFromRegistry,character,environment-method}
+\alias{getFromRegistry-character-environment-method}
 \title{Get From Registry (character-environment)}
 \usage{
 \S4method{getFromRegistry}{character,environment}(id, where = parent.frame(),
@@ -15,8 +16,8 @@
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{logical}}. \code{TRUE}: successfully removed;
-   \code{FALSE}: not removed because there was nothing to remove.
+\code{\link{ReactiveObject.S3}}. Stored hidden instance of reactive
+   object.
 }
 \description{
 See generic: \code{\link[reactr]{getFromRegistry}}

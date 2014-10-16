@@ -2,6 +2,7 @@
 \docType{methods}
 \name{getFromRegistry,character,missing-method}
 \alias{getFromRegistry,character,missing-method}
+\alias{getFromRegistry-character-missing-method}
 \title{Get From Registry (character-missing)}
 \usage{
 \S4method{getFromRegistry}{character,missing}(id, where = parent.frame(), ...)
@@ -15,7 +16,7 @@
 }
 \value{
 See method
-   \code{\link[reactr]{getFromRegistry}}
+   \code{\link[reactr]{getFromRegistry-character-environment-method}}
 }
 \description{
 See generic: \code{\link[reactr]{getFromRegistry}}
@@ -51,7 +52,8 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-   \link[reactr]{getFromRegistry}
+   \link[reactr]{getFromRegistry},
+   \link[reactr]{getFromRegistry-character-environment-method}
 }
 }
 

@@ -33,7 +33,7 @@
 #' }
 #' 
 #' A more internal but very central function:
-#' \itemiz{
+#' \itemize{
 #'    \item{\code{\link[reactr]{getBoilerplateCode}}: }{
 #'      Function that retrieves boilerplate code as required by 
 #'      \code{\link[reactr]{setReactive}} and \code{\link[base]{makeActiveBinding}}.

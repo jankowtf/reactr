@@ -2,7 +2,8 @@
 \docType{methods}
 \name{getRegistry,environment-method}
 \alias{getRegistry,environment-method}
-\title{Get Hash Registry (environment-method)}
+\alias{getRegistry-environment-method}
+\title{Get Registry (environment)}
 \usage{
 \S4method{getRegistry}{environment}(where = NULL, ...)
 }
@@ -12,7 +13,7 @@
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{logical}}. \code{TRUE}: successful; \code{FALSE}: fail.
+\code{\link{environment}}. Registry object.
 }
 \description{
 See generic: \code{\link[reactr]{getRegistry}}
@@ -20,14 +21,14 @@ See generic: \code{\link[reactr]{getRegistry}}
 \examples{
 \dontrun{
 
-## Set reactive so that there are elements in hash registry //  
+## Set reactive so that there are elements in registry //  
 resetRegistry()
 setReactiveS3(id = "x_1", value = Sys.time())  
   
-hash <- getRegistry()
-hash
-ls(hash)
-identical(hash, getOption("reactr")$.registry)
+registry <- getRegistry()
+registry
+ls(registry)
+identical(registry, getOption("reactr")$.registry)
 
 ## Clean up //
 resetRegistry()

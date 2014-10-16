@@ -2,6 +2,7 @@
 \docType{methods}
 \name{initializePackageOptions,missing,missing-method}
 \alias{initializePackageOptions,missing,missing-method}
+\alias{initializePackageOptions-missing-missing-method}
 \title{Initialize Package Options (missing-missing)}
 \usage{
 \S4method{initializePackageOptions}{missing,missing}(id = "options", where,

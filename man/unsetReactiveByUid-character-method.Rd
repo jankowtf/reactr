@@ -3,7 +3,7 @@
 \name{unsetReactiveByUid,character-method}
 \alias{unsetReactiveByUid,character-method}
 \alias{unsetReactiveByUid-method_main}
-\title{Unset Reactive Object}
+\title{Unset Reactive Object (character)}
 \usage{
 \S4method{unsetReactiveByUid}{character}(uid, ...)
 }
@@ -14,15 +14,11 @@ Object containing UID information.}
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 
 \item{id}{\code{\link{character}}.}
-
-\item{where}{\code{\link{missing}}.
-Internal argument that should not be set explicitly.
-The value at runtime will correspond to the function that has been
-provided via argument \code{binding}.}
 }
 \value{
-See method
-   \code{\link[reactr]{unsetReactiveByUid-character-method}}
+\code{\link{logical}}.
+   \code{TRUE}: successfully unset;
+   \code{FALSE}: failed to unset.
 }
 \description{
 See generic: \code{\link[reactr]{unsetReactiveByUid}}
@@ -30,65 +26,9 @@ See generic: \code{\link[reactr]{unsetReactiveByUid}}
 \examples{
 \dontrun{
 
-## Set example reactive objects //  
 setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
-x_1 <- 50
-x_2
-regref_1 <- getFromRegistry("x_1")
-uid_1 <- regref_1$uid
-regref_1$checksum
-# regref_1$invalid <- TRUE
-regref_2 <- getFromRegistry("x_2")
-uid_2 <- regref_2$uid
-regref_2$references[[uid_1]]$invalid
-regref_2$references[[uid_1]]$checksum
-x_2
-
-## Unset //
-## --> transforms objects into non-reactive/regular objects again
 unsetReactiveByUid(uid = getObjectUid("x_1"))
-
-## Inspect //
-x_1
-identical(x_2, x_1)
-x_1 <- 20
-x_1
-x_2
-## --> no reactive relationship to 'x_1' anymore; last cached value returned
 isReactive("x_1")
-isReactive("x_2")
-
-## Reset again //
-setReactiveS3(id = "x_1", value = 10)
-x_1
-x_2
-
-
-ls(regref_2$hash)
-
-regref_1$checksum
-regref_2$checksums_ref[[uid_1]]
-ls(regref_2$references)
-(regref_2$references[[uid_1]])
-regref_2$references[[uid_1]]$checksum
-
-env_1 <- new.env()
-env_2 <- new.env()
-env_2$env_1 <- env_1
-rm(env_1)
-
-## --> cached value still at '10' --> reactivity is revealed only after 
-## changing 'x_1'
-x_1 <- 30
-x_1
-x_2
-
-## Clean up //
-ls(getRegistry())
-resetRegistry()
-rm(x_2)
-rm(x_1)
 
 }
 }
@@ -100,7 +40,8 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-   Generic: \link[reactr]{unsetReactiveByUid}
+   Generic: \link[reactr]{unsetReactiveByUid},
+    \link[reactr]{unsetReactive}
 }
 }
 

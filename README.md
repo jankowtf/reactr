@@ -13,15 +13,16 @@ require("reactr")
 ```
 ## Overview 
 
-The package tries to make a contribution with respect to Reactive Programming in R. It allows to dynamically link objects so that if one object changes, the objects referencing that objecst (in whatever way) are updated as well in a very similar way than how reactivity is implemented in the [shiny](http://shiny.rstudio.com) framework. 
+The package tries to make a contribution with respect to ways for *Reactive Programming* or *Reactivity* in R. It allows to dynamically link objects so that if one object changes, the objects referencing that object (in whatever way) are updated as well. 
+
+The implementation was greatly inspired by and is very similar to that of [shiny](http://shiny.rstudio.com) framework. 
 
 ### Quick Example
 
-Set object 'x_1' that others can reference:
+Set object `x_1` that others can reference:
 
 ```
 setReactiveS3(id = "x_1", value = 10)
-
 # [1] 10
 ```
 
@@ -32,7 +33,6 @@ setReactiveS3(id = "x_2", value = function() {
   "object-ref: {id: x_1}"
   x_1 * 2
 })
-
 # Initializing ...
 # [1] 20
 
@@ -63,7 +63,7 @@ x_2
 
 ### Things to notice at this point
 
-1. The preferred way to specify the reference is via [YAML](http://www.yaml.org/) markup as done above. However, there also exist two other ways to specify references. See vignette [Specifying Reactive References]() for details.
+1. The preferred way to specify the reference is via [YAML](http://www.yaml.org/) markup as in the example above. However, there also exist two other ways to specify references. See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/specifying_reactive_references.Rmd) for details.
 
 2. Strictness levels can be defined for 
 
@@ -71,23 +71,25 @@ x_2
   - *getting* the value of a reactive object: argument `strict_get`
   - *setting* the value of a reactive object: argument `strict_set`
   
-  See vignette [Strictness]() for details.
+  See vignette [Strictness](https://github.com/Rappster/reactr/blob/master/vignettes/strictness.Rmd) for details.
   
 3. The environment in which to set a reactive object can be chosen via argument `where`
 
-4. The package implements a caching mechanism: the binding functions are only executed when one of the referenced objects has actually changed. Otherwise a cached value is returned.
+4. The package implements a **caching mechanism**: the binding functions are only executed when they need to be, i.e. only if one of the referenced objects has actually changed. Otherwise a cached value that has been stored from the last update run is returned.
 
-  While this may cost more than it actually helps in scenarios where the binding functions are quite simple, such a mechanism *may* significantly reduce computation times in case of more complex binding functions that take very long to run. See vignette [Caching]() for details.
+  While this may cost more than it actually helps in scenarios where the binding functions are quite simple and thus don't take long to run, such a mechanism *may* significantly reduce computation times in case of more complex binding functions that take very long to run. See vignette [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.Rmd) for details.
   
-5. You can choose between a *pull* and a *push* paradigm with respect to how changes are propagated through the system. 
+5. You can choose between a **pull** and a **push** paradigm with respect to how changes are propagated through the system. 
 
   When using *pull* paradigm (the default), objects referencing an object that has changed are not informed of this change until they are explicitly requested (by `get()` or its syntactical sugars).
   
   When using a *push* paradigm, an object that changed informs all objects that have a reference to it about the change by implicitly calling the `$get()` method of their `ReactiveObject.S3` class instance which translates to an actual `get()` of the respective reactive objects. 
   
-  See vignette [Pushing]() for details on this.
+  See vignette [Pushing](https://github.com/Rappster/reactr/blob/master/vignettes/pushing.Rmd) for details on this.
 
 -----
+
+# Reactivity scenarios
 
 ## Scenario 1: one-directional (1)
 
@@ -103,7 +105,7 @@ x_2
 
 ### Example
 
-Set object 'x_1' that others can reference:
+Set object `x_1` that others can reference:
 
 ```
 setReactiveS3(id = "x_1", value = 10)
@@ -115,7 +117,6 @@ Set object that references `x_1` and has a reactive binding to it:
 
 ```
 setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
-
 # Initializing ...
 # [1] 10
 
@@ -140,7 +141,7 @@ x_2
 
 x_2
 # [1] 100
-## --> cached value as 'x_1' has not changed; no update until 'x_1' 
+## --> cached value as `x_1` has not changed; no update until `x_1` 
 ## changes again
 ```
 -----
@@ -164,7 +165,6 @@ setReactiveS3(id = "x_3", value = function() {
   "object-ref: {id: x_1, as: ref_1}"
   ref_1 * 2
 })
-
 # Initializing ...
 # [1] 200
 ```
@@ -216,7 +216,6 @@ setReactiveS3(id = "x_4", value = function() {
   "object-ref: {id: x_2, as: ref_2}"
   ref_1 + ref_2 * 2
 })
-
 # Initializing ...
 # [1] 1500
 ```
@@ -232,39 +231,39 @@ x_4
 x_4
 # Modified reference: 2fc2e352f72008b90a112f096cd2d029
 # Updating ...
-## --> corresponds to the update of 'x_2' due to a change of 'x_1'
+## --> corresponds to the update of `x_2` due to a change of `x_1`
 
 # Modified reference: 2fc2e352f72008b90a112f096cd2d029
 # Updating ...
-## --> corresponds to the update of 'x_4' due to a change of 'x_1'
+## --> corresponds to the update of `x_4` due to a change of `x_1`
 [1] 30
 
 (x_2 <- 100)
 ## --> NOTE
-## this is only allowed due to 'strict_set = 0'! By doing so, we temporariliy 
-## break/disable or pause the reactive binding of 'x_2' on 'x_2'.
-## As long as 'x_1' is not updated, 'x_2' is "out of sync" with respect to 'x_1'
+## this is only allowed due to `strict_set = 0`! By doing so, we temporariliy 
+## break/disable or pause the reactive binding of `x_2` on `x_2`.
+## As long as `x_1` is not updated, `x_2` is "out of sync" with respect to `x_1`
 
 x_4
 # Modified reference: ab22808532ff42c87198461640612405
 # Updating ...
 # [1] 210
-## --> corresponds to the update of 'x_4' due to a change of 'x_2' 
+## --> corresponds to the update of `x_4` due to a change of `x_2` 
 
 (x_1 <- 50)
 x_2
 # Modified reference: 2fc2e352f72008b90a112f096cd2d029
 # Updating ...
 # [1] 50
-## --> reactive binding reestablished again; 'x_2' is now in-sync again 
-## with respect to 'x_1'
+## --> reactive binding reestablished again; `x_2` is now in-sync again 
+## with respect to `x_1`
 
 x_4
 # Modified reference: 2fc2e352f72008b90a112f096cd2d029
 # Modified reference: ab22808532ff42c87198461640612405
 # Updating ...
 # [1] 150
-## --> update as both 'x_1' and 'x_2' have changed
+## --> update as both `x_1` and `x_2` have changed
 ```
 
 ## Scenario 4: bi-directional (1)
@@ -285,20 +284,18 @@ A cool feature of this binding type is that you are free to alter the values of 
 
 ```
 setReactiveS3(id = "x_5", function() "object-ref: {id: x_6}")
-
 # Initializing ...
-# NULL
+# numeric(0)
 
 setReactiveS3(id = "x_6", function() "object-ref: {id: x_5}")
-
 # Initializing ...
 # Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
 # Updating ...
 # Initializing ...
-# NULL
+# numeric(0)
 ```
 
-Note that the call to `setReactiveS3()` merely initializes objects with bidirectional bindings to the value `NULL`.
+Note that the call to `setReactiveS3()` merely initializes objects with bidirectional bindings to the value `numeric(0)`.
 
 You must actually assign a value to either one of them via `<-` **after** establishing the binding:
 
@@ -307,10 +304,10 @@ You must actually assign a value to either one of them via `<-` **after** establ
 x_5
 # Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
 # Updating ...
-# NULL
+# numeric(0)
 
 x_6
-# NULL
+# numeric(0)
 
 ## Set actual initial value to either one of the objects //
 (x_5 <- 100)
@@ -359,31 +356,21 @@ setReactiveS3(id = "x_6", function() {
   "object-ref: {id: x_7}"
   x_7 * 2
 })
-
 # Initializing ...
-# NULL
+# numeric(0)
 
 setReactiveS3(id = "x_7", function() {
   "object-ref: {id: x_6}"
   x_6 / 2
 })
-
 # Initializing ...
 # Modified reference: d02321209550bf005cbade3bf09fdd85
 # Updating ...
 # Initializing ...
 # numeric(0)
-```
 
-Note that `x_7` is is not initialized to `NULL` but to `numeric()` and that this also alters the initial value of `x_6` to `numeric()`. 
-
-This is a minor inconsistency due to the actual structure of these specific binding functions that will be removed in future releases.
-
-```
 x_6
 # Modified reference: d02321209550bf005cbade3bf09fdd85
-# Updating ...
-# Modified reference: 9032d7c46f03dd5177f6f16eb729baf9
 # Updating ...
 # numeric(0)
 
@@ -442,7 +429,6 @@ setReactiveS3(id = "x_8", function() {
   "object-ref: {id: x_9}"
   x_9 * 2
 })
-
 # Initializing ...
 # NULL
 
@@ -450,13 +436,16 @@ setReactiveS3(id = "x_9", function() {
   "object-ref: {id: x_8}"
   x_8 * 10
 })
-
 # Initializing ...
 # Modified reference: 794daff29ee5d00144e3dc00ef18107b
 # Updating ...
 # Initializing ...
 # numeric(0)
 ```
+
+Note that `x_8` is initialized to `NULL` and `x_9` `numeric()`.
+
+This is a minor inconsistency due to the actual structure of these specific binding functions that will be removed in future releases.
 
 Illustration of "non-steady-state" behavior:
 
@@ -519,7 +508,7 @@ x_8
 
 This turns reactive objects (that are, even though hidden from the user, instances of class `ReactiveObject.S3`) into regular or non-reactive objects again. 
 
-**Note that it does not mean the a reactive object is removed! See `removeReactive()` for that purpose**
+**Note that it does not mean the a reactive object is removed alltogether! See `removeReactive()` for that purpose**
 
 ```
 setReactiveS3(id = "x_1", value = 10)
@@ -541,12 +530,12 @@ x_1
 x_2
 (x_1 <- 10)
 x_2
-## --> 'x_1' is not a reactive object anymore; from now on, 'x_2' simply returns
+## --> `x_1` is not a reactive object anymore; from now on, `x_2` simply returns
 ## the last value that has been cached
 ```
 
 ### NOTE
-What happens when a reactive relationship is broken or removed depends on how you set argument `strictness_get` in the call to `setReactiveS3()`. Also refer to vignette [Strictness]() for more details.
+What happens when a reactive relationship is broken or removed depends on how you set argument `strictness_get` in the call to `setReactiveS3()`. Also refer to vignette [Strictness](https://github.com/Rappster/reactr/blob/master/vignettes/strictness.Rmd) for more details.
 
 ## Removing reactive objects
 
@@ -556,7 +545,7 @@ This deletes the object alltogether.
 setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 
-## Remove reactive --> remove it from 'where' //
+## Remove reactive --> remove it from `where` //
 removeReactive(id = "x_1")
 
 exists("x_1", inherits = FALSE)
@@ -570,7 +559,7 @@ As mentioned above, this *might* be unnecessary or even counter-productive in si
 
 A second reason why the caching mechanism was implemented is to offer the possibility to specify *bi-directional* reactive bindings. AFAICT, you need some sort of caching mechanism in order to avoid infinite recursions.
 
-See vignette [Caching]() for details on this.
+See vignette [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.Rmd) for details on this.
 
 ### The registry
 
@@ -585,13 +574,13 @@ setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 ```
 
-### Get the registry object
+#### Get the registry object
 
 ```
 registry <- getRegistry()
 ```
 
-### Show registry content
+#### Show registry content
 
 ```
 showRegistryContent()
@@ -599,7 +588,7 @@ showRegistryContent()
 
 The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `getObjectUid()` for the details of the computation of object UIDs.
 
-### Retrieve from registry
+#### Retrieve from registry
 
 ```
 x_1_hidden <- getFromRegistry(id = "x_1")
@@ -633,23 +622,22 @@ x_2_hidden$hasReferences()
 ls(x_2_hidden$references)
 x_2_hidden$references[[x_1_hidden$uid]]
 ```
-### Remove from registry
+#### Remove from registry
 
 ```
-## Via ID (and 'where') //
+## Via ID (and `where`) //
 removeFromRegistry(id = "x_1")
-## --> notice that entry '2fc2e352f72008b90a112f096cd2d029' has been removed
+## --> notice that entry `2fc2e352f72008b90a112f096cd2d029` has been removed
 
 ## Via UID //
 removeFromRegistry(getObjectUid("x_2"))
-## --> notice that entry 'ab22808532ff42c87198461640612405' has been removed
+## --> notice that entry `ab22808532ff42c87198461640612405` has been removed
 ```
 
-### Reset from registry
+#### Reset from registry
 
 ```
 showRegistryContent()
 resetRegistry()
 showRegistryContent()
 ```
-

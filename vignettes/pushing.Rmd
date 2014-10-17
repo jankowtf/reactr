@@ -1,12 +1,53 @@
-```{r, echo=FALSE}
-require("reactr")
-```
-
 ---
 title: "Caching"
 author: "Janko Thyson"
 date: "Thursday, October 16, 2014"
-output: html_document
+output:
+  html_document:
+    self_contained: no
 ---
 
-To be added
+```{r, echo=FALSE}
+suppressMessages(require("reactr"))
+```
+
+
+```{r}
+setReactiveS3(id = "x_1", value = 10)
+path_testfile <- file.path(tempdir(), "pushtest.txt")
+suppressWarnings(file.remove(path_testfile))
+
+setReactiveS3(
+  id = "x_2", 
+  value = function() {
+    "object-ref: {id: x_1}"
+    msg <- paste0("[", Sys.time(), 
+      "] Simulated push-triggered database update for x_1: ", x_1)
+    write(msg, file = file.path(tempdir(), "pushtest.txt"), append = TRUE)
+    TRUE
+  }, 
+  push = TRUE
+)
+
+## Inspect state of test file //
+readLines(path_testfile)
+
+## Note that we are never calling `x_2` explicitly and yet the 
+## content of `path_testfile` will change for each modification of `x_1`:
+(x_1 <- 100)
+readLines(path_testfile)
+
+(x_1 <- 200)
+readLines(path_testfile)
+
+(x_1 <- 300)
+readLines(path_testfile)
+
+## Clean up //
+rm(x_1)
+rm(x_2)
+resetRegistry()
+```
+
+
+  

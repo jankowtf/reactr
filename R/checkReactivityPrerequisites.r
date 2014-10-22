@@ -11,16 +11,13 @@
 #'    Typically, this corresponds to the instance of class 
 #'    \code{\link[reactr]{ReactiveObject.S3}}.
 #' @param strict \code{\link{numeric}}.
-#'    Relevant if a referenced object has been removed thus breaking the 
-#'    reactive relationship.
+#'    Relevant when initially setting a reactive object
 #'    \itemize{
-#'      \item{\code{0}: } {function returns last cached value}
-#'      \item{\code{1}: } {object value is set to \code{NULL} and is returned}
-#'      \item{\code{2}: } {object value is set to an instance of condition class 
-#'          \code{BrokenReactiveBinding} and this condition is triggered whenever
-#'          the object's value is requested by \code{\link[base]{get}} or 
-#'          its syntactical surgars \code{{obj-name} or \code{}}
-#'      }
+#'      \item{\code{0}: } {no checks are performed}
+#'      \item{\code{1}: } {warning if object is already a non-reactive or 
+#'      reactive object or if any references does not exist yet}
+#'      \item{\code{2}: } {error if object is already a non-reactive or 
+#'      reactive object or if any references do not exist yet}
 #'    }
 #' @template threedots
 #' @example inst/examples/checkReactivityPrerequisites.r
@@ -80,6 +77,8 @@ setMethod(
                                  as.character(c(0, 1, 2))))
     
   out <- FALSE
+  
+  ## Check self //
   idx_exist <- exists(input$id, input$where, inherits = FALSE)
   has_binding <- try(bindingIsActive(input$id, input$where), silent = TRUE)
   if (inherits(has_binding, "try-error")) {
@@ -117,7 +116,7 @@ setMethod(
         type = "error"
       )
     }
-  } else if (has_binding) {
+  } else if (idx_exist && has_binding) {
     if (strict == 0) {
       out <- TRUE
     } else if (strict == 1) {
@@ -183,6 +182,56 @@ setMethod(
   if (out && idx_exist) {
     rm(list = input$id, envir = input$where, inherits = TRUE)
   }
+
+  ## Check pull references //
+  out_ref <- all(sapply(ls(input$refs_pull), function(ref_uid) {
+    ref_inst <- get(ref_uid, input$refs_pull, inherits = FALSE)
+    idx_exist <- exists(ref_inst$id, ref_inst$where, inherits = FALSE)
+print(idx_exist)    
+    out <- FALSE
+    if (!idx_exist) {
+      if (strict == 0) {
+        out <- TRUE
+        input$wait <- TRUE
+      } else if (strict == 1) {
+        conditionr::signalCondition(
+          condition = "ReactivityPrerequisitesNotMetButOverwrite",
+          msg = c(
+            Reason = "reference does not exist yet",
+            Action = "exit with warning",
+            ID = input$id,
+            UID = input$uid,
+            Location = capture.output(input$where),
+            "Reference ID" = ref_inst$id,
+            "Reference UID" = ref_inst$uid,
+            "Reference location" = ref_inst$where
+          ),
+          ns = "reactr",
+          type = "warning"
+        )
+      } else if (strict == 2) {
+        conditionr::signalCondition(
+          condition = "ReactivityPrerequisitesNotMet",
+          msg = c(
+            Reason = "reference does not exist yet",
+            Action = "exit with error",
+            ID = input$id,
+            UID = input$uid,
+            Location = capture.output(input$where),
+            Location = capture.output(input$where),
+            "Reference ID" = ref_inst$id,
+            "Reference UID" = ref_inst$uid,
+            "Reference location" = ref_inst$where
+          ),
+          ns = "reactr",
+          type = "error"
+        )
+      } 
+    }
+    out
+  }))
+  
+  out <- all(c(out, out_ref))
   
   return(out)
   

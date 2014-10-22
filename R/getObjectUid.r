@@ -11,7 +11,7 @@
 #'    Environment to create the object in.
 #' @template threedots
 #' @return \code{\link{character}}. Object UID (checksum).
-#' @example inst/examples/getObjectUid.r
+#' @example inst/examples/computeObjectUid.r
 #' @seealso \code{
 #'   	\link[reactr]{setReactiveS3}
 #' }
@@ -20,7 +20,7 @@
 #' @export 
 #' @import shiny
 #' @import digest
-getObjectUid <- function(
+computeObjectUid <- function(
     id,
     where = parent.frame(),
     ...

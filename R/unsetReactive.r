@@ -132,7 +132,7 @@ setMethod(
   if (!length(id)) {
     stop(paste0("Provide an ID"))
   } else {
-    out <- unsetReactiveByUid(uid = getObjectUid(id = id, where = where)    )
+    out <- unsetReactiveByUid(uid = computeObjectUid(id = id, where = where)    )
   }
     
   return(out)

@@ -1,12 +1,14 @@
-```{r, echo=FALSE}
-require("reactr")
-```
-
 ---
 title: "Caching"
 author: "Janko Thyson"
 date: "Thursday, October 16, 2014"
-output: html_document
+output:
+  html_document:
+    self_contained: no
 ---
 
-To be added
+```{r, echo=FALSE}
+suppressMessages(require("reactr"))
+```
+
+Suggested: read vignette [Registry Mechanism](/registry_mechanism.Rmd) prior to reading this vignette

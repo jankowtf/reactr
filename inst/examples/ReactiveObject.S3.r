@@ -46,7 +46,7 @@ digest::digest(x_1)
 obj$computeChecksum()
 
 ## Compute UID //
-x_1_uid <- getObjectUid(id = "x_1")
+x_1_uid <- computeObjectUid(id = "x_1")
 obj$uid
 obj$computeUid()
 ## --> automatically executed in constructor based on 'obj$id' and 'obj$where'

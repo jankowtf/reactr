@@ -36,6 +36,11 @@
 #' @field checksum \code{\link{character}}.
 #'    Object value checksum.
 #'    Initial: \code{character()}.
+#' @field cl \code{\link{character}}.
+#'    Class of object value. If strongly typed (argument \code{typed = TRUE} in
+#'    \code{\link[reactr]{setReactiveS3}}, then this field is used to determine
+#'    if an assignment value is valid or not.
+#'    Initial: \code{character()}.
 #' @field exists_visible \code{\link{logical}}.
 #'    Field for tracking if the visible object actually exists already or if this
 #'    is a mere "empty container" in the registry. 
@@ -57,13 +62,41 @@
 #'    Reference to the registry environment. Important for retrieving and 
 #' 		comparing checksum values.
 #'    Initial: \code{getRegistry()}.
-#' @field references_pull \code{\link{environment}}.
-#'    Environment storing information of referenced objects.
+#' @field refs_pull \code{\link{environment}}.
+#'    Environment storing information of inbound/pull references.
 #'    Initial: \code{new.env(parent = emptyenv())}.
+#' @field refs_push \code{\link{environment}}.
+#'    Environment storing information of outbound/push references.
+#'    Initial: \code{new.env(parent = emptyenv())}.
+#' @field has_pull_refs \code{\link{logical}}.
+#'    \code{TRUE}: object has no inbound/pull references;
+#'    \code{FALSE}: object has no inbound/pull references
+#'    Initial: \code{FALSE}.
+#' @field has_push_refs \code{\link{logical}}.
+#'    \code{TRUE}: object has no outbound/push references;
+#'    \code{FALSE}: object has no outbound/push references
+#'    Initial: \code{FALSE}.
+#' @field must_push \code{\link{logical}}.
+#'    Field that controls if push is enabled.
+#'    \code{TRUE}: push changes to outbound references;
+#'    \code{FALSE}: changes need to be pulled by references, no push.
+#'    Initial: \code{FALSE}.
+#' @field has_pushed \code{\link{logical}}.
+#'    \code{TRUE}: pushed change to push references;
+#'    \code{FALSE}: change not pushed to push references yet.
+#'    Initial: \code{FALSE}.
+#' @field is_running_push \code{\link{logical}}.
+#'    \code{TRUE}: push process is currently running;
+#'    \code{FALSE}: no push process is currently running.
+#'    Initial: \code{FALSE}.
+#' @field wait \code{\link{logical}}.
+#'    \code{TRUE}: wait with running the binding function;
+#'    \code{FALSE}: run binding function when necessary.
+#'    Initial: \code{FALSE}.
 #' @field func \code{\link{function}}.
 #'    Binding function.
 #'    Initial: \code{NULL}.
-#' @field checksums_ref \code{\link{environment}}.
+#' @field refs_checksum \code{\link{environment}}.
 #'    Environment for caching checksums of referenced objects.
 #'    Initial: \code{new.env(parent = emptyenv())}.
 #' @field condition \code{\link{condition}} (at least by inheritance).
@@ -90,6 +123,7 @@ ReactiveObject.S3 <- function(
   value = NULL,
   where = parent.frame(),
   checksum = character(),
+  cl = class(value),
   
   exists_visible = FALSE,
   has_cached = FALSE,
@@ -99,14 +133,16 @@ ReactiveObject.S3 <- function(
   registry = getRegistry(),
   
   ## References //
-  references_pull = new.env(parent = emptyenv()),
-  references_push = new.env(parent = emptyenv()),
+  refs_pull = new.env(parent = emptyenv()),
+  refs_push = new.env(parent = emptyenv()),
+  refs_checksum = new.env(parent = emptyenv()),
   has_pull_refs = FALSE,
   has_push_refs = FALSE,
+  must_push = FALSE,
   has_pushed = FALSE,
   is_running_push = FALSE,
+  wait = FALSE,
   func = NULL,
-  checksums_ref = new.env(parent = emptyenv()),
   
   ## Conditions and status messages //
   condition = NULL
@@ -123,7 +159,8 @@ ReactiveObject.S3 <- function(
     ##--------------------------------------------------------------------------
 
     this$checksum <- checksum
-    this$checksums_ref <- checksums_ref
+    this$refs_checksum <- refs_checksum
+    this$cl <- cl
     this$condition <- condition
     
     this$exists_visible <- exists_visible
@@ -135,13 +172,15 @@ ReactiveObject.S3 <- function(
     this$id <- id
     this$is_invalid <- is_invalid
     
-    this$references_pull <- references_pull
-    this$references_push <- references_push
+    this$refs_pull <- refs_pull
+    this$refs_push <- refs_push
     this$has_pull_refs <- has_pull_refs
     this$has_push_refs <- has_push_refs
     this$has_pushed <- has_pushed
     this$is_running_push <- is_running_push 
+    this$must_push <- must_push
     this$value <- value
+    this$wait <- wait
     this$where <- where
     
     ##--------------------------------------------------------------------------
@@ -157,55 +196,49 @@ ReactiveObject.S3 <- function(
       out <- if (length(id)) {
         self$uid <- eval(substitute(digest::digest(list(id = ID, where = WHERE)), 
           list(ID = self$id, WHERE = capture.output(eval(self$where)))))
-        self$uid
       } else {
         character()
       }
       out
     }
     this$copy <- function(self = this, id, where = parent.frame()) {
-#       print(ls(where))
-      if (length(id)) {
-        if (!is.null(self$func)) {
-          setReactiveS3(id = id, value = self$func, where = where)
-        } else {
-          setReactiveS3(id = id, value = self$value, where = where)
-        }
-        TRUE
+      if (!is.null(self$func)) {
+        setReactiveS3(id = id, value = self$func, where = where)
       } else {
-        FALSE
+        setReactiveS3(id = id, value = self$value, where = where)
       }
     }
     this$ensureIntegrity <- function(self = this, ref_uid) {
       if (exists(ref_uid, envir = self$registry, inherits = FALSE)) {     
         assign(ref_uid, 
           get(ref_uid, envir = self$registry, inherits = FALSE), 
-          envir = self$references_pull
+          envir = self$refs_pull
         )      
       }
       TRUE
     }
-    this$get <- function(self = this) {
+    this$getVisible <- function(self = this) {
       get(self$id, self$where, inherits = FALSE)
     }
     this$hasPullReferences <- function(self = this) {
-      res <-length(ls(self$references_pull, all.names = TRUE)) > 0
+      res <-length(ls(self$refs_pull, all.names = TRUE)) > 0
       self$has_pull_refs <- res
       res
     }
     this$hasPushReferences <- function(self = this) {
-      res <- length(ls(self$references_push, all.names = TRUE)) > 0
+      res <- length(ls(self$refs_push, all.names = TRUE)) > 0
       self$has_push_refs <- res
       res
     }
     this$pushToReferences <- function(self = this) {
+      self$has_pushed <- FALSE
       self$is_running_push <- TRUE
-      push_refs_env <- self$references_push
+      push_refs_env <- self$refs_push
       push_refs <- ls(push_refs_env)
       out <- if (length(push_refs)) {
         sapply(push_refs, function(ref) {
           message(paste0("Pushing to: ", ref))
-          push_refs_env[[ref]]$get()
+          push_refs_env[[ref]]$getVisible()
         })
         TRUE
       } else {
@@ -227,20 +260,22 @@ ReactiveObject.S3 <- function(
     this$registerReferences <- function(self = this, references = list()) {
       out <- if (length(references)) {
         sapply(references, function(ref) {
-          if (!exists(ref, envir = self$registry)) {
+          ref_uid <- computeObjectUid(id = ref$id, where = eval(ref$where))
+          if (!exists(ref_uid, envir = self$registry)) {
           ## Ensure a valid ref instance exists in registry            
             ref_inst <- ReactiveObject.S3(
-              id = ref,
+              id = ref$id,
+              where = eval(ref$where),
               checksum = digest::digest(NULL)
-            )      
+            ) 
             ref_inst$register(self = ref_inst)
           }
           ## Pointer //
-          assign(ref, self$registry[[ref]], envir = self$references_pull)
+          assign(ref_uid, self$registry[[ref_uid]], envir = self$refs_pull)
           ## Cached checksums //
-          this$updateReferenceChecksum(
-            ref = ref, 
-            checksum = self$references_pull[[ref]]$checksum
+          self$updateReferenceChecksum(
+            ref = ref_uid, 
+            checksum = self$refs_pull[[ref_uid]]$checksum
           )
         })
         TRUE
@@ -301,7 +336,7 @@ ReactiveObject.S3 <- function(
       }
     }
     this$updateReferenceChecksum <- function(self = this, ref, checksum) {
-      assign(ref, checksum, envir = self$checksums_ref)
+      assign(ref, checksum, envir = self$refs_checksum)
     }
     
     ##--------------------------------------------------------------------------

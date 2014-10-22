@@ -7,10 +7,10 @@ ReactiveObject.S3(.x, .references = character(), id = character(),
   uid = character(), value = NULL, where = parent.frame(),
   checksum = character(), exists_visible = FALSE, has_cached = FALSE,
   is_invalid = FALSE, registry = getRegistry(),
-  references_pull = new.env(parent = emptyenv()),
-  references_push = new.env(parent = emptyenv()), has_pull_refs = FALSE,
+  refs_pull = new.env(parent = emptyenv()),
+  refs_push = new.env(parent = emptyenv()), has_pull_refs = FALSE,
   has_push_refs = FALSE, has_pushed = FALSE, is_running_push = FALSE,
-  func = NULL, checksums_ref = new.env(parent = emptyenv()),
+  func = NULL, refs_checksum = new.env(parent = emptyenv()),
   condition = NULL)
 }
 \arguments{
@@ -83,7 +83,7 @@ Reference to the registry environment. Important for retrieving and
      comparing checksum values.
 Initial: \code{getRegistry()}.}
 
-\item{\code{references_pull}}{\code{\link{environment}}.
+\item{\code{refs_pull}}{\code{\link{environment}}.
 Environment storing information of referenced objects.
 Initial: \code{new.env(parent = emptyenv())}.}
 
@@ -91,7 +91,7 @@ Initial: \code{new.env(parent = emptyenv())}.}
 Binding function.
 Initial: \code{NULL}.}
 
-\item{\code{checksums_ref}}{\code{\link{environment}}.
+\item{\code{refs_checksum}}{\code{\link{environment}}.
 Environment for caching checksums of referenced objects.
 Initial: \code{new.env(parent = emptyenv())}.}
 
@@ -166,7 +166,7 @@ digest::digest(x_1)
 obj$computeChecksum()
 
 ## Compute UID //
-x_1_uid <- getObjectUid(id = "x_1")
+x_1_uid <- computeObjectUid(id = "x_1")
 obj$uid
 obj$computeUid()
 ## --> automatically executed in constructor based on 'obj$id' and 'obj$where'

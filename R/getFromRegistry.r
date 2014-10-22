@@ -105,7 +105,7 @@ setMethod(
 
   out <- NULL
   if (length(id)) {
-    uid <- getObjectUid(id = id, where = where)
+    uid <- computeObjectUid(id = id, where = where)
     out <- getFromRegistryByUid(uid = uid)
   }
   return(out)

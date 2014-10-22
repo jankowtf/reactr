@@ -590,7 +590,7 @@ registry <- getRegistry()
 showRegistryContent()
 `` 
 
-The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `getObjectUid()` for the details of the computation of object UIDs.
+The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `computeObjectUid()` for the details of the computation of object UIDs.
 
 #### Retrieve from registry
 
@@ -599,8 +599,8 @@ x_1_hidden <- getFromRegistry(id = "x_1")
 x_2_hidden <- getFromRegistry(id = "x_2")
 
 ## Via UID //
-getFromRegistry(getObjectUid("x_1"))
-getFromRegistry(getObjectUid("x_2"))
+getFromRegistry(computeObjectUid("x_1"))
+getFromRegistry(computeObjectUid("x_2"))
 
 ```
 
@@ -634,7 +634,7 @@ removeFromRegistry(id = "x_1")
 ## --> notice that entry `2fc2e352f72008b90a112f096cd2d029` has been removed
 
 ## Via UID //
-removeFromRegistry(getObjectUid("x_2"))
+removeFromRegistry(computeObjectUid("x_2"))
 ## --> notice that entry `ab22808532ff42c87198461640612405` has been removed
 ```
 

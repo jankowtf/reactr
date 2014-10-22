@@ -133,7 +133,7 @@ setMethod(
   if (!length(id)) {
     stop(paste0("Provide an ID"))
   }
-  uid <- getObjectUid(id = id, where = where)    
+  uid <- computeObjectUid(id = id, where = where)    
   
   if (exists(id, envir = where, inherits = FALSE)) {
     has_binding <- try(bindingIsActive(id, where))

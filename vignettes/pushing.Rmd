@@ -1,5 +1,5 @@
 ---
-title: "Caching"
+title: "Pushing"
 author: "Janko Thyson"
 date: "Thursday, October 16, 2014"
 output:
@@ -11,19 +11,104 @@ output:
 suppressMessages(require("reactr"))
 ```
 
+The underlying registry mechanism of `reactr` ensures that references of the hidden instances/objects of class [ReactiveObject.S3](../R/ReactiveObject.S3) are stored in a registry object (see vignette [Registry Mechanism](./registry_mechanism.Rmd) for details). 
 
-```{r}
+Besides being a prerequisite for the caching mechanism that allows the specification of bi-directional bindings (see vignette [Bi-Directional Bindings](./bidirectional_bindings.Rmd), this also facilitates the use of a **push paradigm** with respect to reactivity or the propagation of changes throught an application.
+
+Below is a short example that illustrates how the push mechanism works.
+
+## Scenario description
+
+We set up a very simple example:
+
+- there exists a reactive object that other objects can reference: `x_1`
+- each modification of `x_1` should trigger two events in a **push** manner:
+
+    1. Update a database table
+    2. Send an E-Mail to a certain address
+
+## Implementation
+
+Ensure that required packages are loaded
+
+```{r, echo=FALSE, }
+pkgs <- c("sendmailR", "RSQLite", "sqldf")
+suppressMessages(
+  sapply(pkgs, function(pkg) {
+    if (!suppressWarnings(require(pkg, character.only = TRUE))) {
+      install.packages(pkg)
+      require(pkg, character.only = TRUE)
+    }
+    invisible(NULL)
+  })
+)
+```
+
+Set reactive object
+
+```{r, eval=FALSE}
 setReactiveS3(id = "x_1", value = 10)
+```
+ 
+Define the actual core functions for 
+
+- the database update
+- sending the E-Mail
+  
+ 
+```{r}
+updateDatabase <- function(
+  id, 
+  value, 
+  con = file.path(tempdir(), "testdb.sqlite")
+) {
+  
+  db <- dbConnect(SQLite(), dbname = con)
+  sqldf(paste0("attach '", con, "' as new"))
+  if (!"x_1" %in%  dbListTables(db))
+  dbSendQuery(conn = db,
+    "CREATE TABLE x_1 (
+        Datetime TEXT,
+        Value INTEGER
+    )"
+  )
+  dbSendQuery(conn = db,
+         "INSERT INTO School
+         VALUES (1, 'urban', 'state', 'medium')")
+  msg <- paste0("[", Sys.time(), 
+    "] Push-triggered database update for ", id, ": ", x_1)
+  write(msg, file = con, append = TRUE)
+}
+sendEmail <- function(id, value, con) {
+  
+}
+
+
+#use string formatting and your system info to format FROM address
+from <- sprintf("<Project1@%s>", Sys.info()[4])
+ 
+to <- "<janko.thyson@gmail.com>"
+subject <- "Test Email From R"
+ 
+#create list with text of body as first element
+#second list element is R object to attach using the mime_part() function
+body <- list("Email sent from R. Dataframe attached.",mime_part(data.frame(x=rnorm(1000),y=rnorm(1000)),name="output"))
+
+sendmail(from, to, subject, body, control=list(smtpServer="ASPMX.L.GOOGLE.COM"))
+
 path_testfile <- file.path(tempdir(), "pushtest.txt")
 suppressWarnings(file.remove(path_testfile))
 
+
 setReactiveS3(
-  id = "x_2", 
+  id = "pushHandlerForX1", 
   value = function() {
     "object-ref: {id: x_1}"
-    msg <- paste0("[", Sys.time(), 
-      "] Simulated push-triggered database update for x_1: ", x_1)
-    write(msg, file = file.path(tempdir(), "pushtest.txt"), append = TRUE)
+    fooUpdateDatabase(
+      id = "x_1", 
+      value = x_1 * 2, 
+      con = file.path(tempdir(), "pushtest.txt")
+    )
     TRUE
   }, 
   push = TRUE
@@ -51,3 +136,56 @@ resetRegistry()
 
 
   
+```{r}
+setReactiveS3(id = "x_1", value = 1:5, typed = TRUE)
+setReactiveS3(id = "x_2", value = function() { 
+  "object-ref: {id: x_1}"
+  x_1 * 2
+}, typed = TRUE)
+setReactiveS3(id = "x_3", value = function() { 
+  "object-ref: {id: x_1}"
+  "object-ref: {id: x_2}"
+  data.frame(x_1, x_2)
+}, typed = TRUE)
+x_3
+
+x_1 <- 10:15
+x_3
+x_1 <- x_1 * 10
+x_3
+
+setReactiveS3(id = "x_1", value = 1:5, typed = TRUE)
+setReactiveS3(id = "x_2", value = function() { 
+  "object-ref: {id: x_1}"
+  x_1 * 2
+}, push = TRUE, typed = TRUE)
+setReactiveS3(id = "x_3", value = function() { 
+  "object-ref: {id: x_1}"
+  "object-ref: {id: x_2}"
+  data.frame(x_1, x_2)
+}, push = TRUE, typed = TRUE)
+x_3
+
+x_1 <- 10:15
+x_3
+x_1 <- x_1 * 10
+x_3
+
+setReactiveS3(id = "x_4", value = function() { 
+  "object-ref: {id: x_1}"
+  "object-ref: {id: x_2}"
+  "object-ref: {id: x_3}"
+  list(x_1 = x_1, x_2 = x_2, x_3 = x_3, 
+     message = paste0("Value of `x_1`: \n", paste(x_1, collapse = "\n"))
+  )
+}, push = TRUE)
+x_4
+message(x_4$message)
+
+x_1 <- 1
+x_4
+
+x_1 <- 1:100
+x_4
+```
+

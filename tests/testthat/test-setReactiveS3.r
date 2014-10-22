@@ -34,7 +34,7 @@ test_that("setReactiveS3/explicit 'where'", {
     x_1$registry[[x_1$uid]][[x_1$uid]]
   } else {
     expect_equal(x_1, value)
-    uid_1 <- getObjectUid(id = "x_1", where = where)
+    uid_1 <- computeObjectUid(id = "x_1", where = where)
     expect_true("id" %in% ls(getRegistry()[[uid_1]]))
     expect_true("where" %in% ls(getRegistry()[[uid_1]]))
     expect_is(regobj_1 <- getRegistry()[[uid_1]], "ReactiveObject.S3")
@@ -65,11 +65,11 @@ test_that("setReactiveS3/explicit 'where'", {
   } else {
     expect_equal(x_1, value_2)
     expect_equal(x_2, value_2 + 60*60*24)
-    uid_2 <- getObjectUid(id = "x_2", where = where)
+    uid_2 <- computeObjectUid(id = "x_2", where = where)
     expect_is(regobj_2 <- getRegistry()[[uid_2]], "ReactiveObject.S3")
     expect_equal(regobj_2$id, "x_2")
-    expect_true(exists(uid_1, regobj_2$references_pull))
-    expect_equal(regobj_2$references_pull[[uid_1]], regobj_1)
+    expect_true(exists(uid_1, regobj_2$refs_pull))
+    expect_equal(regobj_2$refs_pull[[uid_1]], regobj_1)
     expect_equal(regobj_2$checksum, digest::digest(x_1 + 60*60*24))
     
     (x_1 <- Sys.time())
@@ -240,6 +240,59 @@ test_that("setReactiveS3/bidirectional/identity", {
   
 })
 
+test_that("setReactiveS3/bidirectional/identity/wait", {
+  
+  setReactiveS3(id = "x_1", value = function() {
+    .ref_1 <- get(x = "x_2")
+    .ref_1
+  })
+  expect_equal(x_1, NULL)
+  setReactiveS3(id = "x_3", value = function() {
+    .ref_1 <- get(x = "x_2")
+    .ref_1
+  })
+  expect_equal(x_3, NULL)
+  setReactiveS3(id = "x_2", value = function() {
+    .ref_1 <- get(x = "x_1")
+    .ref_1
+  })
+  expect_equal(x_2, NULL)
+
+  if (FALSE) {
+    x_1$registry[[x_1$uid]][[x_1$uid]]
+    x_1$registry[[x_1$uid]][[x_2$uid]]
+    x_2$registry[[x_2$uid]][[x_2$uid]]
+    x_2$registry[[x_2$uid]][[x_1$uid]]
+  
+    x_1 <- 10
+    x_2$value
+    x_1$value
+    (x_2 <- 20)
+    x_1$value
+    x_2$value
+  }
+  
+  expect_equal(x_1 <- 10, 10)
+  expect_equal(x_2, x_1)
+  expect_equal(x_1, x_2)
+  expect_equal(x_3, x_2)
+  expect_equal(x_3, x_1)
+  expect_equal(x_1, x_2)
+  expect_equal(x_2, x_1)
+  expect_equal(x_2 <- 20, 20)
+  expect_equal(x_1, x_2)
+  expect_equal(x_2, x_1)
+  expect_equal(x_3, x_1)
+  expect_equal(x_3, x_2)
+  
+  ## Clean up //
+  suppressWarnings(rm(x_1))
+  suppressWarnings(rm(x_2))
+  suppressWarnings(rm(x_3))
+  resetRegistry()
+  
+})
+
 test_that("setReactiveS3/bidirectional/function/steady", {
 
   setReactiveS3(id = "x_1", value = function() {
@@ -382,12 +435,16 @@ test_that("setReactiveS3/scenario 1", {
   value <- 10
   setReactiveS3(id = "x_1", value = value, where = where)
   expect_equal(where$x_1, value)
-  setReactiveS3(id = "x_2", value = function() {
+showRegistryContent()  
+  setReactiveS3(id = "x_2", value = function(where = where) {
+    print(where)
+    print(ls(where))
     .ref_1 <- get(x = "x_1", envir = where)
     .ref_1 + 10
   })
   expect_equal(x_2, where$x_1 + 10)
-  
+  value(where = where)
+
   ## Clean up //
   suppressWarnings(rm(where))
   suppressWarnings(rm(x_2))
@@ -591,7 +648,7 @@ test_that("setReactiveS3: strictness (get)", {
     x_2
     registry <- getRegistry()
     ls(registry)
-    uid <- getObjectUid(id = "x_2", where)
+    uid <- computeObjectUid(id = "x_2", where)
     ls(registry[[uid]][[uid]])
   }
   expect_equal(x_2, 20)
@@ -1125,13 +1182,13 @@ test_that("setReactiveS3/push", {
   
   ## Actual push //
   (x_1 <- 100)
-  uid_1 <- getObjectUid("x_1")
-  uid_2 <- getObjectUid("x_2")
+  uid_1 <- computeObjectUid("x_1")
+  uid_2 <- computeObjectUid("x_2")
   reg_1 <- getFromRegistryByUid(uid_1)
   reg_2 <- getFromRegistryByUid(uid_2)
   expect_false(reg_2$is_running_push)
   expect_false(reg_2$has_pushed)
-  expect_true(exists(uid_2, reg_1$references_push, inherits = FALSE))
+  expect_true(exists(uid_2, reg_1$refs_push, inherits = FALSE))
   expect_equal(length(readLines(path_testfile)), 2)
   
   (x_1 <- 200)
@@ -1162,9 +1219,9 @@ test_that("ensureIntegrity", {
   x_2
   setReactiveS3(id = "x_1", value = 20)
   expect_equal(x_2, 20)
-  uid_1 <- getObjectUid("x_1")
+  uid_1 <- computeObjectUid("x_1")
   expect_equal(
-    getFromRegistry("x_2")$references_pull[[uid_1]],
+    getFromRegistry("x_2")$refs_pull[[uid_1]],
     getFromRegistry("x_1")
   )
   
@@ -1192,6 +1249,23 @@ test_that("ensureIntegrity", {
       "cache 2" = x_2
     )
   }
+  ## Clean up //
+  resetRegistry()
+  
+})
+
+##------------------------------------------------------------------------------
+context("setReactiveS3/typed")
+##------------------------------------------------------------------------------
+
+test_that("ensureIntegrity/typed", {
+
+  resetRegistry()
+  setReactiveS3(id = "x_1", value = 10)
+  expect_equal(x_1 <- TRUE, TRUE)
+  setReactiveS3(id = "x_1", value = 10, typed = TRUE)
+  expect_error(x_1 <- TRUE)
+  
   ## Clean up //
   resetRegistry()
   

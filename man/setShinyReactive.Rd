@@ -3,7 +3,9 @@
 \alias{setShinyReactive}
 \title{Set Reactive Object with Shiny Functionality (S3)}
 \usage{
-setShinyReactive(id, value = NULL, where = parent.frame(), ...)
+setShinyReactive(id, value = NULL, where = parent.frame(), quoted = FALSE,
+  label = NULL, domain = shiny:::getDefaultReactiveDomain(),
+  integrity = TRUE, push = FALSE, typed = FALSE, ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.
@@ -197,7 +199,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-  	\link[reactr]{setReactiveS3}
+    \link[reactr]{setReactiveS3}
 }
 }
 

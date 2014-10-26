@@ -280,7 +280,7 @@ x_4
   
 - Binding/Relationship: 
 
-  `A` uses value of `B` "as is" and `B` uses value of `A` "as is". This results in a steady state. 
+  `A` uses value of `B` "as is" and `B` uses value of `A` "as is". This results in a **steady state**. 
 
 ### Example
 
@@ -337,7 +337,7 @@ x_5
 # [1] 1000
 ```
 
-## Scenario 4: bi-directional (2)
+## Scenario 5: bi-directional (2)
 
 ### Scenario explanation
 
@@ -349,7 +349,7 @@ x_5
 
   `A` uses transformed value of `B` and `B` uses transformed value of `A`. 
   
-  The binding functions used result in a **steady** state.
+  The binding functions used result in a **steady state**.
 
 ### Example
 
@@ -410,7 +410,7 @@ x_7
 # [1] 1000
 ```
 
-## Scenario 4: bi-directional (3)
+## Scenario 6: bi-directional (3)
 
 ### Scenario explanation
 
@@ -422,7 +422,7 @@ x_7
 
   `A` uses transformed value of `B` and `B` uses transformed value of `A`. 
   
-  The binding functions used result in a **non-steady** state.
+  The binding functions used result in a **non-steady state**.
 
 ### Example
 
@@ -587,7 +587,7 @@ registry <- getRegistry()
 #### Show registry content
 
 ```
-showRegistryContent()
+showRegistry()
 `` 
 
 The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `computeObjectUid()` for the details of the computation of object UIDs.
@@ -641,7 +641,7 @@ removeFromRegistry(computeObjectUid("x_2"))
 #### Reset from registry
 
 ```
-showRegistryContent()
+showRegistry()
 resetRegistry()
-showRegistryContent()
+showRegistry()
 ```

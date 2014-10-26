@@ -78,11 +78,11 @@ setMethod(
   if (is.null(sub)) {
     stop(paste0("No entry in registry for UID: ", uid))
   }
-  id <- subenv$id
+  id <- subenv$.id
   if (is.null(id)) {
     stop(paste0("No ID stored in registry for UID: ", uid))
   }
-  where <- subenv$where
+  where <- subenv$.where
   if (is.null(where)) {
     stop(paste0("No location stored in registry for UID: ", uid))
   }  

@@ -8,15 +8,15 @@
 #' @param where \strong{Signature argument}.
 #'    Object containing registry location information.
 #' @template threedots
-#' @example inst/examples/showRegistryContent.r
+#' @example inst/examples/showRegistry.r
 #' @seealso \code{
-#'   	\link[reactr]{showRegistryContent-environment-method},
+#'   	\link[reactr]{showRegistry-environment-method},
 #'     \link[reactr]{getRegistry}
 #' }
 #' @template author
 #' @template references
 setGeneric(
-  name = "showRegistryContent",
+  name = "showRegistry",
   signature = c(
     "where"
   ),
@@ -24,7 +24,7 @@ setGeneric(
     where = NULL,
     ...
   ) {
-    standardGeneric("showRegistryContent")       
+    standardGeneric("showRegistry")       
   }
 )
 
@@ -32,23 +32,23 @@ setGeneric(
 #' Show Registry Content (missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{showRegistryContent}}
+#' See generic: \code{\link[reactr]{showRegistry}}
 #'      
-#' @inheritParams showRegistryContent
+#' @inheritParams showRegistry
 #' @param where \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{showRegistryContent-environment-method}}.
-#' @example inst/examples/showRegistryContent.r
+#'    \code{\link[reactr]{showRegistry-environment-method}}.
+#' @example inst/examples/showRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{showRegistryContent-environment-method},
+#'    \link[reactr]{showRegistry-environment-method},
 #'     \link[reactr]{getRegistry}
 #' }
 #' @template author
 #' @template references
 #' @export
-#' @aliases showRegistryContent-missing-method
+#' @aliases showRegistry-missing-method
 setMethod(
-  f = "showRegistryContent", 
+  f = "showRegistry", 
   signature = signature(
     where= "missing"
   ), 
@@ -57,7 +57,7 @@ setMethod(
     ...
   ) {
   
-  return(showRegistryContent(
+  return(showRegistry(
     where = getRegistry(),
     ...
   ))    
@@ -69,22 +69,22 @@ setMethod(
 #' Get Hash Registry (environment)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{showRegistryContent}}
+#' See generic: \code{\link[reactr]{showRegistry}}
 #'      
-#' @inheritParams showRegistryContent
+#' @inheritParams showRegistry
 #' @param where \code{\link{environment}}.
 #' @return \code{\link{logical}}. \code{TRUE}: successful; \code{FALSE}: fail.
-#' @example inst/examples/showRegistryContent.r
+#' @example inst/examples/showRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{showRegistryContent},
+#'    \link[reactr]{showRegistry},
 #'     \link[reactr]{getRegistry}
 #' }
 #' @template author
 #' @template references
 #' @export
-#' @aliases showRegistryContent-environment-method
+#' @aliases showRegistry-environment-method
 setMethod(
-  f = "showRegistryContent", 
+  f = "showRegistry", 
   signature = signature(
     where= "environment"
   ), 

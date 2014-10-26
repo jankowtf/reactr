@@ -79,8 +79,8 @@ setMethod(
   out <- FALSE
   
   ## Check self //
-  idx_exist <- exists(input$id, input$where, inherits = FALSE)
-  has_binding <- try(bindingIsActive(input$id, input$where), silent = TRUE)
+  idx_exist <- exists(input$.id, input$.where, inherits = FALSE)
+  has_binding <- try(bindingIsActive(input$.id, input$.where), silent = TRUE)
   if (inherits(has_binding, "try-error")) {
     has_binding <- FALSE
   } 
@@ -94,9 +94,9 @@ setMethod(
         msg = c(
           Reason = "already a non-reactive object",
           Action = "overwrite existing object",
-          ID = input$id,
-          UID = input$uid,
-          Location = capture.output(input$where)
+          ID = input$.id,
+          UID = input$.uid,
+          Location = capture.output(input$.where)
         ),
         ns = "reactr",
         type = "warning"
@@ -108,9 +108,9 @@ setMethod(
         msg = c(
           Reason = "already a non-reactive object",
           Action = "exit with error",
-          ID = input$id,
-          UID = input$uid,
-          Location = capture.output(input$where)
+          ID = input$.id,
+          UID = input$.uid,
+          Location = capture.output(input$.where)
         ),
         ns = "reactr",
         type = "error"
@@ -125,9 +125,9 @@ setMethod(
         msg = c(
           Reason = "already an reactive object",
           Action = "existing object is overwritten",
-          ID = input$id,
-          UID = input$uid,
-          Location = capture.output(input$where)
+          ID = input$.id,
+          UID = input$.uid,
+          Location = capture.output(input$.where)
         ),
         ns = "reactr",
         type = "warning"
@@ -139,9 +139,9 @@ setMethod(
         msg = c(
           Reason = "already an reactive object",
           Action = "exit with error",
-          ID = input$id,
-          UID = input$uid,
-          Location = capture.output(input$where)
+          ID = input$.id,
+          UID = input$.uid,
+          Location = capture.output(input$.where)
         ),
         ns = "reactr",
         type = "error"
@@ -156,9 +156,9 @@ setMethod(
         msg = c(
           Reason = "object does not exist yet",
           Action = "object is created",
-          ID = input$id,
-          UID = input$uid,
-          Location = capture.output(input$where)
+          ID = input$.id,
+          UID = input$.uid,
+          Location = capture.output(input$.where)
         ),
         ns = "reactr",
         type = "warning"
@@ -169,9 +169,9 @@ setMethod(
         msg = c(
           Reason = "object does not exist yet",
           Action = "exit with error",
-          ID = input$id,
-          UID = input$uid,
-          Location = capture.output(input$where)
+          ID = input$.id,
+          UID = input$.uid,
+          Location = capture.output(input$.where)
         ),
         ns = "reactr",
         type = "error"
@@ -180,31 +180,35 @@ setMethod(
   }
   
   if (out && idx_exist) {
-    rm(list = input$id, envir = input$where, inherits = TRUE)
+    rm(list = input$.id, envir = input$.where, inherits = TRUE)
   }
 
   ## Check pull references //
-  out_ref <- all(sapply(ls(input$refs_pull), function(ref_uid) {
-    ref_inst <- get(ref_uid, input$refs_pull, inherits = FALSE)
-    idx_exist <- exists(ref_inst$id, ref_inst$where, inherits = FALSE)
-print(idx_exist)    
+  out_ref <- all(sapply(ls(input$.refs_pull), function(ref_uid) {
+    ref <- get(ref_uid, input$.refs_pull, inherits = FALSE)
+    idx_exist <- exists(ref$.id, ref$.where, inherits = FALSE)
+# print(idx_exist)    
     out <- FALSE
     if (!idx_exist) {
       if (strict == 0) {
         out <- TRUE
-        input$wait <- TRUE
+        input$.has_cached <- TRUE
+        ## --> this prevents the binding function being executed "too early",
+        ## i.e. in cases where not all refs exist yet. 
+        ## Possibly think about how to solve this in a more encapsulated or
+        ## in a "more obvious" way with respect to maintainability.
       } else if (strict == 1) {
         conditionr::signalCondition(
           condition = "ReactivityPrerequisitesNotMetButOverwrite",
           msg = c(
             Reason = "reference does not exist yet",
             Action = "exit with warning",
-            ID = input$id,
-            UID = input$uid,
-            Location = capture.output(input$where),
-            "Reference ID" = ref_inst$id,
-            "Reference UID" = ref_inst$uid,
-            "Reference location" = ref_inst$where
+            ID = input$.id,
+            UID = input$.uid,
+            Location = capture.output(input$.where),
+            "Reference ID" = ref$.id,
+            "Reference UID" = ref$.uid,
+            "Reference location" = ref$.where
           ),
           ns = "reactr",
           type = "warning"
@@ -215,13 +219,12 @@ print(idx_exist)
           msg = c(
             Reason = "reference does not exist yet",
             Action = "exit with error",
-            ID = input$id,
-            UID = input$uid,
-            Location = capture.output(input$where),
-            Location = capture.output(input$where),
-            "Reference ID" = ref_inst$id,
-            "Reference UID" = ref_inst$uid,
-            "Reference location" = ref_inst$where
+            ID = input$.id,
+            UID = input$.uid,
+            Location = capture.output(input$.where),
+            "Reference ID" = ref$.id,
+            "Reference UID" = ref$.uid,
+            "Reference location" = ref$.where
           ),
           ns = "reactr",
           type = "error"

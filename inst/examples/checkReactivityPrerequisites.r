@@ -3,19 +3,16 @@
 ## NOTE
 ## This function has a strong internal character as it is mainly designed to 
 ## be used inside of 'setReactiveS3()'.
-## Thus not all aspects can be properly illustrated if not used in its default
-## context
+## Thus not all aspects can be properly illustrated if the function is not 
+## used in its default context
 
 ## Start with a fresh registry state //
 resetRegistry()
 
 suppressWarnings(rm(x_1))
-input <- reactr::ReactiveObject.S3()
-input <- prepareReactiveInstance(
-  input = input, 
-  id = "x_1",
-  value = NULL,
-  where = environment()
+input <- reactr::ReactiveObject.S3(
+  .id = "x_1",
+  .value = 10
 )
 
 ## Error reason: object does not exist yet //

@@ -78,7 +78,7 @@ setMethod(
   ) {  
     
   reg_ref <- getFromRegistryByUid(uid = uid)
-  reg_ref$unset()
+  reg_ref$.unset()
   
   }
 )

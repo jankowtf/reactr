@@ -135,7 +135,7 @@ setMethod(
   ) {
 
   from <- getFromRegistry(id = id_from, where = where_from)
-  from$copy(id = id_to, where = where_to)
+  from$.copy(id = id_to, where = where_to)
     
   }
 )

@@ -144,7 +144,7 @@ Observable3 <- R6Class(
         )
       }
     },
-    .classCheck = function(v) {
+    .checkClass = function(v) {
       if (!inherits(v, .class)) {
         num_clss <- c("integer", "numeric")
         if (all(c(class(v), .class) %in% num_clss)) {
@@ -221,7 +221,7 @@ Observable3 <- R6Class(
               condition = "BrokenReactiveReference",
               msg = c(
                 Reason = "broken reactive reference",
-                ID = id,
+                ID = .id,
                 UID = .uid,
                 Location = capture.output(.where),
                 "Reference UID" = ref_uid
@@ -245,10 +245,10 @@ Observable3 <- R6Class(
     },
     .computeUid = function() {
       out <- if (length(.id)) {
-print(.where)        
+# print(.where)        
         .uid <<- eval(substitute(digest::digest(list(id = ID, where = WHERE)), 
           list(ID = .id, WHERE = capture.output(eval(.where)))))
-print(.uid)        
+# print(.uid)        
         .uid
       } else {
         character()
@@ -338,15 +338,14 @@ print(.uid)
     },
     .registerPushReferences = function() {
       out <- if (.hasPullReferences()) {
-        .must_push <- TRUE
-#         .has_push_refs <- TRUE
         sapply(ls(.refs_pull), function(ref_uid) {
           ## Pointer //
           assign(ref_uid, .registry[[ref_uid]], envir = .refs_push)
           if (!exists(.uid, envir = .refs_pull[[ref_uid]]$.refs_push)) {
           ## Ensure a push reference is created //
             assign(.uid, self, .refs_pull[[ref_uid]]$.refs_push)
-#             .refs_pull[[ref_uid]]$.has_push_refs <- TRUE
+            .refs_pull[[ref_uid]]$.has_push_refs <- TRUE
+            .refs_pull[[ref_uid]]$.must_push <- TRUE
             TRUE
           } else {
             FALSE
@@ -360,10 +359,11 @@ print(.uid)
   )
 )
 
-x <- Observable3$new(id = "abcd", func = function() print("hello world!"))
-x$label
+# x <- Observable3$new(id = "abcd", func = function() print("hello world!"))
+# x$label
 
 #' @import R6
+#' @import shiny
 Observable2 <- R6Class(
   'Observable2',
   inherit = shiny:::Observable,
@@ -530,7 +530,7 @@ print("updateValue()/before")
 print("updateValue()/after")  
     },
     ## {@change: jt, start}
-    .classCheck = function(v) {
+    .checkClass = function(v) {
       if (!inherits(v, .class)) {
         num_clss <- c("integer", "numeric")
         if (all(c(class(v), .class) %in% num_clss)) {
@@ -963,7 +963,7 @@ o <<- o
         message("----- set (reactive) -----")
         
         if (typed) {
-          o$.classCheck(v = v)
+          o$.checkClass(v = v)
         }
         
         ## Set //
@@ -1027,9 +1027,9 @@ o <<- o
         }
       }
 
-      ##----------------------------------------------------------------------
+      ##------------------------------------------------------------------------
       ## Return //
-      ##----------------------------------------------------------------------
+      ##------------------------------------------------------------------------
 
       ## Condition handling //
       if (!is.null(o$.condition)) {           

@@ -1,6 +1,7 @@
 context("shiny/basics")
 test_that("shiny", {
 
+  skip("not finished yet")
   require("shiny")
   shiny:::makeFunction
   x_1 <- 10

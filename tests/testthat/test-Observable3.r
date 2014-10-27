@@ -1,17 +1,19 @@
-context("ReactiveObject.S3_A")
-test_that("ReactiveObject.S3", {
+##------------------------------------------------------------------------------
+context("Observable3")
+##------------------------------------------------------------------------------
 
-  where <- environment()
-  expect_is(ReactiveObject.S3(), "ReactiveObject.S3")
-  expect_is(ReactiveObject.S3(TRUE), "ReactiveObject.S3")
-  
-  expect_is(res <- ReactiveObject.S3(
-      id = "x_1",
-      value = 10
-#       where = where
+test_that("Observable3", {
+
+  expect_is(
+    res <- Observable3$new(
+      id = "x_1", 
+      value = 10,
+      where = environment(),
+      func = NULL
     ), 
-    "ReactiveObject.S3"
+    "Observable3"
   )
+  
   expect_equal(res$.value, 10)
   expect_equal(res$.checksum, digest::digest(10))
 
@@ -35,20 +37,21 @@ test_that("ReactiveObject.S3", {
   ## Copy //
   resetRegistry()
   expect_true(res$.register())
-  ls(registry)
+#   showRegistry()
   expect_equal(res$.copy(id = "x_copied"), 10)
-  ls(registry)
+#   showRegistry()
   expect_equal(x_copied, 10)
-  
+
 })
 
-test_that("ReactiveObject.S3/setReactiveS3", {
+
+test_that("Observable3/setReactiveS3", {
 
   resetRegistry()
   registry <- getRegistry()
-  setReactiveS3(id = "x_1", value = 10)
+  setShinyReactive(id = "x_1", value = 10)
   obj <- getFromRegistry("x_1")
-  expect_is(obj, "ReactiveObject.S3")
+  expect_is(obj, "Observable3")
 
   ## Copy //
   obj$.copy(id = "x_1_copied")

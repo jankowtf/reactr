@@ -204,16 +204,16 @@ digest::digest(x_1)
 obj$checksum
 obj$value <- x_1 <- 100
 digest::digest(x_1)
-obj$computeChecksum()
+obj$.computeChecksum()
 
 ## Compute UID //
 x_1_uid <- computeObjectUid(id = "x_1")
 obj$uid
-obj$computeUid()
+obj$.computeUid()
 ## --> automatically executed in constructor based on 'obj$id' and 'obj$where'
 
 ## Copy //
-obj$copy(id = "x_1_copied")
+obj$.copy(id = "x_1_copied")
 x_1_copied
 x_1 <- 100
 x_1
@@ -227,17 +227,17 @@ getFromRegistry("x_1_copied")
 obj$hasReferences()
 
 ## Register and unregister //
-obj$register()
+obj$.register()
 exists(obj$uid, getRegistry())
 ## --> already registered through call to 'setReactiveS3()'
-obj$unregister()
+obj$.unregister()
 exists(obj$uid, getRegistry())
-obj$register()
+obj$.register()
 exists(obj$uid, getRegistry())
 
 ## Remove //
 ## Remove visible object from registry and itself
-obj$remove()
+obj$.remove()
 try(x_1)
 ## --> removed 
 

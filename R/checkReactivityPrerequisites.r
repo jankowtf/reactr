@@ -42,6 +42,47 @@ setGeneric(
 )
 
 #' @title
+#' Check Prerequisits for Setting Reactive Objects (Observable3) 
+#'
+#' @description 
+#' See generic: \code{\link[reactr]{checkReactivityPrerequisites}}
+#'      
+#' @inheritParams checkReactivityPrerequisites
+#' @param input \code{\link{Observable3}}.
+#' @return See method 
+#'    \code{\link[reactr]{checkReactivityPrerequisites-ReactiveObject.S3-method}}. 
+#' @example inst/examples/checkReactivityPrerequisites.r
+#' @seealso \code{
+#'    \link[reactr]{checkReactivityPrerequisites},
+#'     \link[reactr]{setReactiveS3}
+#' }
+#' @template author
+#' @template references
+#' @export
+#' @aliases checkReactivityPrerequisity-Observable3-method
+setMethod(
+  f = "checkReactivityPrerequisites", 
+  signature = signature(
+    input = "Observable3"
+  ), 
+  definition = function(
+    input,
+    strict,
+    ...
+  ) {
+    
+  mthd <- selectMethod(f = "checkReactivityPrerequisites",
+               signature = c(input = "ReactiveObject.S3"))  
+  mthd(
+    input = input, 
+    strict = strict, 
+    ...
+  )
+    
+  }
+)
+
+#' @title
 #' Check Prerequisits for Setting Reactive Objects (ReactiveObject.S3) 
 #'
 #' @description 
@@ -187,6 +228,7 @@ setMethod(
   out_ref <- all(sapply(ls(input$.refs_pull), function(ref_uid) {
     ref <- get(ref_uid, input$.refs_pull, inherits = FALSE)
     idx_exist <- exists(ref$.id, ref$.where, inherits = FALSE)
+# message("idx_exist:")    
 # print(idx_exist)    
     out <- FALSE
     if (!idx_exist) {

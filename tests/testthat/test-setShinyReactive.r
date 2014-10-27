@@ -1,81 +1,78 @@
 ##------------------------------------------------------------------------------
-context("setShinyReactive/in parent environment")
+context("setShinyReactive/one-directional")
 ##------------------------------------------------------------------------------
 
-test_that("setShinyReactive/two", {
+test_that("setShinyReactive/one-directional (1)", {
 
-  require("shiny")
+  resetRegistry()
+  expect_equal(setShinyReactive(id = "x_1", value = 10), 10)
+  expect_equal(setShinyReactive(id = "x_2", value = function() {
+    "object-ref: {id: x_1}"
+    x_1 * 2
+  }), 10 * 2)
   
-  ## In .GlobalEnv //
-  ## Make sure 'x_1' and 'x_2' are removed:
-#   rm(list = ls(environment()))
-  suppressWarnings(rm(x_1))
-  suppressWarnings(rm(x_2))
+  expect_equal(x_1, 10)
+  expect_equal(x_2, x_1 * 2)
+  expect_equal(x_1 <- 20, 20)
+  expect_equal(x_2, x_1 * 2)
   
-  value <- Sys.time()
-  setShinyReactive(id = "x_1", value = value)
-  expect_equal(x_1, value)
-  value_2 <- Sys.time()
-  expect_equal(x_1 <- value_2, value_2)
-  expect_equal(x_1, value_2)
-#   where=environment()
-  expect_equal(
-    setShinyReactive(id = "x_2", value = reactive(x_1 + 60*60*24)),
-    value_2 + 60*60*24)
-  expect_equal(x_2, value_2 + 60*60*24)
-  ## --> 'x_1' + one day
-  x_1 <- Sys.time()
-  x_1
-  expect_equal(x_2, x_1 + 60*60*24)
-  ## --> reactive
-  
-  suppressWarnings(rm(x_1))
-  suppressWarnings(rm(x_2))
-  
+  ## Clean up //
+  removeReactive("x_1")
+  removeReactive("x_2")
+  expect_true(!length(showRegistry()))
+
 })
 
-test_that("setShinyReactive/three", {
+test_that("setShinyReactive/one-directional (2)", {
+
+  skip("environment issues")
+  resetRegistry()
+  where_1 <- new.env()
+  expect_equal(setShinyReactive(id = "x_1", value = 10, where = where_1), 10)
+  expect_equal(setShinyReactive(id = "x_2", value = function() {
+    "object-ref: {id: x_1, where: where_1}"
+    x_1 * 2
+  }, where = where_1, where_1 = where_1), 10 * 2)
   
-  x_1 <- setShinyReactive("x_1", 10)
-  x_2 <- setShinyReactive("x_2", 20)
-  expect_equal(x_3 <- setShinyReactive("x_3", value = reactive(x_1 + x_2 * 2)),
-               x_1 + x_2 * 2)
-  expect_equal(x_3, x_1 + x_2 * 2)
-  x_1 <- 100
-  expect_equal(x_3, x_1 + x_2 * 2)
-  x_2 <- 100
-  expect_equal(x_3, x_1 + x_2 * 2)
-  
-  suppressWarnings(rm(x_1))
-  suppressWarnings(rm(x_2))
-  suppressWarnings(rm(x_3))
+  expect_equal(where_1$x_1, 10)
+  expect_equal(where_1$x_2, where_1$x_1 * 2)
+  expect_equal(where_1$x_1 <- 100, 100)
+  expect_equal(where_1$x_2, where_1$x_1 * 2)
+
+  ## Clean up //
+  removeReactive("x_1")
+  removeReactive("x_2")
+  expect_true(!length(showRegistry()))
   
 })
 
 ##------------------------------------------------------------------------------
-context("setShinyReactive/in custom environment")
+context("setShinyReactive/bi-directional")
 ##------------------------------------------------------------------------------
 
+test_that("setShinyReactive/bi-directional (1)", {
 
-test_that("setShinyReactive/two", {
+  expect_equal(setShinyReactive(id = "x_1", value = function() {
+    "object-ref: {id: x_2}"
+    x_2
+  }), NULL)
+  expect_equal(setShinyReactive(id = "x_2", value = function() {
+    "object-ref: {id: x_1}"
+    x_1
+  }), NULL)
   
-  ## In custom environment //
-  where <- new.env()
-  value <- 10
-  expect_equal(setShinyReactive("x_1", value = value, where = where), 
-               value)
-  expect_equal(where$x_1, value)
-  expect_equal(where$x_1 <- 100, 100)
-  expect_equal(where$x_1, 100)
+  expect_equal(x_1, NULL)
+  expect_equal(x_2, NULL)
 
-  expect_equal(
-    setShinyReactive(
-      "x_2", value = reactive(where$x_1 * 2), where = where
-    ),
-    where$x_1 * 2
-  )
-  expect_equal(where$x_2, where$x_1 * 2)
-  where$x_1 <- 500
-  expect_equal(where$x_2, where$x_1 * 2)
+  expect_equal(x_1 <- 10, 10)
+  expect_equal(x_2, 10)
+  expect_equal(x_1 <- 20, 20)
+  expect_equal(x_2, 20)
+
+  ## Clean up //
+  removeReactive("x_1")
+  removeReactive("x_2")
+  expect_true(!length(showRegistry()))
   
 })
+  

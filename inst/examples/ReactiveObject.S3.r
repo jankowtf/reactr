@@ -4,8 +4,8 @@
 ## Takes *any* object and simply changes the class attributes
 ReactiveObject.S3(
   list(
-    .id = "x_1",
-    .value = 10
+    id = "x_1",
+    value = 10
   )
 )  
 ReactiveObject.S3(TRUE)  
@@ -14,8 +14,8 @@ ReactiveObject.S3(TRUE)
 res <- ReactiveObject.S3()
 ls(res, all.names = TRUE)
 res <- ReactiveObject.S3(
-  .id = "x_1",
-  .value = 10
+  id = "x_1",
+  value = 10
 )
 res$.id
 res$.uid
@@ -24,8 +24,8 @@ res$.uid
 ## Recommended: include namespace //
 ## Regardless if you plan on using this class in an informal or formal way
 reactr::ReactiveObject.S3(
-  .id = "x_1",
-  .value = 10
+  id = "x_1",
+  value = 10
 )
 
 ##------------------------------------------------------------------------------
@@ -33,8 +33,8 @@ reactr::ReactiveObject.S3(
 ##------------------------------------------------------------------------------
 
 obj <- reactr::ReactiveObject.S3(
-  .id = "x_1",
-  .value = 10
+  id = "x_1",
+  value = 10
 )
 
 ## Compute checksum //
@@ -49,7 +49,7 @@ x_1_uid <- computeObjectUid(id = "x_1")
 x_1_uid
 obj$.uid
 obj$.computeUid()
-## --> automatically executed in constructor based on 'obj$id' and 'obj$where'
+## --> automatically executed in constructor based on 'obj$.id' and 'obj$.where'
 
 ## Copy //
 obj$.copy(id = "x_1_copied")

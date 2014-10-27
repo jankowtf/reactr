@@ -17,6 +17,9 @@
 #'    attribute should be updated so that it becomes an instance of class
 #'    \code{ReactiveObject.S3}. Mainly intended for rapid prototyping 
 #'    purposes
+#' @param pull_refs_list \code{\link{list}}. 
+#' 		List of pull references as returned by functions that identify 
+#' 		pull references (e.g. \code{\link[yamlr]{processYaml}}.
 #'    
 #' @field .id \code{\link{character}}.
 #'    Object ID.
@@ -52,6 +55,13 @@
 #'    If \code{FALSE}, the binding function (if there is any) is executed and 
 #'    after that the field is set to \code{TRUE} to signal that a cached value
 #'    exists.
+#'    Initial: \code{FALSE}.
+#' @field .force_cached \code{\link{logical}}.
+#'    Field that controls if cached value takes predence over binding function
+#'    in bi-directional settings.
+#'    \code{TRUE}: use cached value even though a binding function exists and
+#'    would be called otherwise;
+#'    \code{FALSE}: call binding function.
 #'    Initial: \code{FALSE}.
 #' @field .is_invalid \code{\link{logical}}.
 #'    Field for propagating the invalidity of referenced objects to its 
@@ -116,33 +126,34 @@
 #' @import digest
 ReactiveObject.S3 <- function(
   .x,
-  .references = character(),
+  pull_refs_list = character(),
   
-  .id = character(),
-  .uid = character(),
-  .value = NULL,
-  .where = parent.frame(),
-  .checksum = character(),
-  .class = class(.value),
+  id = character(),
+  uid = character(),
+  value = NULL,
+  where = parent.frame(),
+  checksum = character(),
+  cl = class(value),
   
-  .exists_visible = FALSE,
-  .cache = TRUE,
-  .has_cached = FALSE,
-  .is_invalid = FALSE,
+  exists_visible = FALSE,
+  cache = TRUE,
+  has_cached = FALSE,
+  force_cached = FALSE,
+  is_invalid = FALSE,
   
   ## Registry //
-  .registry = getRegistry(),
+  registry = getRegistry(),
   
   ## References //
-  .refs_pull = new.env(parent = emptyenv()),
-  .refs_push = new.env(parent = emptyenv()),
-  .refs_checksum = new.env(parent = emptyenv()),
-  .has_pull_refs = FALSE,
-  .has_push_refs = FALSE,
-  .must_push = FALSE,
-  .has_pushed = FALSE,
-  .is_running_push = FALSE,
-  .func = NULL,
+  refs_pull = new.env(parent = emptyenv()),
+  refs_push = new.env(parent = emptyenv()),
+  refs_checksum = new.env(parent = emptyenv()),
+  has_pull_refs = FALSE,
+  has_push_refs = FALSE,
+  must_push = FALSE,
+  has_pushed = FALSE,
+  is_running_push = FALSE,
+  func = NULL,
   
   ## Conditions and status messages //
   condition = NULL
@@ -158,30 +169,33 @@ ReactiveObject.S3 <- function(
     ## Fields and initialization //
     ##--------------------------------------------------------------------------
 
-    this$.cache <- .cache
-    this$.checksum <- .checksum
-    this$.refs_checksum <- .refs_checksum
-    this$.class <- .class
+    this$.cache <- cache
+    this$.calling <- new.env(parent = emptyenv())
+    this$.checksum <- checksum
+    this$.refs_checksum <- refs_checksum
+    this$.class <- cl
     this$.condition <- condition
     
-    this$.exists_visible <- .exists_visible
+    this$.exists_visible <- exists_visible
     
-    this$.func <- .func
-    this$.registry <- .registry
-    this$.has_cached <- .has_cached
+    this$.force_cached <- force_cached
+    this$.func <- func
+    this$.registry <- registry
+    this$.has_cached <- has_cached
     
-    this$.id <- .id
-    this$.is_invalid <- .is_invalid
+    this$.id <- id
+    this$.is_invalid <- is_invalid
     
-    this$.refs_pull <- .refs_pull
-    this$.refs_push <- .refs_push
-    this$.has_pull_refs <- .has_pull_refs
-    this$.has_push_refs <- .has_push_refs
-    this$.has_pushed <- .has_pushed
-    this$.is_running_push <- .is_running_push 
-    this$.must_push <- .must_push
-    this$.value <- .value
-    this$.where <- .where
+    this$.refs_pull <- refs_pull
+    this$.refs_push <- refs_push
+    this$.has_pull_refs <- has_pull_refs
+    this$.has_push_refs <- has_push_refs
+    this$.has_pushed <- has_pushed
+    this$.is_running_push <- is_running_push 
+    this$.must_push <- must_push
+    this$.out_of_sync <- FALSE
+    this$.value <- value
+    this$.where <- where
     
     ##--------------------------------------------------------------------------
     ## Methods //
@@ -225,12 +239,16 @@ ReactiveObject.S3 <- function(
         ## --> checksum missing or reference has changed 
         ## --> update                    
           if (verbose) {
+            message(paste0("Object: ", self$.uid))
             message(paste0("Modified reference: ", ref_uid))
           }
           self$.updateReferenceChecksum(
             ref = ref_uid, 
             checksum = ref_chk
           )
+          
+          ## Who is calling //
+          assign(self$.uid, NULL, envir = self$.refs_pull[[ref_uid]]$.calling)
           do_update <- TRUE
         }
       } else {
@@ -298,16 +316,16 @@ ReactiveObject.S3 <- function(
     }
     this$.copy <- function(self = this, id, where = parent.frame()) {
       if (!is.null(self$.func)) {
-        setReactiveS3(id = id, value = self$.func, where = .where)
+        setReactiveS3(id = id, value = self$.func, where = where)
       } else {
-        setReactiveS3(id = id, value = self$.value, where = .where)
+        setReactiveS3(id = id, value = self$.value, where = where)
       }
     }
-    this$.ensurePullReferencesIntegrity = function(ref_uid) {
-      if (exists(ref_uid, envir = .registry, inherits = FALSE)) {     
+    this$.ensurePullReferencesIntegrity = function(self = this, ref_uid) {
+      if (exists(ref_uid, envir = self$.registry, inherits = FALSE)) {     
         assign(ref_uid, 
-          get(ref_uid, envir = .registry, inherits = FALSE), 
-          envir = .refs_pull
+          get(ref_uid, envir = self$.registry, inherits = FALSE), 
+          envir = self$.refs_pull
         )      
       }
       
@@ -315,10 +333,10 @@ ReactiveObject.S3 <- function(
       ## Ensures that "in-object" reference (as compared to the 
       ## "in-registry" reference) is updated once a reference has 
       ## become invalid
-      if (  is.null(.refs_pull[[ref_uid]]) ||
-            .refs_pull[[ref_uid]]$.is_invalid
+      if (  is.null(self$.refs_pull[[ref_uid]]) ||
+            self$.refs_pull[[ref_uid]]$.is_invalid
       ) {                 
-        .refs_pull[[ref_uid]] <- .registry[[ref_uid]]
+        self$.refs_pull[[ref_uid]] <- self$.registry[[ref_uid]]
       }
       
       TRUE
@@ -371,14 +389,14 @@ ReactiveObject.S3 <- function(
       out
     }
     this$.registerPullReferences = function(self = this, refs = list(), 
-                                            where = .where) {
+                                            where = self$.where) {
       out <- if (length(refs)) {
         self$.has_pull_refs <- TRUE
         sapply(refs, function(ref) {
           ref_uid <- computeObjectUid(id = ref$id, where = eval(ref$where))
           if (!exists(ref_uid, envir = self$.registry)) {
           ## Ensure a valid ref instance exists in registry    
-            ref_inst <- ReactiveObject.S3(.id = ref$id, .where = eval(ref$where))
+            ref_inst <- ReactiveObject.S3(id = ref$id, where = eval(ref$where))
             ref_inst$.computeChecksum()
             ref_inst$.register()
           }
@@ -474,8 +492,27 @@ ReactiveObject.S3 <- function(
 
     this$.computeChecksum()
     this$.computeUid()
-    if (this$.cache && length(.references)) {
-      this$.registerPullReferences(refs = .references)
+    this$.class <- class(this$.value)
+    if (this$.cache && length(pull_refs_list)) {
+      this$.registerPullReferences(refs = pull_refs_list)
+    }
+    if (this$.cache && length(this$.uid)) {
+      this$.register(overwrite = TRUE)
+    }
+    
+    ## Catch self-reference situations //
+    if (length(this$.uid) && this$.uid %in% ls(this$.refs_checksum)) {    
+      conditionr::signalCondition(
+        condition = "NoSelfReferenceAllowed",
+        msg = c(
+          Reason = "tried to set a self-reference",
+          ID = this$.id,
+          UID = this$.uid,
+          Location = capture.output(this$.where)
+        ),
+        ns = "reactr",
+        type = "error"
+      )
     }
     
     class(this) <- c("ReactiveObject.S3", class(this))

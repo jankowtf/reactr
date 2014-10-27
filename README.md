@@ -611,20 +611,20 @@ class(x_1_hidden)
 ls(x_1_hidden)
 
 ## Some interesting fields //
-x_1_hidden$id
-x_1_hidden$where
-x_1_hidden$uid
-x_1_hidden$value
-x_1_hidden$hasReferences()
+x_1_hidden$.id
+x_1_hidden$.where
+x_1_hidden$.uid
+x_1_hidden$.value
+x_1_hidden$.hasPullReferences()
 
-x_2_hidden$id
-x_2_hidden$where
-x_2_hidden$uid
-x_2_hidden$value
-x_2_hidden$has_cached
-x_2_hidden$hasReferences()
-ls(x_2_hidden$references)
-x_2_hidden$references[[x_1_hidden$uid]]
+x_2_hidden$.id
+x_2_hidden$.where
+x_2_hidden$.uid
+x_2_hidden$.value
+x_2_hidden$.has_cached
+x_2_hidden$.hasPullReferences()
+ls(x_2_hidden$.refs_pull)
+x_2_hidden$references[[x_1_hidden$.uid]]
 ```
 #### Remove from registry
 

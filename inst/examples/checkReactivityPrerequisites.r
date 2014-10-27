@@ -11,8 +11,8 @@ resetRegistry()
 
 suppressWarnings(rm(x_1))
 input <- reactr::ReactiveObject.S3(
-  .id = "x_1",
-  .value = 10
+  id = "x_1",
+  value = 10
 )
 
 ## Error reason: object does not exist yet //

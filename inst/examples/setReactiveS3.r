@@ -723,9 +723,9 @@ ls(registry)
 uid_x_1 <- computeObjectUid(id = "x_1", where = environment())
 registry_x_1 <- registry[[uid_x_1]]
 ls(registry_x_1)
-registry_x_1$id
-registry_x_1$uid
-registry_x_1$where
+registry_x_1$.id
+registry_x_1$.uid
+registry_x_1$.where
 registry_x_1[[uid_x_1]]
 ## --> contains own registry value
 
@@ -741,9 +741,9 @@ ls(registry)
 uid_x_2 <- computeObjectUid(id = "x_2", where = environment())
 registry_x_2 <- registry[[uid_x_2]]
 ls(registry_x_2)
-registry_x_2$id
-registry_x_2$uid
-registry_x_2$where
+registry_x_2$.id
+registry_x_2$.uid
+registry_x_2$.where
 registry_x_2[[uid_x_2]]
 ## --> contains own registry value
 registry_x_2[[uid_x_1]]

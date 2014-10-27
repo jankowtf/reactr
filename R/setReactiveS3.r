@@ -246,40 +246,43 @@ setReactiveS3 <- function(
     func <- value
   }
 
+  ## Clean up //
+#   removeReactive(id = id, where = where)
+
   ## Instance of class 'ReactiveObject.S3' //
   obj <- reactr::ReactiveObject.S3(
-    .id = id,
+    id = id,
 #     value = value_initial,
-    .value = if (!is_reactive) value,
-    .where = where,
-    .references = pull_refs,
-    .has_cached = FALSE,
-    .func = func,
-    .exists_visible = TRUE,
-    .cache = cache
+    value = if (!is_reactive) value,
+    where = where,
+    pull_refs_list = pull_refs,
+    has_cached = FALSE,
+    func = func,
+    exists_visible = TRUE,
+    cache = cache
   )
-  obj$.class <- class(obj$.value)
+#   obj$.class <- class(obj$.value)
 
-  if (cache) {
-#     reg_res <- obj$.register()
-    reg_res <- obj$.register(overwrite = TRUE)
-  }
+#   if (cache) {
+# #     reg_res <- obj$.register()
+#     reg_res <- obj$.register(overwrite = TRUE)
+#   }
 
-  ## No self-references //
-#   if (any(pull_refs == obj$.uid) && !reg_res) {
-  if (any(sapply(pull_refs, "[[", "uid") == obj$.uid)) {    
-    conditionr::signalCondition(
-      condition = "NoSelfReferenceAllowed",
-      msg = c(
-        Reason = "tried to set a self-reference",
-        ID = obj$.id,
-        UID = obj$.uid,
-        Location = capture.output(where)
-      ),
-      ns = "reactr",
-      type = "error"
-    )
-  }
+#   ## No self-references //
+# #   if (any(pull_refs == obj$.uid) && !reg_res) {
+#   if (any(sapply(pull_refs, "[[", "uid") == obj$.uid)) {    
+#     conditionr::signalCondition(
+#       condition = "NoSelfReferenceAllowed",
+#       msg = c(
+#         Reason = "tried to set a self-reference",
+#         ID = obj$.id,
+#         UID = obj$.uid,
+#         Location = capture.output(where)
+#       ),
+#       ns = "reactr",
+#       type = "error"
+#     )
+#   }
 
   ## Push //
   if (cache && push) {
@@ -306,7 +309,6 @@ setReactiveS3 <- function(
               ## Process references //
               if (obj$.hasPullReferences()) {
                 ## Update decision //
-              
                 ## Compare checksum values of all references with the ones in 
                 ## own cache; 
                 ## - if any has changed --> update
@@ -326,8 +328,12 @@ setReactiveS3 <- function(
                     verbose = verbose
                   ))
                 })
+                if (obj$.out_of_sync) {
+                  do_update <- TRUE
+                }
               } else {
-                do_update <- FALSE
+#                 do_update <- FALSE
+                do_update <- obj$.out_of_sync
               }
             } else {
               do_update <- TRUE
@@ -336,9 +342,13 @@ setReactiveS3 <- function(
             ##----------------------------------------------------------------
             ## Actual update //
             ##----------------------------------------------------------------
-
+# message("calling:")
+# print(ls(obj$.calling))
             if (is_reactive && (any(do_update) || !obj$.has_cached)) {
               if (verbose) {
+#                 if (obj$.out_of_sync) {
+#                   message("Out of sync ...")  
+#                 }
                 if (!obj$.has_cached) {
                   message("Initializing ...")  
                 }
@@ -348,54 +358,77 @@ setReactiveS3 <- function(
               }
               
               ## Cache new value //
-              obj$.value <<-  withRestarts(
-                  tryCatch(
-                    {
-# print(value)                      
+              obj$.value <<- withRestarts(
+                tryCatch(
+                  {
+
+                    ## Handle predence of cached values vs. calling binding
+                    ## functions in situations where bi-directional 
+                    ## relationships exist, the value of one object has 
+                    ## been **explicitly** set but then the **other** object
+                    ## was called before the object itself was called.
+                    ## Withough this `.force_cached` mechanism, the explicit
+                    ## setting would be overwritten as the request of the
+                    ## other object would trigger the binding function of 
+                    ## this object and thus the explicit change would be lost
+#                     if (obj$.has_cached && obj$.force_cached) {
+# print(ls(obj$.refs_pull))
+# if(obj$.out_of_sync) print("out of sync")
+                    if (any(ls(obj$.calling) %in% ls(obj$.refs_pull))) {
+message("from cache")
+                      out <- obj$.value
+                    } else {
                       out <- value()
-#                       print(out)
-                      obj$.condition <- NULL
-                      obj$.has_cached <- TRUE
-                      out 
-                    
-                    ## For debugging/testing purposes 
-  #                     stop("Intentional update fail"),
-                    },
-                    warning = function(cond) {
-                      invokeRestart("muffleWarning")
-                    },
-                    error = function(cond) {
-                      invokeRestart("ReactiveUpdateFailed", cond = cond)
+                      obj$.out_of_sync <- FALSE
                     }
-                  ),
-                  muffleWarning = function(cond) {
-                    message(cond)
+                    
+                    ## Reset //
+                    rm(list = ls(obj$.calling), envir = obj$.calling)
+                    
+# message("Current value:")                      
+# print(out)
+                    obj$.condition <- NULL
+                    obj$.has_cached <- TRUE
+                    out 
+                  
+                  ## For debugging/testing purposes 
+#                     stop("Intentional update fail"),
+                  },
+                  warning = function(cond) {
                     invokeRestart("muffleWarning")
                   },
-                  ReactiveUpdateFailed = function(cond) {
-                    ## Custom condition //
-                    cond <- conditionr::signalCondition(
-                      call = substitute(
-                        get(x= ID, envir = WHERE, inherits = FALSE),
-                        list(ID = obj$.id, WHERE = obj$.where)
-                      ),
-                      condition = "AbortedReactiveUpdateWithError",
-                      msg = c(
-                        "Update failed",
-                        Reason = conditionMessage(cond),
-                        ID = obj$.id,
-                        UID = obj$.uid,
-                        Location = capture.output(where)
-                      ),
-                      ns = "reactr",
-                      type = "error",
-                      signal = FALSE
-                    )
-                    ## Transfer condition //
-                    obj$.condition <<- cond
-                    NULL
+                  error = function(cond) {
+                    invokeRestart("ReactiveUpdateFailed", cond = cond)
                   }
-                )
+                ),
+                muffleWarning = function(cond) {
+                  message(cond)
+                  invokeRestart("muffleWarning")
+                },
+                ReactiveUpdateFailed = function(cond) {
+                  ## Custom condition //
+                  cond <- conditionr::signalCondition(
+                    call = substitute(
+                      get(x= ID, envir = WHERE, inherits = FALSE),
+                      list(ID = obj$.id, WHERE = obj$.where)
+                    ),
+                    condition = "AbortedReactiveUpdateWithError",
+                    msg = c(
+                      "Update failed",
+                      Reason = conditionMessage(cond),
+                      ID = obj$.id,
+                      UID = obj$.uid,
+                      Location = capture.output(where)
+                    ),
+                    ns = "reactr",
+                    type = "error",
+                    signal = FALSE
+                  )
+                  ## Transfer condition //
+                  obj$.condition <<- cond
+                  NULL
+                }
+              )
 
               ## Update fields //
               obj$.computeChecksum()
@@ -415,6 +448,7 @@ setReactiveS3 <- function(
             if (obj$.hasPullReferences()) {
               if (strict_set == 0) {
                 obj$.value <<- v    
+                obj$.out_of_sync <- TRUE
               } else if (strict_set == 1) {
                 ## Do nothing //
               } else if (strict_set == 2) {

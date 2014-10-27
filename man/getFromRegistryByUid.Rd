@@ -32,7 +32,7 @@ obj$uid
 obj$where
 
 ## Clean up //
-obj$remove()
+obj$.remove()
 try(x_1)
 ## --> removes itself from 'where' and from registry
 ls(getRegistry())

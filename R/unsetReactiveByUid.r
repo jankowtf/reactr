@@ -77,8 +77,12 @@ setMethod(
     ...
   ) {  
     
-  reg_ref <- getFromRegistryByUid(uid = uid)
-  reg_ref$unset()
+  reg <- getFromRegistryByUid(uid = uid)
+  if (!is.null(reg)) {
+    out <- reg$.unset()
+  } else {
+    out <- TRUE
+  }
   
   }
 )

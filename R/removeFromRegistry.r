@@ -105,7 +105,7 @@ setMethod(
 
   out <- FALSE
   if (length(id)) {
-    uid <- getObjectUid(id = id, where = where)
+    uid <- computeObjectUid(id = id, where = where)
     out <- removeFromRegistryByUid(uid = uid)
   }
   return(out)

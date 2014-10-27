@@ -1,5 +1,6 @@
-## fix: github #11
+## fix: issue #11
 ##      Inconsistency for initial values
+## fix: issue #16 (application of strictness settings)
 
 #' @title
 #' Set Reactive Object (S3)
@@ -39,12 +40,32 @@
 #' instances. This comes at the cost of a minimal overhead of about 2.3e-08
 #' seconds for each request of an reactive object. 
 #' 
+#' @section Referenced environments:
+#' 
+#' When referencing objects from environments other than the environment that
+#' is assigned to argument \code{where}, it is recommended to provide those
+#' environments explicitly as additional arguments. E.g., when using 
+#' object \code{x_1} from environment \code{where_1}, then include \code{where_1}
+#' as additional argument in the call to \code{\link[reactr]{setReactiveS3}}. 
+#' This might not always be necessary due to the way lexical scoping works, but
+#' it is probably generally a good idea.
+#' 
 #' @param id \code{\link{character}}.
 #'    Name of the object to set.
 #' @param value \code{\link{ANY}}.
 #'    Variable value or binding.
 #' @param where \code{\link{environment}}.
 #'    Environment to create the object in.
+#' @param cache \code{\link{logical}}.
+#'    \code{TRUE}: use caching mechanism;
+#'    \code{FALSE}: no caching mechanism used.
+#'    Theoretically, \code{cache = FALSE} should result in less overhead 
+#'    (no registry) and faster processing of \code{get} and \code{set}  
+#'    operations for objects. However, the benchmark with respect to the 
+#'    processing of \code{get} and \code{set} operations are still 
+#'    ambiguous at this point (see profiling in examples).
+#'    Note that \emph{bi-directional bindings} and \emph{push propagation} of 
+#'    changes are only supported if \code{cache = TRUE}.
 #' @param integrity \code{\link{logical}}.
 #'    \code{TRUE}: ensures structural integrity of underlying reactive object
 #'    (instance of class \code{\link[reactr]{ReactiveObject.S3}}).
@@ -59,14 +80,20 @@
 #'    in this object if they are called/requested themselves as this would 
 #'    then trigger the execution of their binding functions 
 #'    (corresponds to a \strong{pull paradigm}).
+#' @param typed \code{\link{logical}}.
+#'    \code{TRUE}: checks class validity of assignment values to \code{value}
+#'    and throws an error if classes do not match or if the class of the 
+#'    assignment value does not inherit from the class of \code{value} at
+#'    initialization;
+#'    \code{FALSE}: no class check is performed.
 #' @param strict \code{\link{numeric}}.
 #'    Relevant when initially setting a reactive object
 #'    \itemize{
 #'      \item{\code{0}: } {no checks are performed}
 #'      \item{\code{1}: } {warning if object is already a non-reactive or 
-#'      reactive object}
+#'      reactive object or if any references does not exist yet}
 #'      \item{\code{2}: } {error if object is already a non-reactive or 
-#'      reactive object}
+#'      reactive object or if any references do not exist yet}
 #'    }
 #' @param strict_get \code{\link{numeric}}.
 #'    Relevant if retrieving object when reactive reference has been broken
@@ -97,7 +124,12 @@
 #'      \item{\code{2}: } {ignore with Warning}
 #'      \item{\code{3}: } {stop with error}
 #'    }
-#' @template threedots
+#' @param verbose \code{\link{logical}}.
+#'    \code{TRUE}: output certain status information;
+#'    \code{FALSE}: no status information.
+#' @param ... Further arguments to be passed to subsequent functions/methods.
+#'    In particular, all environments of references that you are referring to
+#'    in the body of the binding function. See section \emph{Referenced environments}.
 #' @example inst/examples/setReactiveS3.r
 #' @seealso \code{
 #'   	\link[reactr]{setReactiveS3}
@@ -111,11 +143,14 @@ setReactiveS3 <- function(
     id,
     value = NULL,
     where = parent.frame(),
+    cache = TRUE,
     integrity = TRUE,
     push = FALSE,
-    strict = 0,
-    strict_get = 0,
-    strict_set = 0,
+    typed = FALSE,
+    strict = c(0, 1, 2),
+    strict_get = c(0, 1, 2),
+    strict_set = c(0, 1, 2, 3),
+    verbose = FALSE,
     .debug = FALSE,
     ...
   ) {
@@ -127,14 +162,14 @@ setReactiveS3 <- function(
                                  as.character(c(0, 1, 2))))
   strict_set <- as.numeric(match.arg(as.character(strict_set), 
                                  as.character(c(0, 1, 2, 3))))
-
+  
   ## Check if regular value assignment or reactive function //
   if (!is.function(value)) {    
     is_reactive <- FALSE
-    references <- character()
+    pull_refs <- character()
     
 #     value_initial <- value
-#     value_expr <- quote(obj$value <<- value)
+#     value_expr <- quote(obj$.value <<- value)
     value_expr <- NULL
     func <- NULL
   } else {
@@ -155,9 +190,13 @@ setReactiveS3 <- function(
     )
     if (length(yaml$original)) { 
       refs <- yaml
-      references <- unname(sapply(names(yaml$parsed), function(ii) {
-        getObjectUid(id = ii, where = eval(yaml$parsed[[ii]]$where))
-      }))
+#       pull_refs <- unname(sapply(names(yaml$parsed), function(ii) {
+#         computeObjectUid(id = ii, where = eval(yaml$parsed[[ii]]$where))
+#       }))
+      pull_refs <- lapply(yaml$parsed, function(ii) {
+        ii$uid <- computeObjectUid(id = ii$id, where = eval(ii$where))
+        ii
+      })
       value <- yaml$src
       if (.debug) {
         message("Updated binding function:")
@@ -179,16 +218,16 @@ setReactiveS3 <- function(
           message("Updated binding function:")
           print(value)
         }
-        ii="x_1"
-        references <- unname(sapply(names(refs), function(ii) {
-          getObjectUid(id = ii, where = eval(refs[[ii]]$where))
-        }))
+#         pull_refs <- unname(sapply(names(refs), function(ii) {
+#           computeObjectUid(id = ii, where = eval(refs[[ii]]$where))
+#         }))
+        pull_refs <- refs
       } 
     }
 
     ## 3) Recognize via '.ref_*' specification in body //
     if (is.null(refs)) {
-#       references <- as.character(unlist(.getReferences(expr = body(value))))
+#       pull_refs <- as.character(unlist(.getReferences(expr = body(value))))
 #       refs <- .getReferences(expr = body(value), where = where)
       res <- .getReferencesFromBody2(fun = value, where = where)
       refs <- res$refs
@@ -197,38 +236,44 @@ setReactiveS3 <- function(
         message("Updated binding function:")
         print(value)
       }
-      references <- .getActualReferencesFromBody(refs = refs, where = where)
-#       references <- "abcd"
+      pull_refs <- .getActualReferencesFromBody(refs = refs, where = where)
+#       pull_refs <- .getActualReferencesFromBody(refs = refs)
+#       pull_refs <- "abcd"
     }
 
 #     value_initial <- tryCatch(value(), error = function(cond) NULL)
-    value_expr <- quote(obj$value <<- value())
+    value_expr <- quote(obj$.value <<- value())
     func <- value
   }
 
   ## Instance of class 'ReactiveObject.S3' //
   obj <- reactr::ReactiveObject.S3(
-    id = id,
+    .id = id,
 #     value = value_initial,
-    value = if (!is_reactive) value,
-    where = where,
-    .references = references,
-    has_cached = FALSE,
-    func = func,
-    exists_visible = TRUE
+    .value = if (!is_reactive) value,
+    .where = where,
+    .references = pull_refs,
+    .has_cached = FALSE,
+    .func = func,
+    .exists_visible = TRUE,
+    .cache = cache
   )
-#   reg_res <- obj$register()
-  reg_res <- obj$register(overwrite = TRUE)
+  obj$.class <- class(obj$.value)
+
+  if (cache) {
+#     reg_res <- obj$.register()
+    reg_res <- obj$.register(overwrite = TRUE)
+  }
 
   ## No self-references //
-#   if (any(references == obj$uid) && !reg_res) {
-  if (any(references == obj$uid)) {    
+#   if (any(pull_refs == obj$.uid) && !reg_res) {
+  if (any(sapply(pull_refs, "[[", "uid") == obj$.uid)) {    
     conditionr::signalCondition(
       condition = "NoSelfReferenceAllowed",
       msg = c(
         Reason = "tried to set a self-reference",
-        ID = obj$id,
-        UID = obj$uid,
+        ID = obj$.id,
+        UID = obj$.uid,
         Location = capture.output(where)
       ),
       ns = "reactr",
@@ -237,21 +282,8 @@ setReactiveS3 <- function(
   }
 
   ## Push //
-# push <- FALSE
-  if (push && length(references)) {
-    sapply(references, function(ref_uid) {
-# print(ref_uid)
-# print(obj$references_pull[[ref_uid]])
-# print(ls(obj$references_pull[[ref_uid]]))
-      if (!exists(obj$uid, envir = obj$references_pull[[ref_uid]]$references_push)) {
-      ## Ensure a push reference is created //
-        assign(obj$uid, obj, obj$references_pull[[ref_uid]]$references_push)
-        obj$references_pull[[ref_uid]]$has_push_refs <- TRUE
-        TRUE
-      } else {
-        FALSE
-      }
-    })        
+  if (cache && push) {
+    obj$.registerPushReferences()
   }
 
   ## Check prerequisites //
@@ -269,127 +301,65 @@ setReactiveS3 <- function(
           ##--------------------------------------------------------------------
           ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
           ##--------------------------------------------------------------------            
-# print(references)            
-            ## Process references //
-            if (length(references)) {
-              ## Update decision //
-              ## Compare checksum values of all references with the ones in 
-              ## own cache; 
-              ## - if any has changed --> update
-              ## - if not --> return cached value
-              do_update <- sapply(references, function(ref_uid) {
+           
+            if (cache) {
+              ## Process references //
+              if (obj$.hasPullReferences()) {
+                ## Update decision //
+              
+                ## Compare checksum values of all references with the ones in 
+                ## own cache; 
+                ## - if any has changed --> update
+                ## - if not --> return cached value
+                do_update <- sapply(pull_refs, function(ref_uid) {
+                  ref_uid <- ref_uid$uid
+  #                 do_update <- FALSE
+                  
+                  ## Ensure integrity //
+                  if (integrity) {
+                    obj$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
+                  }
+                  ## Compare checksums //
+                  (do_update <- obj$.compareChecksums(
+                    ref_uid = ref_uid, 
+                    strict_get = strict_get,
+                    verbose = verbose
+                  ))
+                })
+              } else {
                 do_update <- FALSE
-                
-                ## Ensure integrity //
-                if (integrity) {
-                  obj$ensureIntegrity(ref_uid = ref_uid)
-                }
-                
-                ## Handle invalidation of referenced objects //
-                ## Ensures that "in-object" reference (as compared to the 
-                ## "in-registry" reference) is updated once a reference has 
-                ## become invalid
-# print(ref_uid)
-# print(obj$references)
-# print(ls(obj$references))
-# print(ls(obj$references[[ref_uid]]))
-                if (  is.null(obj$references_pull[[ref_uid]]) ||
-                      obj$references_pull[[ref_uid]]$is_invalid
-                ) {                 
-                  obj$references_pull[[ref_uid]] <- obj$registry[[ref_uid]]
-                }
-                ## TODO: fix #14 (strictness for invalidation)
-                          
-                ## Get last-known reference checksum //
-                ref_chk_own <- obj$checksums_ref[[ref_uid]]
-                if (  !is.null(obj$references_pull[[ref_uid]]$checksum) 
-                      ## --> due to invalidation
-#                       !is.null(ref_chk <- obj$references_pull[[ref_uid]]$checksum)
-                      ## --> can't be anymore
-                ) {
-                  ref_chk <- obj$references_pull[[ref_uid]]$checksum                 
-                  if (is.null(ref_chk_own) || ref_chk != ref_chk_own) {
-                  ## Hash reference missing or reference has changed 
-                  ## --> update                    
-                    message(paste0("Modified reference: ", ref_uid))
-                    obj$updateReferenceChecksum(
-                      ref = ref_uid, 
-                      checksum = ref_chk
-                    )
-                    do_update <- TRUE
-                  }
-                } else {
-                ## Check if 'broken-binding' condition exists //
-                  if (!is.null(ref_chk_own)) {
-                  ## This can only be the case if there has been a reactive 
-                  ## binding that was valid/working at one point in time
-                    if (strict_get == 0) {
-                      ## Do nothing //
-                    } else if (strict_get == 1) {                    
-                      conditionr::signalCondition(
-                        call = substitute(
-                          get(x= ID, envir = WHERE, inherits = FALSE),
-                          list(ID = obj$id, WHERE = obj$where)
-                        ),
-                        condition = "BrokenReactiveReference",
-                        msg = c(
-                          Reason = "broken reactive reference",
-                          ID = obj$id,
-                          UID = obj$uid,
-                          Location = capture.output(where),
-                          "Reference UID" = ref_uid
-                        ),
-                        ns = "reactr",
-                        type = "warning"
-                      )
-                      obj$value <<- NULL
-                    } else if (strict_get == 2) {
-                      cond <- conditionr::signalCondition(
-                        call = substitute(
-                          get(x= ID, envir = WHERE, inherits = FALSE),
-                          list(ID = obj$id, WHERE = obj$where)
-                        ),
-                        condition = "BrokenReactiveReference",
-                        msg = c(
-                          Reason = "broken reactive reference",
-                          ID = id,
-                          UID = obj$uid,
-                          Location = capture.output(where),
-                          "Reference UID" = ref_uid
-                        ),
-                        ns = "reactr",
-                        type = "error",
-                        signal = FALSE
-                      )
-                      
-                      ## Transfer condition //
-                      obj$condition <<- cond
-                    }
-                  }
-                }
-                do_update
-              })
+              }
+            } else {
+              do_update <- TRUE
+            }
 
-              ##----------------------------------------------------------------
-              ## Actual update //
-              ##----------------------------------------------------------------
+            ##----------------------------------------------------------------
+            ## Actual update //
+            ##----------------------------------------------------------------
 
-              if (any(do_update) || !obj$has_cached) {
-                if (!obj$has_cached) {
+            if (is_reactive && (any(do_update) || !obj$.has_cached)) {
+              if (verbose) {
+                if (!obj$.has_cached) {
                   message("Initializing ...")  
                 }
                 if (any(do_update)) {
                   message("Updating ...")  
                 }
-                
-                ## Cache new value //
-                obj$value <<- withRestarts(
+              }
+              
+              ## Cache new value //
+              obj$.value <<-  withRestarts(
                   tryCatch(
                     {
-                      value()
+# print(value)                      
+                      out <- value()
+#                       print(out)
+                      obj$.condition <- NULL
+                      obj$.has_cached <- TRUE
+                      out 
                     
                     ## For debugging/testing purposes 
-#                     stop("Intentional update fail"),
+  #                     stop("Intentional update fail"),
                     },
                     warning = function(cond) {
                       invokeRestart("muffleWarning")
@@ -403,60 +373,63 @@ setReactiveS3 <- function(
                     invokeRestart("muffleWarning")
                   },
                   ReactiveUpdateFailed = function(cond) {
-                    registry <- getRegistry()
                     ## Custom condition //
                     cond <- conditionr::signalCondition(
+                      call = substitute(
+                        get(x= ID, envir = WHERE, inherits = FALSE),
+                        list(ID = obj$.id, WHERE = obj$.where)
+                      ),
                       condition = "AbortedReactiveUpdateWithError",
                       msg = c(
                         "Update failed",
-                        ID = obj$id,
-                        UID = obj$uid,
-                        Location = capture.output(where),
-## TODO: GitHub #2
-## Think of ways of making conditions more informative with respect 
-## to which references cause the failure
-                        Reason = conditionMessage(cond)
+                        Reason = conditionMessage(cond),
+                        ID = obj$.id,
+                        UID = obj$.uid,
+                        Location = capture.output(where)
                       ),
                       ns = "reactr",
                       type = "error",
                       signal = FALSE
                     )
                     ## Transfer condition //
-                    obj$condition <<- cond
+                    obj$.condition <<- cond
                     NULL
                   }
                 )
-                ## Update fields //
-                obj$computeChecksum()
-                obj$has_cached <- TRUE
-                obj$condition <- NULL
-              }
-            } 
+
+              ## Update fields //
+              obj$.computeChecksum()
+            }
           } else {
           
           ##--------------------------------------------------------------------
           ## Handler for 'set' (i.e. 'assign()' or '<-') //
           ##--------------------------------------------------------------------            
             
+            ## Class check //
+            if (typed) {
+              obj$.checkClass(v = v)
+            }
+          
             ## Set //
-            if (obj$hasPullReferences()) {
+            if (obj$.hasPullReferences()) {
               if (strict_set == 0) {
-                obj$value <<- v    
+                obj$.value <<- v    
               } else if (strict_set == 1) {
                 ## Do nothing //
               } else if (strict_set == 2) {
                 conditionr::signalCondition(
                   call = substitute(
                     assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-                    list(ID = obj$id, VALUE = v, WHERE = obj$where)
+                    list(ID = obj$.id, VALUE = v, WHERE = obj$.where)
                   ),
                   condition = "AbortedWithReactiveDependencyWarning",
                   msg = c(
                     Reason = "trying to set value of object with reactive dependency",
-                    ID = obj$id,
-                    UID = obj$uid,
+                    ID = obj$.id,
+                    UID = obj$.uid,
                     Location = capture.output(where),
-                    References = paste(ls(obj$references_pull, all.names = TRUE), collapse = ", ")
+                    References = paste(ls(obj$.refs_pull, all.names = TRUE), collapse = ", ")
                   ),
                   ns = "reactr",
                   type = "warning"
@@ -465,47 +438,52 @@ setReactiveS3 <- function(
                 conditionr::signalCondition(
                   call = substitute(
                     assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-                    list(ID = obj$id, VALUE = v, WHERE = obj$where)
+                    list(ID = obj$.id, VALUE = v, WHERE = obj$.where)
                   ),
                   condition = "AbortedWithReactiveDependencyError",
                   msg = c(
                     Reason = "trying to set value of object with reactive dependency",
-                    ID = obj$id,
-                    UID = obj$uid,
+                    ID = obj$.id,
+                    UID = obj$.uid,
                     Location = capture.output(where),
-                    References = paste(ls(obj$references_pull, all.names = TRUE), collapse = ", ")
+                    References = paste(ls(obj$.refs_pull, all.names = TRUE), collapse = ", ")
                   ),
                   ns = "reactr",
                   type = "error"
                 )
               }
             } else {
-              obj$value <<- v 
+              obj$.value <<- v 
             }
             
             ## Update checksum //
-#             assign(obj$uid, digest::digest(v), envir = obj$registry[[obj$uid]])   
-            obj$computeChecksum()
+#             assign(obj$.uid, digest::digest(v), envir = obj$.registry[[obj$.uid]])   
+            obj$.computeChecksum()
 
             ## Push //
-            if (	obj$hasPushReferences() && 
-                  !obj$has_pushed && 
-                  !obj$is_running_push
+            if (  cache &&
+                  obj$.must_push &&
+                  obj$.hasPushReferences() && 
+                  !obj$.has_pushed && 
+                  !obj$.is_running_push
             ) {
-              message("Pushing ...")
-              obj$pushToReferences()
+              obj$.pushToReferences(verbose = verbose)
               ## Reset value of push control field //
-              obj$has_pushed <- FALSE
+              obj$.has_pushed <- FALSE
             }
 
           }
 
+          ##--------------------------------------------------------------------
+          ## Return //
+          ##--------------------------------------------------------------------
+
           ## Condition handling //
-          if (!is.null(obj$condition)) {           
-            if (inherits(obj$condition, "BrokenReactiveReference")) {
-              obj$value <- stop(obj$condition)
+          if (!is.null(obj$.condition)) {           
+            if (inherits(obj$.condition, "BrokenReactiveReference")) {
+              obj$.value <- stop(obj$.condition)
             } else {            
-              obj$value <- stop(obj$condition)
+              obj$.value <- stop(obj$.condition)
             }
           }
 
@@ -513,7 +491,7 @@ setReactiveS3 <- function(
           if (.debug) {
             obj
           } else {
-            obj$value
+            obj$.value
           }
         }
       }),
@@ -530,11 +508,11 @@ setReactiveS3 <- function(
   ## Initialize and return value //
   if (is_reactive) {
     out <- get(id, envir = where, inherits = FALSE)
-#     out <- obj$value
+#     out <- obj$.value
   } else {
     out <- value
   }
   
-  return(out)
+  invisible(out)
   
 }

@@ -36,7 +36,7 @@ test_that("ReactiveObject.S3", {
   resetRegistry()
   expect_true(res$register())
   ls(registry)
-  res$copy(id = "x_copied")
+  expect_equal(res$copy(id = "x_copied"), 10)
   ls(registry)
   expect_equal(x_copied, 10)
   

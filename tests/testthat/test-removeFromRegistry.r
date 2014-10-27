@@ -10,7 +10,7 @@ test_that("removeFromRegistry", {
   )
   
   expect_true(removeFromRegistry(id = id))
-  uid <- getObjectUid(id = id)
+  uid <- computeObjectUid(id = id)
   expect_false(exists(uid, envir = getRegistry(), inherits = FALSE))
   expect_equal(x_1, 10)
   expect_equal(x_2, x_1)

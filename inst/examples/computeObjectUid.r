@@ -14,9 +14,9 @@ setReactiveS3(id = id_2, value = function() {
 x_1
 x_2
 
-uid_1 <- getObjectUid(id = id_1)
+uid_1 <- computeObjectUid(id = id_1)
 uid_1
-uid_2 <- getObjectUid(id = id_2)
+uid_2 <- computeObjectUid(id = id_2)
 uid_2
 
 ## If these UIDs are available in the registry, they are correct //
@@ -44,9 +44,9 @@ setReactiveS3(id = id_2, value = function() {
 where$x_1
 where$x_2
 
-uid_1 <- getObjectUid(id = id_1, where = where)
+uid_1 <- computeObjectUid(id = id_1, where = where)
 uid_1
-uid_2 <- getObjectUid(id = id_2, where = where)
+uid_2 <- computeObjectUid(id = id_2, where = where)
 uid_2
 
 ## If these UIDs are available in the registry, they are correct //

@@ -1,0 +1,52 @@
+---
+title: "Registry Mechanism"
+author: "Janko Thyson"
+date: "Thursday, October 16, 2014"
+output: 
+  html_document:
+    self_contained: no
+---
+
+```{r, echo=FALSE}
+suppressMessages(require("reactr"))
+resetRegistry()
+```
+
+Whenever a reactive object is set via `setReactiveS3()`, the object that is *actually* created is an instance of class `ReactiveObject.S3` even though it does not appear so: the instance itself remains invisible and only the value of its field `value` is made visible to the user/system and can thus subsequently be accessed and manipulated through the name/ID provided in `id` in the call to `setReactiveS3()`
+
+```{r}
+setReactiveS3(id = "x_1", 10)
+x_1
+class(x_1)
+```
+
+Usually, due to the way `makeActiveBinding()` works, we would not be able to access this hidden object once the function returns as it is only stored internally. In order to keep the object accessible, `setReactiveS3()` stores it in an internal registry.
+
+The registry can be accessed via 
+
+```{r}
+getOption("reactr")$.registry
+```
+
+or via the convenience function `getRegistry()`
+
+```{r}
+registry <- getRegistry()
+```
+
+As mentioned, the actual content consists of the respective **invisible** objects that were created in the call to `setReactiveS3()` which are assigned to names that correspond to the UIDs of its **visible** parts
+
+```{r}
+ls(registry)
+```
+
+
+
+```{r}
+x_1_hidden <- getFromRegistry(id = "x_1")
+x_1_hidden
+class(x_1_hidden)
+```
+
+
+

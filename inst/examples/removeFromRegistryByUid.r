@@ -11,12 +11,12 @@ setReactiveS3(id = id_2, value = function() {
 })
 
 ## Comput UIDs //
-uid_1 <- getObjectUid(id = id_1, where = where)
-uid_2 <- getObjectUid(id = id_2, where = where)
+uid_1 <- computeObjectUid(id = id_1, where = where)
+uid_2 <- computeObjectUid(id = id_2, where = where)
 
 ## Inspect current state of registry //
 registry <- getRegistry()
-ls(registry)
+showRegistry()
 exists(uid_1, registry)
 exists(uid_2, registry)
 

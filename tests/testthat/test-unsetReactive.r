@@ -10,7 +10,7 @@ test_that("unsetReactive", {
   x_1 <- 20
   expect_equal(x_1, 20)
   expect_equal(x_2, 10)
-  expect_false(exists(getObjectUid(id = "x_1"), 
+  expect_false(exists(computeObjectUid(id = "x_1"), 
                       getRegistry(), inherits = FALSE))
   
 })

@@ -56,6 +56,16 @@
 #'    Variable value or binding.
 #' @param where \code{\link{environment}}.
 #'    Environment to create the object in.
+#' @param cache \code{\link{logical}}.
+#'    \code{TRUE}: use caching mechanism;
+#'    \code{FALSE}: no caching mechanism used.
+#'    Theoretically, \code{cache = FALSE} should result in less overhead 
+#'    (no registry) and faster processing of \code{get} and \code{set}  
+#'    operations for objects. However, the benchmark with respect to the 
+#'    processing of \code{get} and \code{set} operations are still 
+#'    ambiguous at this point (see profiling in examples).
+#'    Note that \emph{bi-directional bindings} and \emph{push propagation} of 
+#'    changes are only supported if \code{cache = TRUE}.
 #' @param integrity \code{\link{logical}}.
 #'    \code{TRUE}: ensures structural integrity of underlying reactive object
 #'    (instance of class \code{\link[reactr]{ReactiveObject.S3}}).
@@ -114,6 +124,9 @@
 #'      \item{\code{2}: } {ignore with Warning}
 #'      \item{\code{3}: } {stop with error}
 #'    }
+#' @param verbose \code{\link{logical}}.
+#'    \code{TRUE}: output certain status information;
+#'    \code{FALSE}: no status information.
 #' @param ... Further arguments to be passed to subsequent functions/methods.
 #'    In particular, all environments of references that you are referring to
 #'    in the body of the binding function. See section \emph{Referenced environments}.
@@ -130,12 +143,14 @@ setReactiveS3 <- function(
     id,
     value = NULL,
     where = parent.frame(),
+    cache = TRUE,
     integrity = TRUE,
     push = FALSE,
     typed = FALSE,
     strict = c(0, 1, 2),
     strict_get = c(0, 1, 2),
     strict_set = c(0, 1, 2, 3),
+    verbose = FALSE,
     .debug = FALSE,
     ...
   ) {
@@ -240,11 +255,15 @@ setReactiveS3 <- function(
     .references = pull_refs,
     .has_cached = FALSE,
     .func = func,
-    .exists_visible = TRUE
+    .exists_visible = TRUE,
+    .cache = cache
   )
   obj$.class <- class(obj$.value)
-#   reg_res <- obj$.register()
-  reg_res <- obj$.register(overwrite = TRUE)
+
+  if (cache) {
+#     reg_res <- obj$.register()
+    reg_res <- obj$.register(overwrite = TRUE)
+  }
 
   ## No self-references //
 #   if (any(pull_refs == obj$.uid) && !reg_res) {
@@ -263,7 +282,7 @@ setReactiveS3 <- function(
   }
 
   ## Push //
-  if (push) {
+  if (cache && push) {
     obj$.registerPushReferences()
   }
 
@@ -283,29 +302,35 @@ setReactiveS3 <- function(
           ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
           ##--------------------------------------------------------------------            
            
-            ## Process references //
-            if (obj$.hasPullReferences()) {
-              ## Update decision //
-              ## Compare checksum values of all references with the ones in 
-              ## own cache; 
-              ## - if any has changed --> update
-              ## - if not --> return cached value
-              do_update <- sapply(pull_refs, function(ref_uid) {
-                ref_uid <- ref_uid$uid
-#                 do_update <- FALSE
-                
-                ## Ensure integrity //
-                if (integrity) {
-                  obj$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
-                }
-                ## Compare checksums //
-                (do_update <- obj$.compareChecksums(
-                  ref_uid = ref_uid, 
-                  strict_get = strict_get
-                ))
-              })
+            if (cache) {
+              ## Process references //
+              if (obj$.hasPullReferences()) {
+                ## Update decision //
+              
+                ## Compare checksum values of all references with the ones in 
+                ## own cache; 
+                ## - if any has changed --> update
+                ## - if not --> return cached value
+                do_update <- sapply(pull_refs, function(ref_uid) {
+                  ref_uid <- ref_uid$uid
+  #                 do_update <- FALSE
+                  
+                  ## Ensure integrity //
+                  if (integrity) {
+                    obj$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
+                  }
+                  ## Compare checksums //
+                  (do_update <- obj$.compareChecksums(
+                    ref_uid = ref_uid, 
+                    strict_get = strict_get,
+                    verbose = verbose
+                  ))
+                })
+              } else {
+                do_update <- FALSE
+              }
             } else {
-              do_update <- FALSE
+              do_update <- TRUE
             }
 
             ##----------------------------------------------------------------
@@ -313,12 +338,14 @@ setReactiveS3 <- function(
             ##----------------------------------------------------------------
 
             if (is_reactive && (any(do_update) || !obj$.has_cached)) {
-#               if (!obj$.has_cached) {
-#                 message("Initializing ...")  
-#               }
-#               if (any(do_update)) {
-#                 message("Updating ...")  
-#               }
+              if (verbose) {
+                if (!obj$.has_cached) {
+                  message("Initializing ...")  
+                }
+                if (any(do_update)) {
+                  message("Updating ...")  
+                }
+              }
               
               ## Cache new value //
               obj$.value <<-  withRestarts(
@@ -326,7 +353,7 @@ setReactiveS3 <- function(
                     {
 # print(value)                      
                       out <- value()
-#                       VALUE_EXPR
+#                       print(out)
                       obj$.condition <- NULL
                       obj$.has_cached <- TRUE
                       out 
@@ -346,16 +373,19 @@ setReactiveS3 <- function(
                     invokeRestart("muffleWarning")
                   },
                   ReactiveUpdateFailed = function(cond) {
-                    registry <- getRegistry()
                     ## Custom condition //
                     cond <- conditionr::signalCondition(
+                      call = substitute(
+                        get(x= ID, envir = WHERE, inherits = FALSE),
+                        list(ID = obj$.id, WHERE = obj$.where)
+                      ),
                       condition = "AbortedReactiveUpdateWithError",
                       msg = c(
                         "Update failed",
+                        Reason = conditionMessage(cond),
                         ID = obj$.id,
                         UID = obj$.uid,
-                        Location = capture.output(where),
-                        Reason = conditionMessage(cond)
+                        Location = capture.output(where)
                       ),
                       ns = "reactr",
                       type = "error",
@@ -431,13 +461,13 @@ setReactiveS3 <- function(
             obj$.computeChecksum()
 
             ## Push //
-            if (  obj$.must_push &&
+            if (  cache &&
+                  obj$.must_push &&
                   obj$.hasPushReferences() && 
                   !obj$.has_pushed && 
                   !obj$.is_running_push
             ) {
-#               message("Pushing ...")
-              obj$.pushToReferences()
+              obj$.pushToReferences(verbose = verbose)
               ## Reset value of push control field //
               obj$.has_pushed <- FALSE
             }

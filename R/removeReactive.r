@@ -141,7 +141,7 @@ setMethod(
       has_binding <- FALSE
     } 
     if (has_binding) {
-      unsetReactiveByUid(uid = uid)
+      try(unsetReactiveByUid(uid = uid), silent = TRUE)
       rm(list = id, envir = where, inherits = FALSE)
       out <- TRUE
     }

@@ -58,6 +58,10 @@
 #'    dependees. It is set to \code{TRUE} when an reactive object is unset or
 #'    removed.
 #'    Initial: \code{FALSE}.
+#' @field .cache \code{\link{logical}}.
+#'    \code{TRUE}: use caching mechanism and everything associated with it;
+#'    \code{FALSE}: no caching.
+#'    Initial: \code{TRUE}.
 #' @field .registry \code{\link{environment}}.
 #'    Reference to the registry environment. Important for retrieving and 
 #' 		comparing checksum values.
@@ -122,6 +126,7 @@ ReactiveObject.S3 <- function(
   .class = class(.value),
   
   .exists_visible = FALSE,
+  .cache = TRUE,
   .has_cached = FALSE,
   .is_invalid = FALSE,
   
@@ -153,6 +158,7 @@ ReactiveObject.S3 <- function(
     ## Fields and initialization //
     ##--------------------------------------------------------------------------
 
+    this$.cache <- .cache
     this$.checksum <- .checksum
     this$.refs_checksum <- .refs_checksum
     this$.class <- .class
@@ -207,7 +213,8 @@ ReactiveObject.S3 <- function(
         }
       }
     }
-    this$.compareChecksums = function(self = this, ref_uid, strict_get = 0) {
+    this$.compareChecksums = function(self = this, ref_uid, strict_get = 0,
+                                      verbose = FALSE) {
       do_update <- FALSE
       ## Get last-known reference checksum //
       ref_chk_own <- self$.refs_checksum[[ref_uid]]
@@ -217,7 +224,9 @@ ReactiveObject.S3 <- function(
         if (is.null(ref_chk_own) || ref_chk != ref_chk_own) {
         ## --> checksum missing or reference has changed 
         ## --> update                    
-#           message(paste0("Modified reference: ", ref_uid))
+          if (verbose) {
+            message(paste0("Modified reference: ", ref_uid))
+          }
           self$.updateReferenceChecksum(
             ref = ref_uid, 
             checksum = ref_chk
@@ -332,14 +341,16 @@ ReactiveObject.S3 <- function(
     this$.hasPushReferences = function(self = this) {
       (self$.has_push_refs <- length(ls(self$.refs_push, all.names = TRUE)) > 0)
     }
-    this$.pushToReferences <- function(self = this) {
+    this$.pushToReferences <- function(self = this, verbose = FALSE) {
       self$.has_pushed <- FALSE
       self$.is_running_push <- TRUE
       push_refs_env <- self$.refs_push
       push_refs <- ls(push_refs_env)
       out <- if (length(push_refs)) {
         sapply(push_refs, function(ref) {
-#           message(paste0("Pushing to: ", ref))
+          if (verbose) {
+            message(paste0("Pushing to: ", ref))
+          }
           push_refs_env[[ref]]$.getVisible()
         })
         TRUE
@@ -463,7 +474,7 @@ ReactiveObject.S3 <- function(
 
     this$.computeChecksum()
     this$.computeUid()
-    if (length(.references)) {
+    if (this$.cache && length(.references)) {
       this$.registerPullReferences(refs = .references)
     }
     

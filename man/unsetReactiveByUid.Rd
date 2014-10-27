@@ -37,7 +37,7 @@ that has been cached. \strong{So there is no actual reactive binding anymore}.
 \dontrun{
 
 setReactiveS3(id = "x_1", value = 10)
-unsetReactiveByUid(uid = getObjectUid("x_1"))
+unsetReactiveByUid(uid = computeObjectUid("x_1"))
 isReactive("x_1")
 
 }

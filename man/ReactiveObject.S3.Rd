@@ -5,13 +5,13 @@
 \usage{
 ReactiveObject.S3(.x, .references = character(), id = character(),
   uid = character(), value = NULL, where = parent.frame(),
-  checksum = character(), exists_visible = FALSE, has_cached = FALSE,
-  is_invalid = FALSE, registry = getRegistry(),
-  references_pull = new.env(parent = emptyenv()),
-  references_push = new.env(parent = emptyenv()), has_pull_refs = FALSE,
-  has_push_refs = FALSE, has_pushed = FALSE, is_running_push = FALSE,
-  func = NULL, checksums_ref = new.env(parent = emptyenv()),
-  condition = NULL)
+  checksum = character(), cl = class(value), exists_visible = FALSE,
+  has_cached = FALSE, is_invalid = FALSE, registry = getRegistry(),
+  refs_pull = new.env(parent = emptyenv()), refs_push = new.env(parent =
+  emptyenv()), refs_checksum = new.env(parent = emptyenv()),
+  has_pull_refs = FALSE, has_push_refs = FALSE, must_push = FALSE,
+  has_pushed = FALSE, is_running_push = FALSE, wait = FALSE,
+  func = NULL, condition = NULL)
 }
 \arguments{
 \item{.x}{\code{\link{ANY}}. An object of an arbitrary class whose class
@@ -58,6 +58,12 @@ Initial: \code{parent.frame()}.}
 Object value checksum.
 Initial: \code{character()}.}
 
+\item{\code{cl}}{\code{\link{character}}.
+Class of object value. If strongly typed (argument \code{typed = TRUE} in
+\code{\link[reactr]{setReactiveS3}}, then this field is used to determine
+if an assignment value is valid or not.
+Initial: \code{character()}.}
+
 \item{\code{exists_visible}}{\code{\link{logical}}.
 Field for tracking if the visible object actually exists already or if this
 is a mere "empty container" in the registry.
@@ -83,15 +89,50 @@ Reference to the registry environment. Important for retrieving and
      comparing checksum values.
 Initial: \code{getRegistry()}.}
 
-\item{\code{references_pull}}{\code{\link{environment}}.
-Environment storing information of referenced objects.
+\item{\code{refs_pull}}{\code{\link{environment}}.
+Environment storing information of inbound/pull references.
 Initial: \code{new.env(parent = emptyenv())}.}
+
+\item{\code{refs_push}}{\code{\link{environment}}.
+Environment storing information of outbound/push references.
+Initial: \code{new.env(parent = emptyenv())}.}
+
+\item{\code{has_pull_refs}}{\code{\link{logical}}.
+\code{TRUE}: object has no inbound/pull references;
+\code{FALSE}: object has no inbound/pull references
+Initial: \code{FALSE}.}
+
+\item{\code{has_push_refs}}{\code{\link{logical}}.
+\code{TRUE}: object has no outbound/push references;
+\code{FALSE}: object has no outbound/push references
+Initial: \code{FALSE}.}
+
+\item{\code{must_push}}{\code{\link{logical}}.
+Field that controls if push is enabled.
+\code{TRUE}: push changes to outbound references;
+\code{FALSE}: changes need to be pulled by references, no push.
+Initial: \code{FALSE}.}
+
+\item{\code{has_pushed}}{\code{\link{logical}}.
+\code{TRUE}: pushed change to push references;
+\code{FALSE}: change not pushed to push references yet.
+Initial: \code{FALSE}.}
+
+\item{\code{is_running_push}}{\code{\link{logical}}.
+\code{TRUE}: push process is currently running;
+\code{FALSE}: no push process is currently running.
+Initial: \code{FALSE}.}
+
+\item{\code{wait}}{\code{\link{logical}}.
+\code{TRUE}: wait with running the binding function;
+\code{FALSE}: run binding function when necessary.
+Initial: \code{FALSE}.}
 
 \item{\code{func}}{\code{\link{function}}.
 Binding function.
 Initial: \code{NULL}.}
 
-\item{\code{checksums_ref}}{\code{\link{environment}}.
+\item{\code{refs_checksum}}{\code{\link{environment}}.
 Environment for caching checksums of referenced objects.
 Initial: \code{new.env(parent = emptyenv())}.}
 
@@ -166,7 +207,7 @@ digest::digest(x_1)
 obj$computeChecksum()
 
 ## Compute UID //
-x_1_uid <- getObjectUid(id = "x_1")
+x_1_uid <- computeObjectUid(id = "x_1")
 obj$uid
 obj$computeUid()
 ## --> automatically executed in constructor based on 'obj$id' and 'obj$where'

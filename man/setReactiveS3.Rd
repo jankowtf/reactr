@@ -4,8 +4,8 @@
 \title{Set Reactive Object (S3)}
 \usage{
 setReactiveS3(id, value = NULL, where = parent.frame(), integrity = TRUE,
-  push = FALSE, strict = 0, strict_get = 0, strict_set = 0,
-  .debug = FALSE, ...)
+  push = FALSE, typed = FALSE, strict = 0, strict_get = 0,
+  strict_set = 0, .debug = FALSE, ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.
@@ -33,14 +33,21 @@ in this object if they are called/requested themselves as this would
 then trigger the execution of their binding functions
 (corresponds to a \strong{pull paradigm}).}
 
+\item{typed}{\code{\link{logical}}.
+\code{TRUE}: checks class validity of assignment values to \code{value}
+and throws an error if classes do not match or if the class of the
+assignment value does not inherit from the class of \code{value} at
+initialization;
+\code{FALSE}: no class check is performed.}
+
 \item{strict}{\code{\link{numeric}}.
 Relevant when initially setting a reactive object
 \itemize{
   \item{\code{0}: } {no checks are performed}
   \item{\code{1}: } {warning if object is already a non-reactive or
-  reactive object}
+  reactive object or if any references does not exist yet}
   \item{\code{2}: } {error if object is already a non-reactive or
-  reactive object}
+  reactive object or if any references do not exist yet}
 }}
 
 \item{strict_get}{\code{\link{numeric}}.
@@ -74,7 +81,9 @@ reactive relationship.
      \item{\code{3}: } {stop with error}
    }}
 
-\item{...}{Further arguments to be passed to subsequent functions/methods.}
+\item{...}{Further arguments to be passed to subsequent functions/methods.
+In particular, all environments of references that you are referring to
+in the body of the binding function. See details.}
 }
 \description{
 Creates an reactive object.
@@ -543,7 +552,7 @@ ls(registry)
 
 setReactiveS3(id = "x_1", value = 10)
 ls(registry)
-uid_x_1 <- getObjectUid(id = "x_1", where = environment())
+uid_x_1 <- computeObjectUid(id = "x_1", where = environment())
 registry_x_1 <- registry[[uid_x_1]]
 ls(registry_x_1)
 registry_x_1$id
@@ -561,7 +570,7 @@ setReactiveS3(
 )
 ls(registry)
 
-uid_x_2 <- getObjectUid(id = "x_2", where = environment())
+uid_x_2 <- computeObjectUid(id = "x_2", where = environment())
 registry_x_2 <- registry[[uid_x_2]]
 ls(registry_x_2)
 registry_x_2$id

@@ -75,14 +75,14 @@ setMethod(
     
   ## Get actual location from registry //
   subenv <- getRegistry()[[uid]]
-  if (is.null(sub)) {
+  if (is.null(subenv)) {
     stop(paste0("No entry in registry for UID: ", uid))
   }
-  id <- subenv$id
+  id <- subenv$.id
   if (is.null(id)) {
     stop(paste0("No ID stored in registry for UID: ", uid))
   }
-  where <- subenv$where
+  where <- subenv$.where
   if (is.null(where)) {
     stop(paste0("No location stored in registry for UID: ", uid))
   }  
@@ -94,7 +94,7 @@ setMethod(
       has_binding <- FALSE
     } 
     if (has_binding) {
-      unsetReactiveByUid(uid = uid)
+      try(unsetReactiveByUid(uid = uid))
       rm(list = id, envir = where, inherits = FALSE)
       out <- TRUE
     }

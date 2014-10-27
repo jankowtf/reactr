@@ -12,16 +12,13 @@ Typically, this corresponds to the instance of class
 \code{\link[reactr]{ReactiveObject.S3}}.}
 
 \item{strict}{\code{\link{numeric}}.
-Relevant if a referenced object has been removed thus breaking the
-reactive relationship.
+Relevant when initially setting a reactive object
 \itemize{
-  \item{\code{0}: } {function returns last cached value}
-  \item{\code{1}: } {object value is set to \code{NULL} and is returned}
-  \item{\code{2}: } {object value is set to an instance of condition class
-      \code{BrokenReactiveBinding} and this condition is triggered whenever
-      the object's value is requested by \code{\link[base]{get}} or
-      its syntactical surgars \code{{obj-name} or \code{}}
-  }
+  \item{\code{0}: } {no checks are performed}
+  \item{\code{1}: } {warning if object is already a non-reactive or
+  reactive object or if any references does not exist yet}
+  \item{\code{2}: } {error if object is already a non-reactive or
+  reactive object or if any references do not exist yet}
 }}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.}

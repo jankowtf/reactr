@@ -73,7 +73,7 @@
 #' @template threedots
 #' @example inst/examples/setShinyReactive.r
 #' @seealso \code{
-#'   	\link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactiveS3}
 #' }
 #' @template author
 #' @template references
@@ -83,6 +83,13 @@ setShinyReactive <- function(
     id,
     value = NULL,
     where = parent.frame(),
+    ## from `reactive()` //
+    quoted = FALSE, 
+    label = NULL,
+    domain = shiny:::getDefaultReactiveDomain(), 
+    integrity = TRUE,
+    push = FALSE,
+    typed = FALSE,
     ...
   ) {
 
@@ -93,59 +100,43 @@ setShinyReactive <- function(
   }
   
   ## Check if regular value assignment or reactive function //
-  if (!inherits(value, "reactive")) {
+  if (!is.function(value)) {    
     is_reactive <- FALSE
-    ## Register as an object that other objects can have reactive
-    ## bindings to //
-    shiny::makeReactiveBinding(symbol = id, env = where)
-#     value_expr <- substitute(VALUE, list(VALUE = value))
-    value_expr <- quote(value)
-#     this <- value
+    references <- character()
+    
+#     value_initial <- value
+#     value_expr <- quote(obj$value <<- value)
+    value_expr <- NULL
+    func <- NULL
   } else {
     is_reactive <- TRUE
-#     this <- NULL
-    ## Putting together the "line of lines" //
-    
-    ## Trying the most obvious way //
-    ## Approach 1 --------------------------------------------------------------
-#     value_expr <- substitute(value <<- VALUE(), list(VALUE = value))
-    ## --> works initially but seems to be static
-    ## --> seems like the call to 'local()' needs to contain the *actual*
-    ## "literate" expression (i.e. 'reactive(...)') in order to grab the entire
-    ## invisible object created by `reactive()`. Evaluating the line above 
-    ## results in only the visible part being assigned and that seems to make 
-    ## it static.
-    ## UDATE: with the current structure, it seems like to assignment of 
-    ## 'id' in 'where' is taking place at all anymore
-#     value_expr <- quote(this <<- value())
-    ## --> works but is static
+
+    yaml <- exprToFunction2(x, env, quoted)
+    fun <- yaml$src
+    # Attach a label and a reference to the original user source for debugging
+    if (is.null(label))
+      label <- sprintf('reactive(%s)', paste(deparse(body(fun)), collapse='\n'))
+    srcref <- attr(substitute(x), "srcref")
+    if (length(srcref) >= 2) attr(label, "srcref") <- srcref[[2]]
+    attr(label, "srcfile") <- shiny:::srcFileOfRef(srcref[[1]])
+    o <- Observable3$new(
+      id = id, 
+      where = env,
+      refs_pull = yaml$parsed,
+      func = fun, 
+      label = label, 
+      domain = domain
+    )
+# o <<- o
+    shiny:::registerDebugHook(".func", o, "Reactive")
   
-    ## Approach 2: via 'capture.output()' --------------------------------------
-    ## Workarounds based character strings and re-parsing:
-    ## W/o 'where' //
-#     reactive_expr <- capture.output(value)
-    ## With 'where' //
-#     reactive_expr <- gsub(") $", ", env = where)", capture.output(value))
-
-    ## Approach 3: via attributes ----------------------------------------------
-    ## --> about 40 times faster than approach 2 (not considering function 
-    ## environment substitution part)!
-#     reactive_expr <- attributes(value)$observable$.label
-#     reactive_expr <- gsub(")$", ", env = where)", reactive_expr)
-#     value_expr <- substitute(value <<- eval(VALUE)(), 
-#       list(VALUE = parse(text = reactive_expr)))
-
-    ## Approach 4 --------------------------------------------------------------
-    
-    reactive_expr <- attributes(value)$observable$.label
-#     reactive_expr <- gsub(")$", ", env = where)", reactive_expr)
-    value_expr <- substitute(value <<- VALUE(), 
-      list(VALUE = parse(text = reactive_expr)[[1]]))
-#     value_expr <- substitute(this <<- VALUE(), 
-#       list(VALUE = parse(text = reactive_expr)[[1]]))
-    ## Pass on correct function environment of initial call to 'reactive()' //
-    fun_env <- environment(attributes(value)$observable$.func)
-    value_expr[[3]][[1]]$env <- fun_env
+    ## Some preparations //
+    o$.class <- class(o$.value)
+  
+    ## Push //
+    if (push) {
+      o$.registerPushReferences()
+    }
 
   }
 
@@ -193,3 +184,4 @@ setShinyReactive <- function(
   return(out)
   
 }
+

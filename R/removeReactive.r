@@ -133,7 +133,7 @@ setMethod(
   if (!length(id)) {
     stop(paste0("Provide an ID"))
   }
-  uid <- getObjectUid(id = id, where = where)    
+  uid <- computeObjectUid(id = id, where = where)    
   
   if (exists(id, envir = where, inherits = FALSE)) {
     has_binding <- try(bindingIsActive(id, where))
@@ -141,7 +141,7 @@ setMethod(
       has_binding <- FALSE
     } 
     if (has_binding) {
-      unsetReactiveByUid(uid = uid)
+      try(unsetReactiveByUid(uid = uid), silent = TRUE)
       rm(list = id, envir = where, inherits = FALSE)
       out <- TRUE
     }

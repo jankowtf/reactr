@@ -50,7 +50,7 @@ setGeneric(
 setMethod(
   f = "getRegistry", 
   signature = signature(
-    where= "missing"
+    where = "missing"
   ), 
   definition = function(
     where,

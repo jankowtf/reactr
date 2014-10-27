@@ -8,21 +8,22 @@
 resetRegistry()
 
 where <- new.env()
-setReactiveS3(id = id, value = 10, where = where)
-setReactiveS3(id = id_2, 
-  value = function() .ref_1 <- get("x_1", envir = where),
+setReactiveS3(id = "x_1", value = 10, where = where)
+setReactiveS3(id = "x_2", 
+  value = function() .ref_1 <- get("x_1"),
   where = where
 )
 
 ## Insepct registry before removal //
-ls(getRegistry())
+showRegistry()
 
 removeFromRegistry(id = "x_1", where = where)
-ls(getRegistry())
+showRegistry()
 removeFromRegistry(id = "x_2", where = where)
-ls(getRegistry())
+showRegistry()
 
-## Sanity of actual cached values is not affected by this //
+## Sanity of actual cached values is not affected by this unless other values
+## for `strict_get` are chosen
 where$x_1
 where$x_2
 

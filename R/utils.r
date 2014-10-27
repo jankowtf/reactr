@@ -19,6 +19,10 @@
       if (is.null(tmp$as)) {
         tmp$as <- substitute(AS, list(AS = as.name(tmp$id)))
       }
+      tmp$uid <- computeObjectUid(
+        id = tmp$id, 
+        where = tmp$where
+      )
       tmp
     })
   }
@@ -56,8 +60,12 @@ ii=2
 #   buffer$refs
   list(refs = buffer$refs, fun = fun)
 }
+
 .getActualReferencesFromBody <- function(refs, where) {
-  references <- sapply(refs, function(ref) {
+  nms <- vector("character", length(refs))
+  
+  out <- lapply(seq(along = refs), function(ref_ii) {
+    ref <- refs[[ref_ii]]
     if (class(ref) %in% c("<-", "=")) {
       ref_this <- ref[[3]]
     } else if (class(ref) == "call" && ref[[1]] == "get") {
@@ -66,9 +74,7 @@ ii=2
 #     id_this <- eval(ifelse(is.null(ref_this$x), ref_this[[2]], ref_this$x))
 # ref_this <<- ref_this
     ## Decompose //
-
     ref_this_dec <- lapply(ref_this, function(ii) ii)
-
     ## Recognize 'x' and 'envir' even though they might not have 
     ## been named //
     ## TODO: GitHub #7
@@ -96,12 +102,23 @@ ii=2
       ref_this_dec[[max(idx_envir)]]
     })
 
-    ## UIDs //
-    getObjectUid(
+#     ## UIDs //
+#     computeObjectUid(
+#       id = id_this, 
+#       where = envir_this
+#     )
+    nms[[ref_ii]] <<- id_this
+    list(
       id = id_this, 
+      uid = computeObjectUid(
+        id = id_this, 
+        where = envir_this
+      ),
       where = envir_this
     )
   })
+  names(out) <- nms
+  out
 }
 .transformReactiveFunction <- function(refs, fun) {
   idx <- if (!is.null(names(refs))) {
@@ -224,6 +241,140 @@ ii=2
 # refs <- .parseReferenceYaml(yaml = refs$yaml)
 # value <- .transformReactiveFunction(refs = refs, fun = value)
 
+##------------------------------------------------------------------------------
+## shiny
+##------------------------------------------------------------------------------
+
+.getReferenceYaml <- function(expr) {
+  idx_yaml <- which(sapply(expr, function(expr) {
+    any(grepl("^reactive:", expr))
+  }))
+  if (length(idx_yaml)) {
+    yaml <- structure(
+      list(
+        yaml = sapply(idx_yaml, function(idx) expr[[idx]]),
+        index = idx_yaml
+       ),
+      class = c("ReactiveReferenceYaml", "list")
+    )
+  } else {
+    yaml <- structure(
+      list(yaml = character(), index = character()),
+      class = c("ReactiveReferenceYaml", "list")
+    )
+  }
+}
+# yaml <- .getReferenceYaml(expr = expr)
+.parseYaml <- function(yaml) {
+  nms <- vector("character", length(yaml))
+  yaml_parsed <- lapply(seq(along=yaml), function(ii) {
+    out <- yaml.load(yaml[ii])[[1]]
+    if (is.null(out$where)) {
+      out$where <- as.name("where")
+    } else {
+      out$where <- as.name(out$where)
+    }
+    if (is.null(out$as)) {
+      out$as <- as.name(out$id)
+    } else {
+      out$as <- as.name(out$as)
+    }
+    nms[[ii]] <<- out$id
+    out
+  })
+  names(yaml_parsed) <- nms
+  yaml_parsed
+}
+# yaml_parsed <- .parseYaml(yaml = yaml)
+.constructGetExpressionFromYaml <- function(yaml, where) {
+  yaml_parsed <- .parseYaml(yaml = yaml)
+  expr_get <- lapply(yaml_parsed, function(el) {
+    substitute(AS <- get(x = ID, envir = WHERE, inherits = FALSE),
+               list(AS = el$as, ID = el$id, WHERE = eval(el$where))
+               )
+  })
+  expr_get
+}
+.computeObjectUids <- function(yaml_parsed, where) {
+  sapply(yaml_parsed, function(el) {
+    digest::digest(list(
+      id = el$id,
+      where = capture.output(eval(el$where))
+      ## --> very important to use `capture.output` instead of the
+      ## environment itself as changes in the environment will be
+      ## recognized by `digest()` and thus would lead to a different
+      ## UID being assigned each time
+    ))
+  })
+}
+.updateReactiveExpression <- function(expr, expr_add, idx_yaml) {
+  for (ii in seq(along=idx_yaml)) {
+    expr[[idx_yaml[ii]]] <- expr_add[[ii]]
+  }
+  expr
+}
+.processReferenceYaml <- function(expr, where) {
+  yaml <- .getReferenceYaml(expr = expr)
+  if (length(yaml$yaml)) {
+    yaml_parsed <- .parseYaml(yaml = yaml$yaml)
+    .computeObjectUids(yaml_parsed, where = where)
+    expr_add <- .constructGetExpressionFromYaml(yaml = yaml$yaml, where = where)
+
+    out <- .updateReactiveExpression(
+      expr = expr,
+      expr_add = expr_add,
+      idx_yaml = yaml$index
+    )
+  } else {
+    out <- expr
+  }
+  out
+}
+.constructGetChecksumExpressionFromYaml <- function(yaml, where) {
+  yaml_parsed <- .parseYaml(yaml = yaml)
+  expr <- lapply(yaml_parsed, function(el) {
+    uid <- .computeObjectUid(id = el$id, where = eval(el$where))
+    expr <- substitute(get(
+        x = UID,
+        envir = getOption("shiny")$.registry,
+        inherits = FALSE
+      )$checksum,
+      list(UID = uid)
+    )
+    list(uid = uid, id = el$id, as = el$as, where = el$where, expr = expr)
+  })
+  names(expr) <- sapply(yaml_parsed, "[[", "as")
+  expr
+}
+.computeObjectUid <- function(id, where) {
+  eval(substitute(digest::digest(list(id = ID, where = WHERE)),
+    list(
+      ID = id,
+      WHERE = capture.output(eval(where))
+      ## --> very important to use `capture.output` instead of the
+      ## environment itself as changes in the environment will be
+      ## recognized by `digest()` and thus would lead to a different
+      ## UID being assigned each time
+    )
+  ))
+}
+
+getReactiveReferenceInfo <- function(x, env=parent.frame(2), quoted=FALSE,
+  caller_offset=1) {
+  # Get the quoted expr from two calls back
+  expr_sub <- eval(substitute(substitute(x)), parent.frame(caller_offset))
+  yaml <- .getReferenceYaml(expr = expr_sub)
+  if (length(yaml$yaml)) {
+# tmp <- .parseYaml(yaml = yaml$yaml)
+# .computeObjectUid(id = tmp$x_1$id, where = eval(tmp$x_1$where))
+# .computeObjectUid(id = tmp$x_1$id, where = where)
+    .constructGetChecksumExpressionFromYaml(yaml$yaml, where = env)
+# envir <- new.env()
+# envir$.registry <- new.env()
+# options("shiny" = envir)
+# eval(out[[1]])
+  }
+}
 
 ##------------------------------------------------------------------------------
 ## OLD
@@ -256,7 +407,7 @@ ii=2
 # #                 tmp$envir <- eval(where)
 #             expr_2[[3]]$envir <- eval(where)
 #           }
-# #               return(getObjectUid(id = tmp$x, where = eval(tmp$envir)))
+# #               return(computeObjectUid(id = tmp$x, where = eval(tmp$envir)))
 # #               buffer$out <<- c(buffer$out, tmp)
 #           buffer$out <<- c(buffer$out, expr_2)
 #           

@@ -30,7 +30,7 @@ setReactiveS3(id = "x_1", value = 10)
 x_1
 
 ## Get from registry //
-uid <- getObjectUid(id = "x_1")
+uid <- computeObjectUid(id = "x_1")
 ls(getRegistry())
 obj <- getFromRegistryByUid(uid = uid)
 obj$id

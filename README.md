@@ -280,7 +280,7 @@ x_4
   
 - Binding/Relationship: 
 
-  `A` uses value of `B` "as is" and `B` uses value of `A` "as is". This results in a steady state. 
+  `A` uses value of `B` "as is" and `B` uses value of `A` "as is". This results in a **steady state**. 
 
 ### Example
 
@@ -337,7 +337,7 @@ x_5
 # [1] 1000
 ```
 
-## Scenario 4: bi-directional (2)
+## Scenario 5: bi-directional (2)
 
 ### Scenario explanation
 
@@ -349,7 +349,7 @@ x_5
 
   `A` uses transformed value of `B` and `B` uses transformed value of `A`. 
   
-  The binding functions used result in a **steady** state.
+  The binding functions used result in a **steady state**.
 
 ### Example
 
@@ -410,7 +410,7 @@ x_7
 # [1] 1000
 ```
 
-## Scenario 4: bi-directional (3)
+## Scenario 6: bi-directional (3)
 
 ### Scenario explanation
 
@@ -422,7 +422,7 @@ x_7
 
   `A` uses transformed value of `B` and `B` uses transformed value of `A`. 
   
-  The binding functions used result in a **non-steady** state.
+  The binding functions used result in a **non-steady state**.
 
 ### Example
 
@@ -587,10 +587,10 @@ registry <- getRegistry()
 #### Show registry content
 
 ```
-showRegistryContent()
+showRegistry()
 `` 
 
-The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `getObjectUid()` for the details of the computation of object UIDs.
+The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `computeObjectUid()` for the details of the computation of object UIDs.
 
 #### Retrieve from registry
 
@@ -599,8 +599,8 @@ x_1_hidden <- getFromRegistry(id = "x_1")
 x_2_hidden <- getFromRegistry(id = "x_2")
 
 ## Via UID //
-getFromRegistry(getObjectUid("x_1"))
-getFromRegistry(getObjectUid("x_2"))
+getFromRegistry(computeObjectUid("x_1"))
+getFromRegistry(computeObjectUid("x_2"))
 
 ```
 
@@ -634,14 +634,14 @@ removeFromRegistry(id = "x_1")
 ## --> notice that entry `2fc2e352f72008b90a112f096cd2d029` has been removed
 
 ## Via UID //
-removeFromRegistry(getObjectUid("x_2"))
+removeFromRegistry(computeObjectUid("x_2"))
 ## --> notice that entry `ab22808532ff42c87198461640612405` has been removed
 ```
 
 #### Reset from registry
 
 ```
-showRegistryContent()
+showRegistry()
 resetRegistry()
-showRegistryContent()
+showRegistry()
 ```

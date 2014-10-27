@@ -41,7 +41,7 @@ setReactiveS3(id = "x_2",
               value = function(refs = list(x_1 = where)) x_1,
               where = where)
 
-unsetReactiveByUid(uid = getObjectUid("x_1", where))
+unsetReactiveByUid(uid = computeObjectUid("x_1", where))
 where$x_1
 identical(where$x_2, where$x_1)
 where$x_1 <- 20

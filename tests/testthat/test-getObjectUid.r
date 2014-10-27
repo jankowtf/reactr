@@ -8,10 +8,10 @@ is_testthat <- basename(getwd()) == "testthat"
 if (!is_testthat) {
   
 ##------------------------------------------------------------------------------
-context("getObjectUid/basics")
+context("computeObjectUid/basics")
 ##------------------------------------------------------------------------------
 
-test_that("getObjectUid/no where", {
+test_that("computeObjectUid/no where", {
   
   resetRegistry()
   
@@ -30,8 +30,8 @@ test_that("getObjectUid/no where", {
     })
   }
 
-  uid_1 <- getObjectUid(id = id_1)
-  uid_2 <- getObjectUid(id = id_2)
+  uid_1 <- computeObjectUid(id = id_1)
+  uid_2 <- computeObjectUid(id = id_2)
   
   registry <- getRegistry()
 #   print(ls(registry))
@@ -44,7 +44,7 @@ test_that("getObjectUid/no where", {
   
 })
 
-test_that("getObjectUid/where", {
+test_that("computeObjectUid/where", {
   
   resetRegistry()
   
@@ -64,8 +64,8 @@ test_that("getObjectUid/where", {
     }, where = where)
   }
   
-  uid_1 <- getObjectUid(id = id_1, where = where)
-  uid_2 <- getObjectUid(id = id_2, where = where)
+  uid_1 <- computeObjectUid(id = id_1, where = where)
+  uid_2 <- computeObjectUid(id = id_2, where = where)
   
   registry <- getRegistry()
 #   print(ls(registry))

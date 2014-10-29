@@ -104,7 +104,7 @@ identical(reg_x_1, reg_x_1_through_x_2)
 
 Clean up
 
-```{r, echo=FALSE}
+```{r, message=FALSE}
 rmReactive("x_1")
 rmReactive("x_2")
 resetRegistry()

@@ -11,7 +11,7 @@
 #' @example inst/examples/removeHashRegistry.r
 #' @seealso \code{
 #'   	\link[reactr]{removeHashRegistry-missing-method},
-#'     \link[reactr]{removeFromRegistryByUid}
+#'     \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references

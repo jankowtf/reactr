@@ -9,14 +9,14 @@
 #' @param uid \strong{Signature argument}.
 #'    Object containing UID information.
 #' @template threedots
-#' @example inst/examples/removeFromRegistryByUid.r
+#' @example inst/examples/rmFromRegistryByUid.r
 #' @seealso \code{
-#'   	\link[reactr]{removeFromRegistryByUid-character-environment-method}
+#'   	\link[reactr]{rmFromRegistryByUid-character-environment-method}
 #' }
 #' @template author
 #' @template references
 setGeneric(
-  name = "removeFromRegistryByUid",
+  name = "rmFromRegistryByUid",
   signature = c(
     "uid"
   ),
@@ -24,7 +24,7 @@ setGeneric(
     uid,
     ...
   ) {
-    standardGeneric("removeFromRegistryByUid")       
+    standardGeneric("rmFromRegistryByUid")       
   }
 )
 
@@ -32,23 +32,23 @@ setGeneric(
 #' Remove From Registry (character)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeFromRegistryByUid}}
+#' See generic: \code{\link[reactr]{rmFromRegistryByUid}}
 #'      
-#' @inheritParams removeFromRegistryByUid
+#' @inheritParams rmFromRegistryByUid
 #' @param uid \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return See method
-#'    \code{\link[reactr]{removeFromRegistryByUid-character-character-environment-method}}
-#' @example inst/examples/removeFromRegistryByUid.r
+#'    \code{\link[reactr]{rmFromRegistryByUid-character-character-environment-method}}
+#' @example inst/examples/rmFromRegistryByUid.r
 #' @seealso \code{
-#'    \link[reactr]{removeFromRegistryByUid}
+#'    \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references
 #' @export
-#' @aliases removeFromRegistryByUid-character-method
+#' @aliases rmFromRegistryByUid-character-method
 setMethod(
-  f = "removeFromRegistryByUid", 
+  f = "rmFromRegistryByUid", 
   signature = signature(
     uid = "character"
   ), 

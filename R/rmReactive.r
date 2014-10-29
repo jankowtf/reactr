@@ -9,7 +9,7 @@
 #' @details
 #' 
 #' \strong{Note that tis is different from unsetting a reactive object 
-#' via \code{\link[reactr]{removeReactive}}}. It is equivalent to 
+#' via \code{\link[reactr]{rmReactive}}}. It is equivalent to 
 #' \code{\link[base]{rm}} with a previous call to 
 #' \code{\link[reactr]{unsetReactive}}. 
 #' 
@@ -24,22 +24,22 @@
 #' 
 #' @note
 #' The main S4 method is 
-#' \code{\link[reactr]{removeReactive-character-environment-method}}.
+#' \code{\link[reactr]{rmReactive-character-environment-method}}.
 #'     
 #' @param id \strong{Signature argument}.
 #'    Object containing path-like ID information.
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
 #' @template threedots
-#' @example inst/examples/removeReactive.r
+#' @example inst/examples/rmReactive.r
 #' @seealso \code{
-#'   	\link[reactr]{removeReactive-character-environment-method}
+#'   	\link[reactr]{rmReactive-character-environment-method}
 #' }
 #' @template author
 #' @template references
 #' @export 
 setGeneric(
-  name = "removeReactive",
+  name = "rmReactive",
   signature = c(
     "id",
     "where"
@@ -49,7 +49,7 @@ setGeneric(
     where = parent.frame(),
     ...
   ) {
-    standardGeneric("removeReactive")       
+    standardGeneric("rmReactive")       
   }
 )
 
@@ -57,27 +57,27 @@ setGeneric(
 #' Remove Reactive Object (character-missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeReactive}}
+#' See generic: \code{\link[reactr]{rmReactive}}
 #'      
-#' @inheritParams removeReactive
+#' @inheritParams rmReactive
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{missing}}.
 #'    Internal argument that should not be set explicitly.
 #'    The value at runtime will correspond to the function that has been 
 #'    provided via argument \code{binding}.
 #' @return See method
-#'    \code{\link[reactr]{removeReactive-character-environment-method}}
-#' @example inst/examples/removeReactive.r
+#'    \code{\link[reactr]{rmReactive-character-environment-method}}
+#' @example inst/examples/rmReactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{removeReactive}
+#'    Generic: \link[reactr]{rmReactive}
 #' }
 #' @template author
 #' @template references
-#' @aliases removeReactive-method_main 
+#' @aliases rmReactive-method_main 
 #' @export
-#' @aliases removeReactive-character-missing-method
+#' @aliases rmReactive-character-missing-method
 setMethod(
-  f = "removeReactive", 
+  f = "rmReactive", 
   signature = signature(
     id = "character",
     where = "missing"
@@ -88,7 +88,7 @@ setMethod(
     ...
   ) {
   
-  return(removeReactive(
+  return(rmReactive(
     id = id,
     where = where,
     ...
@@ -101,24 +101,24 @@ setMethod(
 #' Remove Reactive Object (character-environment)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeReactive}}
+#' See generic: \code{\link[reactr]{rmReactive}}
 #'   	 
-#' @inheritParams removeReactive
+#' @inheritParams rmReactive
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return \code{\link{logical}}. \code{TRUE}: success; \code{FALSE}: object
 #'    was not a reactive one or failure to remove.
-#' @example inst/examples/removeReactive.r
+#' @example inst/examples/rmReactive.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{removeReactive}
+#'    Generic: \link[reactr]{rmReactive}
 #' }
 #' @template author
 #' @template references
-#' @aliases removeReactive-method_main 
+#' @aliases rmReactive-method_main 
 #' @export
-#' @aliases removeReactive-character-environment-method
+#' @aliases rmReactive-character-environment-method
 setMethod(
-  f = "removeReactive", 
+  f = "rmReactive", 
   signature = signature(
     id = "character",
     where = "environment"
@@ -142,9 +142,9 @@ setMethod(
     } 
     if (has_binding) {
       try(unsetReactiveByUid(uid = uid), silent = TRUE)
-      rm(list = id, envir = where, inherits = FALSE)
-      out <- TRUE
     }
+    rm(list = id, envir = where, inherits = FALSE)
+    out <- TRUE
   }
     
   return(out)

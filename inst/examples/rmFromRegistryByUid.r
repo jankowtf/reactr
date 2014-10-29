@@ -21,9 +21,9 @@ exists(uid_1, registry)
 exists(uid_2, registry)
 
 ## Remove //
-removeFromRegistryByUid(uid = uid_1)
+rmFromRegistryByUid(uid = uid_1)
 exists(uid_1, registry)
-removeFromRegistryByUid(uid = uid_2)
+rmFromRegistryByUid(uid = uid_2)
 exists(uid_2, registry)
 
 }

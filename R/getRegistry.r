@@ -11,7 +11,7 @@
 #' @example inst/examples/getRegistry.r
 #' @seealso \code{
 #'   	\link[reactr]{getRegistry-environment-method},
-#'     \link[reactr]{removeFromRegistryByUid}
+#'     \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -41,7 +41,7 @@ setGeneric(
 #' @example inst/examples/getRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{getRegistry-environment-method},
-#'     \link[reactr]{removeFromRegistryByUid}
+#'     \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -83,7 +83,7 @@ setMethod(
 #' @example inst/examples/getRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{getRegistry},
-#'     \link[reactr]{removeFromRegistryByUid}
+#'     \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references

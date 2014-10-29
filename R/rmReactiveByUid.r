@@ -6,7 +6,7 @@
 #' 
 #' @details
 #' \strong{Note that tis is different from unsetting a reactive object 
-#' via \code{\link[reactr]{removeReactiveByUid}}}. It is equivalent to 
+#' via \code{\link[reactr]{rmReactiveByUid}}}. It is equivalent to 
 #' \code{\link[base]{rm}} with a previous call to 
 #' \code{\link[reactr]{unsetReactiveByUid}}. 
 #' 
@@ -19,20 +19,20 @@
 #' 
 #' @note
 #' The main S4 method is 
-#' \code{\link[reactr]{removeReactiveByUid-character-method}}.
+#' \code{\link[reactr]{rmReactiveByUid-character-method}}.
 #'     
 #' @param uid \strong{Signature argument}.
 #'    Object containing UID information.
 #' @template threedots
-#' @example inst/examples/removeReactiveByUid.r
+#' @example inst/examples/rmReactiveByUid.r
 #' @seealso \code{
-#'   	\link[reactr]{removeReactiveByUid-character-method}
+#'   	\link[reactr]{rmReactiveByUid-character-method}
 #' }
 #' @template author
 #' @template references
 #' @export 
 setGeneric(
-  name = "removeReactiveByUid",
+  name = "rmReactiveByUid",
   signature = c(
     "uid"
   ),
@@ -40,7 +40,7 @@ setGeneric(
     uid,
     ...
   ) {
-    standardGeneric("removeReactiveByUid")       
+    standardGeneric("rmReactiveByUid")       
   }
 )
 
@@ -48,23 +48,23 @@ setGeneric(
 #' Remove Reactive Object (character)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeReactiveByUid}}
+#' See generic: \code{\link[reactr]{rmReactiveByUid}}
 #'      
-#' @inheritParams removeReactiveByUid
+#' @inheritParams rmReactiveByUid
 #' @param uid \code{\link{character}}.
 #' @return See method
-#'    \code{\link[reactr]{removeReactiveByUid-character-method}}
-#' @example inst/examples/removeReactiveByUid.r
+#'    \code{\link[reactr]{rmReactiveByUid-character-method}}
+#' @example inst/examples/rmReactiveByUid.r
 #' @seealso \code{
-#'    Generic: \link[reactr]{removeReactiveByUid}
+#'    Generic: \link[reactr]{rmReactiveByUid}
 #' }
 #' @template author
 #' @template references
-#' @aliases removeReactiveByUid-method_main 
+#' @aliases rmReactiveByUid-method_main 
 #' @export
-#' @aliases removeReactiveByUid-character-method
+#' @aliases rmReactiveByUid-character-method
 setMethod(
-  f = "removeReactiveByUid", 
+  f = "rmReactiveByUid", 
   signature = signature(
     uid = "character"
   ), 

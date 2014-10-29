@@ -10,14 +10,14 @@
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
 #' @template threedots
-#' @example inst/examples/removeFromRegistry.r
+#' @example inst/examples/rmFromRegistry.r
 #' @seealso \code{
-#'   	\link[reactr]{removeFromRegistry-character-environment-method}
+#'   	\link[reactr]{rmFromRegistry-character-environment-method}
 #' }
 #' @template author
 #' @template references
 setGeneric(
-  name = "removeFromRegistry",
+  name = "rmFromRegistry",
   signature = c(
     "id",
     "where"
@@ -27,7 +27,7 @@ setGeneric(
     where = parent.frame(),
     ...
   ) {
-    standardGeneric("removeFromRegistry")       
+    standardGeneric("rmFromRegistry")       
   }
 )
 
@@ -35,24 +35,24 @@ setGeneric(
 #' Remove From Registry (character-missing)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeFromRegistry}}
+#' See generic: \code{\link[reactr]{rmFromRegistry}}
 #'      
-#' @inheritParams removeFromRegistry
+#' @inheritParams rmFromRegistry
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{missing}}.
 #' @return See method
-#'    \code{\link[reactr]{removeFromRegistry-character-environment-method}}.
-#' @example inst/examples/removeFromRegistry.r
+#'    \code{\link[reactr]{rmFromRegistry-character-environment-method}}.
+#' @example inst/examples/rmFromRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{removeFromRegistry},
-#'    \link[reactr]{removeFromRegistry-character-environment-method}
+#'    \link[reactr]{rmFromRegistry},
+#'    \link[reactr]{rmFromRegistry-character-environment-method}
 #' }
 #' @template author
 #' @template references
 #' @export
-#' @aliases removeFromRegistry-character-missing-method
+#' @aliases rmFromRegistry-character-missing-method
 setMethod(
-  f = "removeFromRegistry", 
+  f = "rmFromRegistry", 
   signature = signature(
     id = "character",
     where = "missing"
@@ -63,7 +63,7 @@ setMethod(
     ...
   ) {
 
-  removeFromRegistry(
+  rmFromRegistry(
     id = id,
     where = where,
     ...
@@ -76,23 +76,23 @@ setMethod(
 #' Remove From Registry (character-environment)
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeFromRegistry}}
+#' See generic: \code{\link[reactr]{rmFromRegistry}}
 #'   	 
-#' @inheritParams removeFromRegistry
+#' @inheritParams rmFromRegistry
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return \code{\link{logical}}. \code{TRUE}: successfully removed; 
 #'    \code{FALSE}: not removed because there was nothing to remove.
-#' @example inst/examples/removeFromRegistry.r
+#' @example inst/examples/rmFromRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{removeFromRegistry}
+#'    \link[reactr]{rmFromRegistry}
 #' }
 #' @template author
 #' @template references
 #' @export
-#' @aliases removeFromRegistry-character-environment-method
+#' @aliases rmFromRegistry-character-environment-method
 setMethod(
-  f = "removeFromRegistry", 
+  f = "rmFromRegistry", 
   signature = signature(
     id = "character",
     where = "environment"
@@ -106,7 +106,7 @@ setMethod(
   out <- FALSE
   if (length(id)) {
     uid <- computeObjectUid(id = id, where = where)
-    out <- removeFromRegistryByUid(uid = uid)
+    out <- rmFromRegistryByUid(uid = uid)
   }
   return(out)
     

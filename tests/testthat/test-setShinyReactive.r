@@ -20,8 +20,8 @@ test_that("setShinyReactive/one-directional (1)", {
   expect_equal(x_2, x_1 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
 
 })
 
@@ -42,8 +42,8 @@ test_that("setShinyReactive/one-directional (2)", {
   expect_equal(where_1$x_2, where_1$x_1 * 2)
 
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -71,8 +71,8 @@ test_that("setShinyReactive/bi-directional (1)", {
   expect_equal(x_2, 20)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -132,8 +132,8 @@ test_that("setShinyReactive/bi-directional (2)", {
   expect_equal(x_2 , 1) ## update (x_2:x_1:1)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
   ##----------
   
@@ -155,8 +155,8 @@ test_that("setShinyReactive/bi-directional (2)", {
     expect_equal(x_4, 30)
     
     ## Clean up //
-    removeReactive("x_3")
-    removeReactive("x_4")
+    rmReactive("x_3")
+    rmReactive("x_4")
     
     setReactiveS3(id = "x_3", value = function() {
       "object-ref: {id: x_4}"
@@ -212,8 +212,8 @@ test_that("setShinyReactive/bi-directional (2)", {
     expect_equal(x_4 , 1) ## update (x_4:x_3:1)
     
     ## Clean up //
-    removeReactive("x_3")
-    removeReactive("x_4")
+    rmReactive("x_3")
+    rmReactive("x_4")
   }
   
 })

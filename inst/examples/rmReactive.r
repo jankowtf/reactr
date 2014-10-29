@@ -12,7 +12,7 @@ setReactiveS3(id = "x_2",
   }
 )
 
-removeReactive(id = "x_1")
+rmReactive(id = "x_1")
 exists("x_1", envir = environment(), inherits = FALSE)
 x_2
 ## --> `x_2` not affected but only because `strict_get = 0`
@@ -26,7 +26,7 @@ setReactiveS3(id = "x_2",
   },
   strict_get = 1
 )
-removeReactive(id = "x_1")
+rmReactive(id = "x_1")
 try(x_2)
 ## --> warning as referenced object `x_1` does not exist anymore
 
@@ -39,7 +39,7 @@ setReactiveS3(id = "x_2",
   },
   strict_get = 2
 )
-removeReactive(id = "x_1")
+rmReactive(id = "x_1")
 try(x_2)
 ## --> error as referenced object `x_1` does not exist anymore
 

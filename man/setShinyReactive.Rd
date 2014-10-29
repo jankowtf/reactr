@@ -108,7 +108,7 @@ See section \emph{Referenced environments}.}
 }
 \description{
 Creates an reactive object as the ones created by the
-\href{http://shiny.rstudio.com/}{shiny} framework/package.
+\href{shiny}{http://shiny.rstudio.com/} framework/package.
 }
 \details{
 The function makes explicit use of \code{\link[shiny]{makeReactiveBinding}}
@@ -210,8 +210,8 @@ x_2
 ## stored in referenced objects is significantly big. 
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------  
 ## Set reactive objects in custom environment //
@@ -245,8 +245,8 @@ where_1$x_2
 ## --> cached value
 
 ## Clean up //
-removeReactive("x_1", where_1)
-removeReactive("x_2", where_1)
+rmReactive("x_1", where_1)
+rmReactive("x_2", where_1)
 suppressWarnings(rm(where_1))
 
 ##------------------------------------------------------------------------------  
@@ -273,9 +273,9 @@ x_3
 x_3
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
-removeReactive("x_3")
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
 
 ##------------------------------------------------------------------------------  
 ## Bi-directional bindings //
@@ -330,7 +330,7 @@ setShinyReactive(id = "x_1", value = 10)
 (inst <- getFromRegistry("x_1"))
 class(inst)
 inst$.value
-removeReactive("x_1")
+rmReactive("x_1")
 
 ## (*)
 ## The shiny framework distinguishes between instances of class `ReactiveValues`

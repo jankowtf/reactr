@@ -10,7 +10,7 @@
 #' @example inst/examples/resetRegistry.r
 #' @seealso \code{
 #'   	\link[reactr]{resetRegistry-environment-method},
-#'     \link[reactr]{removeFromRegistryByUid}
+#'     \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -40,7 +40,7 @@ setGeneric(
 #' @example inst/examples/resetRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{resetRegistry-environment-method},
-#'     \link[reactr]{removeFromRegistryByUid}
+#'     \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references
@@ -76,7 +76,7 @@ setMethod(
 #' @example inst/examples/resetRegistry.r
 #' @seealso \code{
 #'    \link[reactr]{resetRegistry},
-#'     \link[reactr]{removeFromRegistryByUid}
+#'     \link[reactr]{rmFromRegistryByUid}
 #' }
 #' @template author
 #' @template references

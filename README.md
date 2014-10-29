@@ -12,7 +12,7 @@ devtools::install_github("Rappster/yamlr")
 devtools::install_github("Rappster/reactr")
 require("reactr")
 ```
-## Overview 
+## Purpose 
 
 The package aims at contributing to *Reactive Programming* or *Reactivity* in R. 
 
@@ -23,6 +23,19 @@ It allows to specify **reactive objects**, i.e. objects that are linked a way th
 The implementation is greatly inspired by and is to a large extend very similar to that implemented by the [shiny](http://shiny.rstudio.com) framework. 
 
 It is a declared goal of this package to re-use as much of the existing functionality provided by shiny and to make its reactive objects as compatible as possible to those used by shiny.
+
+### Vignettes
+
+- [Bi-directional Bindings](https://github.com/Rappster/reactr/blob/master/vignettes/bidirectional_bindings.Rmd)
+- [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.Rmd)
+- [Convenience functions](https://github.com/Rappster/reactr/blob/master/vignettes/convenience_functions.pdf)
+- [Pushing](https://github.com/Rappster/reactr/blob/master/vignettes/pushing.Rmd)
+- [Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/reactive_references.Rmd)
+- [Relations to Shiny](https://github.com/Rappster/reactr/blob/master/vignettes/relations_to_shiny.Rmd)
+- [Registry](https://github.com/Rappster/reactr/blob/master/vignettes/registry.Rmd)
+- [Strictness](https://github.com/Rappster/reactr/blob/master/vignettes/strictness.Rmd)
+
+----------
 
 ### Quick example 1: setReactiveS3()
 
@@ -99,8 +112,8 @@ x_2
 Clean up 
 
 ```
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 ```
 
 ### Highlighting selected features
@@ -116,7 +129,7 @@ removeReactive("x_2")
   
     with `{number}` being an arbitrary number or other symbol, `{id}` being the referenced object's name/ID and `{where}` being the environment where the value belonging to `{id}` was assigned to (e.g. `.ref_1 <- get{"x_1", where_1}`).
 
-  See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/specifying_reactive_references.Rmd) for details.
+  See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/reactive_references.Rmd) for details.
 
 2. The environment in which to set a reactive object can be chosen via argument `where`
 
@@ -195,8 +208,8 @@ Do the same for reactive objects set via `setReactiveS3()` and compare the objec
 Clean up 
 
 ```
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 ```
 
 ### Quick example 3: pushing
@@ -239,8 +252,8 @@ x_2
 Clean up 
 
 ```
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 ```
 
 ### Quick example 4: closer to an actual use case
@@ -376,10 +389,10 @@ try((x_1 <- "hello world!"))
 Clean up:
 
 ```
-removeReactive("x_1")
-removeReactive("x_2")
-removeReactive("x_3")
-removeReactive("x_4")
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
+rmReactive("x_4")
 ```
 
 -----
@@ -432,8 +445,8 @@ x_2
 ## changes again
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 ```
 -----
 
@@ -481,9 +494,9 @@ x_3
 # [1] 1000
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
-removeReactive("x_3")
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
 ```
 
 -----
@@ -539,9 +552,9 @@ x_3
 # [1] 150
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
-removeReactive("x_3")
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
 ```
 
 ## Scenario 4: bi-directional (1)
@@ -596,8 +609,8 @@ x_1
 # [1] 1000
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 ```
 
 ## Scenario 5: bi-directional (2)
@@ -664,8 +677,8 @@ x_2
 # [1] 1000
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 ```
 
 ## Scenario 6: bi-directional (3)
@@ -739,8 +752,8 @@ x_1
 # [1] 40
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 ```
 
 ----
@@ -749,7 +762,7 @@ removeReactive("x_2")
 
 This turns reactive objects (that are, even though hidden from the user, instances of class `ReactiveObject.S3`) into regular or non-reactive objects again. 
 
-**Note that it does not mean the a reactive object is removed alltogether! See `removeReactive()` for that purpose**
+**Note that it does not mean the a reactive object is removed alltogether! See `rmReactive()` for that purpose**
 
 ```
 setReactiveS3(id = "x_1", value = 10)
@@ -789,7 +802,7 @@ setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 ## Remove reactive --> remove it from `where` //
-removeReactive(id = "x_1")
+rmReactive(id = "x_1")
 
 exists("x_1", inherits = FALSE)
 ```
@@ -870,11 +883,11 @@ x_2_hidden$.refs_pull[[x_1_hidden$.uid]]
 
 ```
 ## Via ID (and `where`) //
-removeFromRegistry(id = "x_1")
+rmFromRegistry(id = "x_1")
 ## --> notice that entry `2fc2e352f72008b90a112f096cd2d029` has been removed
 
 ## Via UID //
-removeFromRegistry(computeObjectUid("x_2"))
+rmFromRegistry(computeObjectUid("x_2"))
 ## --> notice that entry `ab22808532ff42c87198461640612405` has been removed
 ```
 

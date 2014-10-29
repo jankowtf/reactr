@@ -1,5 +1,5 @@
 #' @title
-#' Get Object UID (generic)
+#' Compute Object UID (generic)
 #'
 #' @description 
 #' Computes the UID of an object based on its name/ID (\code{id}) and the 

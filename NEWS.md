@@ -1,6 +1,14 @@
-# FIXLIST
+## NEW FEATURES
 
-- #17
+- `getBinding()`
+- renamed: `removeReactive()` --> `rmReactive()`
+- renamed: `removeFromRegistry()` --> `rmFromRegistry()`
+
+## BUG FIXES
+
+- fixed: #25
+
+----------
 
 # CHANGES IN reactr VERSION 0.1.8
 

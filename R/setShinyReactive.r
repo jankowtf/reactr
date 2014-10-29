@@ -365,7 +365,18 @@ setShinyReactive <- function(
                 invokeRestart("muffleWarning")
               },
               ReactiveUpdateFailed = function(cond) {
-                ## Custom condition //
+                signal <- FALSE
+                if (!cache) { 
+                  if (grepl("object.*not found", conditionMessage(cond))) {
+                    msg <- paste0("caching disabled -->", conditionMessage(cond))
+                  } else if (grepl("evaluation nested too deeply.*infinite recursion", conditionMessage(cond))) {                
+                    message(conditionMessage(cond))
+                    msg <- "caching disabled --> infinite recursion"
+                    signal <- TRUE
+                  }
+                } else {
+                  msg <- conditionMessage(cond)
+                }
                 cond <- conditionr::signalCondition(
                   call = substitute(
                       get(x= ID, envir = WHERE, inherits = FALSE),
@@ -381,7 +392,7 @@ setShinyReactive <- function(
                   ),
                   ns = "reactr",
                   type = "error",
-                  signal = FALSE
+                  signal = signal
                 )
                 ## Transfer condition //
                 o$.condition <<- cond

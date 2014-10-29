@@ -1,5 +1,5 @@
-context("removeFromRegistryByUid/basics")
-test_that("removeFromRegistryByUid", {
+context("rmFromRegistryByUid/basics")
+test_that("rmFromRegistryByUid", {
 
   resetRegistry()
   id <- "x_1"
@@ -13,12 +13,12 @@ test_that("removeFromRegistryByUid", {
   uid_1 <- computeObjectUid(id = id)
   uid_2 <- computeObjectUid(id = id_2)
   
-  expect_true(removeFromRegistryByUid(uid = uid_1))
+  expect_true(rmFromRegistryByUid(uid = uid_1))
   expect_false(exists(uid_1, envir = getRegistry(), inherits = FALSE))
   expect_equal(x_1, 10)
   expect_equal(x_2, x_1)
   expect_true(exists(uid_2, envir = getRegistry(), inherits = FALSE))
-  expect_true(removeFromRegistryByUid(uid = uid_2))
+  expect_true(rmFromRegistryByUid(uid = uid_2))
   expect_false(exists(uid_2, envir = getRegistry(), inherits = FALSE))
   expect_equal(x_2, x_1)
   

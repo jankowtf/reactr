@@ -31,7 +31,7 @@ unsetReactiveByUid(uid = computeObjectUid("x_1"))
 isReactive("x_1")
 
 ## Clean up //
-removeReactive("x_1")
+rmReactive("x_1")
 
 }
 }

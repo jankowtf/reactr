@@ -68,6 +68,6 @@ test_that("ReactiveObject.S3/setReactiveS3", {
   expect_false(exists(obj$.uid, registry))
   
   ## Clean up //
-  removeReactive("x_1")
+  rmReactive("x_1")
 
 })

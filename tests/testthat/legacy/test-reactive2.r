@@ -45,8 +45,8 @@ o$getValue
     })
   )
 
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   rm(x_1)
   rm(x_2)
   resetRegistry()
@@ -69,8 +69,8 @@ o$getValue
 
   ##----------
 
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
   setReactiveS3(id = "x_1", value = function() {
     "object-ref: {id: x_2}"

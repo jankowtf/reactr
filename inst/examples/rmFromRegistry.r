@@ -17,9 +17,9 @@ setReactiveS3(id = "x_2",
 ## Insepct registry before removal //
 showRegistry()
 
-removeFromRegistry(id = "x_1", where = where)
+rmFromRegistry(id = "x_1", where = where)
 showRegistry()
-removeFromRegistry(id = "x_2", where = where)
+rmFromRegistry(id = "x_2", where = where)
 showRegistry()
 
 ## Sanity of actual cached values is not affected by this unless other values

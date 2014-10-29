@@ -113,7 +113,7 @@ removeReactive("x_2")
     .ref_{number} <- get({id}, {where})
     ```
   
-    with `{number}` being an arbitrary number or other symbol, `{id}` being the referenced object's name/ID and `{where}` being the environment where the value belonging to `{id}` was assigned to.
+    with `{number}` being an arbitrary number or other symbol, `{id}` being the referenced object's name/ID and `{where}` being the environment where the value belonging to `{id}` was assigned to (e.g. `.ref_1 <- get{"x_1", where_1}`).
 
   See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/specifying_reactive_references.Rmd) for details.
 
@@ -135,7 +135,7 @@ removeReactive("x_2")
   
   See vignette [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.Rmd) for details.
   
-5. **Propagating changes**: you can choose between a **pull** and a **push** paradigm with respect to how changes are propagated throughout the system. 
+5. **Propagation of changes**: you can choose between a **pull** and a **push** paradigm with respect to how changes are propagated throughout the system. 
 
   When using a *pull* paradigm (the default), objects referencing other objects that have changed are not informed of these change until they are explicitly requested (by `get()` or its syntactical sugars).
   
@@ -143,13 +143,13 @@ removeReactive("x_2")
   
   See vignette [Pushing](https://github.com/Rappster/reactr/blob/master/vignettes/pushing.Rmd) for details on this.
 
-5. As already mentioned, the package has a lot of relations to the [shiny](http://shiny.rstudio.com) and thus the actual [shiny](http://cran.r-project.org/web/packages/shiny/index.html) package
+5. **Relations to shiny**: as already mentioned, the package has a lot of relations to the [shiny framework](http://shiny.rstudio.com) and thus the actual [shiny](http://cran.r-project.org/web/packages/shiny/index.html) package
 
-  Added functionality with respect to existing shiny functionality (limitations of shiny should always be considered "AFAIK" ;-)):
+  Summary of the added functionality compared to what is currently offered by existing shiny functionality (shiny's limitations should always be read "AFAIK" ;-)):
   
   1. Binding functions are **hidden** from the user.
   
-    To the user, all reactive objects appear and behave as if they are actual *non-function* values. This eliminates the need to distinguish (mentally and in the code) if a certain value is a *non-function* value or a *function* that needs to be executed via `()`. 
+    To the user, all reactive objects appear and behave as if they are actual *non-function* values. This eliminates the need to distinguish (mentally and by code) if a certain value is a *non-function* value or a *function* that needs to be executed via `()`. 
     
     The latter is what is necessary when using current shiny functionality based on `shiny::makeReactiveBinding()` and `shiny::reactive()`).
     

@@ -1,14 +1,111 @@
 ---
 title: "Caching"
 author: "Janko Thyson"
-date: "Thursday, October 16, 2014"
+date: "Thursday, October 29, 2014"
 output:
-  html_document:
-    self_contained: no
+  pdf_document
 ---
 
 ```{r, echo=FALSE}
 suppressMessages(require("reactr"))
 ```
 
-Suggested: read vignette [Registry Mechanism](/registry_mechanism.Rmd) prior to reading this vignette
+## Suggested
+
+read vignette [Registry](/registry.pdf) prior to reading this vignette
+
+## Overview
+
+The caching mechanism implemented by `reactr` relies on keeping a registry that stores certain information that are either required or very useful for reacting to respective system states (e.g. for deciding whether an update should be triggered or not).
+
+The rule of thumb for caching is as follows:
+
+> If `B` depends on `A` and `A` has not changed:
+  --> use the last cache value if B is requested
+  If `B` depends on `A` and `A` has changed:
+  --> execute the reactive binding function and thus also update the cached value
+
+## Checksums 
+
+The actual decision is based on a comparison of MD5 checksums of the values of the **visible** objects as computed by `digest::digest()`. 
+
+These are stored in the environment `getOption(".reactr")$.registry` which is accessible via the convenience function `getRegistry()`.
+
+Besides the actual checksum values, each registry entry - corresponding to the **invisible** reactive object - also contains some other information that is often required/useful:
+
+- `.id`: object ID as specified in call to `setReactiveS3()`
+- `.uid`: object UID computed as follows: `digest::digest(list(id = id, where = {where}))` where `{where}` stands for the location provided via argument `where` in the call to `setReactiveS3()`
+- `{uid}`: subenvironment corresponding to the object`s UID. This contains the object`s own checksum 
+- `{ref-uid}`: subenvironments for each referenced object should there exist any. These in turn contain the referenced object`s checksum that is used to determine if an update is necessary or not.
+
+## Actual registry object
+
+The actual registry object can be retrieved by the convenience function `getRegistry()`:
+
+```{r}
+registry <- getRegistry()
+ls(registry)
+showRegistry()
+```
+
+## Illustrating the role of the registry
+
+```{r}
+## Start with fresh registry //
+resetRegistry()
+
+## Set reactive object //
+setReactiveS3(id = "x_1", value = 10)
+showRegistry()
+## --> Object with UID 2fc2e352f72008b90a112f096cd2d029 has been registered
+## The object UID was computed by:
+computeObjectUid("x_1")
+
+## Retrieve from registry //
+(reg_x_1 <- getFromRegistry("x_1"))
+## --> same as manually selecting the respective object from the registry
+## environment:
+registry[[computeObjectUid("x_1")]]
+
+## Inspect structure of invisible object //
+ls(reg_x_1, all.names = TRUE)
+reg_x_1$.id
+reg_x_1$.uid
+reg_x_1$.where
+reg_x_1$.checksum
+
+## Set additional reactive object //
+setReactiveS3(
+  id = "x_2", 
+  value = function() {
+    ## object-ref: {id: x_1}
+    x_1 * 2
+  }
+)
+showRegistry()
+## --> two entries
+
+## Inspect invisible object associated to visible value `x_2`
+reg_x_2 <- getFromRegistry("x_2")
+ls(reg_x_2, all.names = TRUE)
+reg_x_2$.id
+reg_x_2$.uid
+reg_x_2$.where
+reg_x_2$.checksum
+ls(reg_x_2$.refs_pull)
+## --> pull references --> reference to `x_1` or UID 2fc2e352f72008b90a112f096cd2d029
+reg_x_1_through_x_2 <- reg_x_2$.refs_pull[["2fc2e352f72008b90a112f096cd2d029"]]
+## --> same as invisible object behind `x_1` or object with 
+## UID 2fc2e352f72008b90a112f096cd2d029 in registry:
+identical(reg_x_1, reg_x_1_through_x_2)
+## --> that way all references are always accessible which is quite handy
+## for a lot of situations, including push updates and integrity checks.
+```
+
+Clean up
+
+```{r, echo=FALSE}
+rmReactive("x_1")
+rmReactive("x_2")
+resetRegistry()
+```

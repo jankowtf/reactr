@@ -1,5 +1,5 @@
 ---
-title: "Specifying Reactive References"
+title: "Reactive References"
 author: "Janko Thyson"
 date: "Saturday, October 11, 2014"
 output:
@@ -34,7 +34,7 @@ The easiest and most compact way of making references recognizable is by specify
 ### Note
 When using comments, the leading `##` are optional in the sense that the entire line must simply be a valid comment in R scripts (e.g., could also be `#` or `###` etc.)
 
-### Example of generic structure
+### Examples of generic structure
 
 Here are the possible markup constellations
 
@@ -89,7 +89,7 @@ setReactiveS3(id = "x_6", value = function() {
 
 Clean up 
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, echo=FALSE}
 rmReactive("x_1")
 rmReactive("x_2")
 rmReactive("x_3")
@@ -130,8 +130,11 @@ setReactiveS3(id = "x_4", value = function(
   refs = list(ref_1 = list(id = "x_1")))
   x_1 * 2
 )
+```
 
-## Clean up //
+Clean up
+
+```{r, eval=TRUE, echo=FALSE}
 rmReactive("x_1")
 rmReactive("x_2")
 rmReactive("x_3")
@@ -203,7 +206,11 @@ where_1$x_1
 ## --> `x_1` is in `where_1`
 x_2
 ## --> `x_2` is in .GlobalEnv but references `x_1` from `where_1`
+```
 
+Clean up 
+
+```{r, eval=TRUE, echo=FALSE}
 rmReactive("x_1")
 rmReactive("x_2")
 rmReactive("x_3")

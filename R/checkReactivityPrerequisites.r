@@ -100,8 +100,9 @@ setMethod(
 #' }
 #' @template author
 #' @template references
-#' @export
 #' @aliases checkReactivityPrerequisity-ReactiveObject.S3-method
+#' @import conditionr
+#' @export
 setMethod(
   f = "checkReactivityPrerequisites", 
   signature = signature(

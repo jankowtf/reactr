@@ -14,7 +14,9 @@ Roxygen: list(wrap = FALSE)
 NeedsCompilation: no
 Repository: CRAN
 Imports:
+    conditionr,
     digest,
     R6,
     shiny,
-    yaml
+    yaml,
+    yamlr

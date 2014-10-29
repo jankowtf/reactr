@@ -126,9 +126,10 @@
 #' }
 #' @template author
 #' @template references
-#' @export 
+#' @import conditionr
 #' @import shiny
 #' @import yamlr
+#' @export 
 setReactiveS3 <- function(
     id,
     value = NULL,

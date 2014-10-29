@@ -5,9 +5,9 @@ test_that("getFromRegistryByUid", {
   resetRegistry()
   where <- environment()
   obj <- ReactiveObject.S3(id = "x", value = 10, where = where)
-  res$register()
+  res$.register()
   
-  expect_equal(getFromRegistryByUid(obj$uid), obj)
+  expect_equal(getFromRegistryByUid(obj$.uid), obj)
   resetRegistry()
   
 })

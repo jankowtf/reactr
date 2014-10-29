@@ -1,5 +1,8 @@
-context("checkReactivityPrerequisites-A")
-test_that("checkReactivityPrerequisites: default", {
+##------------------------------------------------------------------------------
+context("checkReactivityPrerequisites/basics")
+##------------------------------------------------------------------------------
+
+test_that("checkReactivityPrerequisites/default", {
   
   resetRegistry()
   input <- ReactiveObject.S3(

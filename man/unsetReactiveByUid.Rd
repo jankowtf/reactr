@@ -20,7 +20,7 @@ instead of \code{\link[reactr]{setReactiveS3}} and thus in turn
 by \code{\link[base]{makeActiveBinding}}.
 
 Note that it is \strong{not} equivalent to removing/deleting the object!
-See \code{\link[reactr]{removeReactive}} for this purpose.
+See \code{\link[reactr]{rmReactive}} for this purpose.
 }
 \note{
 The main S4 method is
@@ -41,7 +41,7 @@ unsetReactiveByUid(uid = computeObjectUid("x_1"))
 isReactive("x_1")
 
 ## Clean up //
-removeReactive("x_1")
+rmReactive("x_1")
 
 }
 }

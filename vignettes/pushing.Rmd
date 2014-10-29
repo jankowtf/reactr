@@ -11,7 +11,7 @@ output:
 suppressMessages(require("reactr"))
 ```
 
-The underlying registry mechanism of `reactr` ensures that references of the hidden instances/objects of class [ReactiveObject.S3](../R/ReactiveObject.S3) are stored in a registry object (see vignette [Registry Mechanism](./registry_mechanism.Rmd) for details). 
+The underlying registry mechanism of `reactr` ensures that references of the invisible instances/objects of class [ReactiveObject.S3](../R/ReactiveObject.S3) are stored in a registry object (see vignette [Registry Mechanism](./registry_mechanism.Rmd) for details). 
 
 Besides being a prerequisite for the caching mechanism that allows the specification of bi-directional bindings (see vignette [Bi-Directional Bindings](./bidirectional_bindings.Rmd), this also facilitates the use of a **push paradigm** with respect to reactivity or the propagation of changes throught an application.
 

@@ -14,14 +14,14 @@
 #'    Default: \code{"._HASH"}. Keep it unless this name is already taken in 
 #'    either \code{where} or \code{where_watch}.
 #' @template threedots
-#' @example inst/examples/removeFromRegistry.r
+#' @example inst/examples/rmFromRegistry.r
 #' @seealso \code{
-#'   	\link[reactr]{removeFromRegistry-character-environment-method}
+#'   	\link[reactr]{rmFromRegistry-character-environment-method}
 #' }
 #' @template author
 #' @template references
 setGeneric(
-  name = "removeFromRegistry",
+  name = "rmFromRegistry",
   signature = c(
     "id",
     "where"
@@ -33,7 +33,7 @@ setGeneric(
     .hash_id = "._HASH",
     ...
   ) {
-    standardGeneric("removeFromRegistry")       
+    standardGeneric("rmFromRegistry")       
   }
 )
 
@@ -41,22 +41,22 @@ setGeneric(
 #' Remove From Hash Registry
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeFromRegistry}}
+#' See generic: \code{\link[reactr]{rmFromRegistry}}
 #'      
-#' @inheritParams removeFromRegistry
+#' @inheritParams rmFromRegistry
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return See method
-#'    \code{\link[reactr]{removeFromRegistry-character-character-environment-method}}
-#' @example inst/examples/removeFromRegistry.r
+#'    \code{\link[reactr]{rmFromRegistry-character-character-environment-method}}
+#' @example inst/examples/rmFromRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{removeFromRegistry}
+#'    \link[reactr]{rmFromRegistry}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "removeFromRegistry", 
+  f = "rmFromRegistry", 
   signature = signature(
     id = "character",
     where = "environment"
@@ -69,7 +69,7 @@ setMethod(
     ...
   ) {
     
-  return(removeFromRegistry(
+  return(rmFromRegistry(
     id = id,
     where = where,
     .hash_id = .hash_id,
@@ -83,22 +83,22 @@ setMethod(
 #' Remove From Hash Registry
 #'
 #' @description 
-#' See generic: \code{\link[reactr]{removeFromRegistry}}
+#' See generic: \code{\link[reactr]{rmFromRegistry}}
 #'   	 
-#' @inheritParams removeFromRegistry
+#' @inheritParams rmFromRegistry
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
 #' @return \code{\link{logical}}. \code{TRUE}: successfully removed; 
 #'    \code{FALSE}: not removed because there was nothing to remove.
-#' @example inst/examples/removeFromRegistry.r
+#' @example inst/examples/rmFromRegistry.r
 #' @seealso \code{
-#'    \link[reactr]{removeFromRegistry}
+#'    \link[reactr]{rmFromRegistry}
 #' }
 #' @template author
 #' @template references
 #' @export
 setMethod(
-  f = "removeFromRegistry", 
+  f = "rmFromRegistry", 
   signature = signature(
     id = "character",
     where = "environment"

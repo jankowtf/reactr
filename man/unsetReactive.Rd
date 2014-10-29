@@ -23,7 +23,7 @@ instead of \code{\link[reactr]{setReactiveS3}} and thus in turn
 by \code{\link[base]{makeActiveBinding}}.
 
 Note that it is \strong{not} equivalent to removing/deleting the object!
-See \code{\link[reactr]{removeReactive}} for this purpose.
+See \code{\link[reactr]{rmReactive}} for this purpose.
 }
 \note{
 The main S4 method is
@@ -69,8 +69,8 @@ identical(x_2, x_1)
 ## --> reactive relationship re-established again
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------  
 ## Strict get behavior level 1 //  
@@ -89,8 +89,8 @@ x_2
 ## --> reactive relationship restored
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------  
 ## Strict get behavior level 2 //  
@@ -109,8 +109,8 @@ x_2
 ## --> reactive relationship restored
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 }
 }

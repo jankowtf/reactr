@@ -15,7 +15,7 @@
 \item{where}{\code{\link{environment}}.}
 }
 \value{
-\code{\link{ReactiveObject.S3}}. Stored hidden instance of reactive
+\code{\link{ReactiveObject.S3}}. Stored invisible instance of reactive
    object.
 }
 \description{

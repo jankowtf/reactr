@@ -13,7 +13,7 @@
 \item{where}{\code{\link{environment}}.}
 
 \item{hidden}{\code{\link{logical}}.
-\code{TRUE}: retrieve entire \strong{hidden} object/instance from registry;
+\code{TRUE}: retrieve entire \strong{invisible} object/instance from registry;
 \code{FALSE}: retrieve the visible part of the object/instance.}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.}

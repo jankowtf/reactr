@@ -13,11 +13,17 @@ require("reactr")
 ```
 ## Overview 
 
-The package aims at contributing to *Reactive Programming* or *Reactivity* in R. It allows to specify *reactive objects**, i.e. objects that are linked a way that if one object changes, all objects referencing that object are updated as well. 
+The package aims at contributing to *Reactive Programming* or *Reactivity* in R. 
 
-The implementation is greatly inspired by and is to a large extend very similar to that implemented by the [shiny](http://shiny.rstudio.com) framework. It is a declared goal of this package to re-use as much of the existing functionality provided by shiny and to make its reactive objects as compatible as possible to those used by shiny.
+It allows to specify **reactive objects**, i.e. objects that are linked a way that facilitates the automatic propagation of object state changes: if one object changes, all objects referencing that object are updated as well. 
 
-### Quick Example 1: setReactiveS3()
+### Aknowledgements
+
+The implementation is greatly inspired by and is to a large extend very similar to that implemented by the [shiny](http://shiny.rstudio.com) framework. 
+
+It is a declared goal of this package to re-use as much of the existing functionality provided by shiny and to make its reactive objects as compatible as possible to those used by shiny.
+
+### Quick example 1: setReactiveS3()
 
 Note that we set `verbose = TRUE` to enable the display of status messages that help understand what's going on.
 
@@ -60,104 +66,40 @@ x_2
 # [1] 200
 ```
 
-See examples of `setReactiveS3()` for a short description of the information contained in the status messages
+See the examples of `setReactiveS3()` for a short description of the information contained in the status messages
+
+Note that for subsequent requests and as long as `x_1` does not change, the value that has been cached during the last update cycle is used instead of re-running the binding function each time:
 
 ```
 x_2
 # [1] 200
-```
+## --> cached value, no update
 
-Note that for subsequent requests and as long as `x_1` does not change, the value that has been cached during the last update cycle is used instead of re-running the binding function each time.
-
-Clean up 
-
-```
-removeReactive("x_1")
-removeReactive("x_2")
-```
-
-### Quick Example 2: setShinyReactive()
-
-```
-setShinyReactive(id = "x_1", value = 10)
-setShinyReactive(id = "x_2", value = function() {
-  "object-ref: {id: x_1}"
-  x_1 * 2
-})
-```
-
-The main difference to using `setReactiveS3()` consists in the classes and instances used: instead of class `ReactiveObject.S3` class `ReactiveShinyObject` (and the classes that this class inherits from) is used:
-
-```
-reg_x_1 <- getFromRegistry("x_1")
-reg_x_1
-class(reg_x_1)
-
-reg_x_2 <- getFromRegistry("x_2")
-reg_x_2
-class(reg_x_2)
-```
-
-Do the same for reactive objects set via `setReactiveS3()` and compare the objects/classes.
-
-Clean up 
-
-```
-removeReactive("x_1")
-removeReactive("x_2")
-```
-
-### Quick Example 3: Closer to an actual use case
-
-```
-setReactiveS3(id = "x_1", value = 1:5, typed = TRUE)
-setReactiveS3(id = "x_2", value = function() { 
-  "object-ref: {id: x_1}"
-  x_1 * 2
-}, typed = TRUE)
-
-setReactiveS3(id = "x_3", value = function() { 
-  "object-ref: {id: x_1}"
-  "object-ref: {id: x_2}"
-  data.frame(x_1 = x_1, x_2 = x_2)
-}, typed = TRUE)
-
-setReactiveS3(id = "x_4", value = function() { 
-  "object-ref: {id: x_1}"
-  "object-ref: {id: x_2}"
-  "object-ref: {id: x_3}"
-  list(
-    x_1 = summary(x_1), 
-    x_2 = summary(x_2), 
-    x_3_new = data.frame(x_3, prod = x_3$x_1 * x_3$x_2),
-    filenames = paste0("file_", x_1)
-  )
-})
-
-## Inspect //
-x_1
 x_2
-x_3
-x_4
-
-## Change values //
-(x_1 <- 1:10)
-x_2
-x_3
-x_4
+# [1] 200
+## --> cached value, no update
 
 (x_1 <- 1)
 x_2
-x_3
-x_4
+# Object: ab22808532ff42c87198461640612405
+# Called by: ab22808532ff42c87198461640612405
+# Modified reference: 2fc2e352f72008b90a112f096cd2d029
+#   - Checksum last: d344558826c683dbadec305ed64365f1
+# 	- Checksum current: 6717f2823d3202449301145073ab8719
+# Updating ...
+# [1] 2
+## --> update according to binding function
 
-try((x_1 <- "hello world!"))
+x_2
+# [1] 2
+## --> cached value, no update
+```
 
-## Clean up //
+Clean up 
+
+```
 removeReactive("x_1")
 removeReactive("x_2")
-removeReactive("x_3")
-removeReactive("x_4")
 ```
 
 ### Highlighting selected features
@@ -179,7 +121,7 @@ removeReactive("x_4")
 
 3. Strictness levels can be defined for 
 
-  - the creation process itself in `setReactiveS3()` and`setShinyReactive()`: see argument `strict`
+  - the *creation process* itself in `setReactiveS3()` and`setShinyReactive()`: see argument `strict`
   - *getting* the visible value of a reactive object: see argument `strict_get`
   - *setting* the visible value of a reactive object: see argument `strict_set`
   
@@ -207,19 +149,235 @@ removeReactive("x_4")
   
   1. Binding functions are **hidden** from the user.
   
-    To the user, all reactive objects behave as if they are actual *non-function* values. This eliminates the need to keep keep track if a certain value is a *non-function* value or a *function* that needs to be executed via `()` (that's what is necessary when using current shiny functionality)
+    To the user, all reactive objects appear and behave as if they are actual *non-function* values. This eliminates the need to distinguish (mentally and in the code) if a certain value is a *non-function* value or a *function* that needs to be executed via `()`. 
+    
+    The latter is what is necessary when using current shiny functionality based on `shiny::makeReactiveBinding()` and `shiny::reactive()`).
     
   2. Caching
   
-    While shiny implements reactivity in an *immediate* manner (i.e. binding functions are **always** executed), `reactr` implements a mechanism that keeps track if an update is actually needed or if it is valid to return a cached value instead. 
+    While shiny implements reactivity in an *immediate* manner (i.e. binding functions are **always** executed when a reactive object value is requested), `reactr` implements a mechanism that keeps track if an update is actually needed or if it is valid to return a cached value instead. 
     
   3. Bi-directional bindings
   
-  Due to the aspect mentioned in 2., it is not possible to define bi-directional bindings with current shiny functionality. Due to the caching mechanism, `reactr` allows to specify such bindings.
+    Due to the aspect mentioned in ii., it is not possible to define bi-directional bindings with current shiny functionality. The caching mechanism of `reactr` allows to specify such bindings.
   
   4. Push updates
   
-  While shiny implements reactivity following a **pull paradigm** with respect to the way that changes are propagated throughout the system (resembles *lazy evaluation*), `reactr` also offers the use of a **push paradigm** where changes are *actively* propagated.
+    While shiny implements reactivity following a **pull paradigm** with respect to the way that changes are propagated throughout the system (resembles *lazy evaluation*), `reactr` also offers the alternative use of a **push paradigm** where changes are *actively* propagated.
+
+### Quick example 2: setShinyReactive()
+
+```
+setShinyReactive(id = "x_1", value = 10)
+setShinyReactive(id = "x_2", value = function() {
+  "object-ref: {id: x_1}"
+  x_1 * 2
+})
+```
+
+The main difference to using `setReactiveS3()` consists in the classes that are used: instead of class `ReactiveObject.S3` class `ReactiveShinyObject` (and the classes that this class inherits from) is used:
+
+```
+reg_x_1 <- getFromRegistry("x_1")
+reg_x_1
+class(reg_x_1)
+
+reg_x_2 <- getFromRegistry("x_2")
+reg_x_2
+class(reg_x_2)
+```
+
+Do the same for reactive objects set via `setReactiveS3()` and compare the objects/classes.
+
+Clean up 
+
+```
+removeReactive("x_1")
+removeReactive("x_2")
+```
+
+### Quick example 3: pushing
+
+```
+setShinyReactive(id = "x_1", value = 10)
+setShinyReactive(id = "x_2", value = function() {
+  "object-ref: {id: x_1}"
+  message(paste0("[", Sys.time(), "] I'm x_2 and the value of x_1 is: ", x_1))
+  x_1 * 2
+}, push = TRUE)
+# [2014-10-29 03:52:33] I'm x_2 and the value of x_1 is: 10
+
+x_1
+# [1] 10
+
+x_2
+# [2] 20
+```
+
+Note that we never request the value of `x_2` explicitly yet changes in `x_1` are actively pushed to `x_2` thus executing its binding function:
+
+```
+(x_1 <- 11)
+# [2014-10-29 03:54:10] I'm x_2 and the value of x_1 is: 11
+# [1] 11
+
+(x_1 <- 12)
+# [2014-10-29 03:54:29] I'm x_2 and the value of x_1 is: 12
+# [1] 12
+
+(x_1 <- 13)
+# [2014-10-29 03:54:33] I'm x_2 and the value of x_1 is: 13
+# [1] 13
+
+x_2
+# [1] 26
+```
+
+Clean up 
+
+```
+removeReactive("x_1")
+removeReactive("x_2")
+```
+
+### Quick example 4: closer to an actual use case
+
+Specify reactive objects:
+
+```
+setReactiveS3(id = "x_1", value = 1:5, typed = TRUE)
+setReactiveS3(id = "x_2", value = function() { 
+  "object-ref: {id: x_1}"
+  x_1 * 2
+}, typed = TRUE)
+
+setReactiveS3(id = "x_3", value = function() { 
+  "object-ref: {id: x_1}"
+  "object-ref: {id: x_2}"
+  data.frame(x_1 = x_1, x_2 = x_2)
+}, typed = TRUE)
+
+setReactiveS3(id = "x_4", value = function() { 
+  "object-ref: {id: x_1}"
+  "object-ref: {id: x_2}"
+  "object-ref: {id: x_3}"
+  list(
+    x_1 = summary(x_1), 
+    x_2 = summary(x_2), 
+    x_3_new = data.frame(x_3, prod = x_3$x_1 * x_3$x_2),
+    filenames = paste0("file_", x_1)
+  )
+})
+```
+
+Inspect:
+
+```
+x_1
+# [1] 1 2 3 4 5
+
+x_2
+# [1]  2  4  6  8 10
+
+x_3
+#   x_1 x_2
+# 1   1   2
+# 2   2   4
+# 3   3   6
+# 4   4   8
+# 5   5  10
+
+x_4
+# $x_1
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#       1       2       3       3       4       5 
+# 
+# $x_2
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#       2       4       6       6       8      10 
+# 
+# $x_3_new
+#   x_1 x_2 prod
+# 1   1   2    2
+# 2   2   4    8
+# 3   3   6   18
+# 4   4   8   32
+# 5   5  10   50
+# 
+# $filenames
+# [1] "file_1" "file_2" "file_3" "file_4" "file_5"
+```
+
+Change values and inspect implications:
+
+```
+(x_1 <- 1:3)
+# [1] 1 2 3
+
+x_2
+# [1] 2 4 6
+
+x_3
+#   x_1 x_2
+# 1   1   2
+# 2   2   4
+# 3   3   6
+
+x_4
+# $x_1
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#     1.0     1.5     2.0     2.0     2.5     3.0 
+# 
+# $x_2
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#       2       3       4       4       5       6 
+# 
+# $x_3_new
+#   x_1 x_2 prod
+# 1   1   2    2
+# 2   2   4    8
+# 3   3   6   18
+# 
+# $filenames
+# [1] "file_1" "file_2" "file_3"
+
+(x_1 <- 1)
+# [1] 1
+
+x_2
+# [1] 2
+
+x_3
+#   x_1 x_2
+# 1   1   2
+
+x_4
+# $x_1
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#       1       1       1       1       1       1 
+# 
+# $x_2
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#       2       2       2       2       2       2 
+# 
+# $x_3_new
+#   x_1 x_2 prod
+# 1   1   2    2
+# 
+# $filenames
+# [1] "file_1"
+
+try((x_1 <- "hello world!"))
+```
+
+Clean up:
+
+```
+removeReactive("x_1")
+removeReactive("x_2")
+removeReactive("x_3")
+removeReactive("x_4")
+```
 
 -----
 
@@ -667,7 +825,7 @@ registry <- getRegistry()
 
 ```
 showRegistry()
-`` 
+```
 
 The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `computeObjectUid()` for the details of the computation of object UIDs.
 

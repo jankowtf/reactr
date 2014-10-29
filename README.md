@@ -109,11 +109,11 @@ removeReactive("x_2")
   1. Via a function argument `refs`.
   2. Via explicit `get()` calls in the body of form 
     
-  ```
-  .ref_{number} <- get({id}, {where})
-  ```
+    ```
+    .ref_{number} <- get({id}, {where})
+    ```
   
-  with `{number}` being an arbitrary number or other symbol, `{id}` being the referenced object's name/ID and `{where}` being the environment where the value belonging to `{id}` was assigned to.
+    with `{number}` being an arbitrary number or other symbol, `{id}` being the referenced object's name/ID and `{where}` being the environment where the value belonging to `{id}` was assigned to.
 
   See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/specifying_reactive_references.Rmd) for details.
 
@@ -164,6 +164,8 @@ removeReactive("x_2")
   4. Push updates
   
     While shiny implements reactivity following a **pull paradigm** with respect to the way that changes are propagated throughout the system (resembles *lazy evaluation*), `reactr` also offers the alternative use of a **push paradigm** where changes are *actively* propagated.
+    
+  See vignette [Relations to Shiny](https://github.com/Rappster/reactr/blob/master/vignettes/relations_to_shiny.Rmd) for more details.
 
 ### Quick example 2: setShinyReactive()
 
@@ -613,7 +615,7 @@ removeReactive("x_2")
 
 ### Example
 
-As the binding functions are "inversions"" of each other, we still stay at a steady state.
+As the binding functions are "inversions"" of each other, we still get to a steady state.
 
 ```
 setReactiveS3(id = "x_1", function() {

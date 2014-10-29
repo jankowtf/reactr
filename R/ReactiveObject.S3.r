@@ -126,8 +126,9 @@
 #' }
 #' @template author
 #' @template references
-#' @export
 #' @import digest
+#' @import conditionr
+#' @export
 ReactiveObject.S3 <- function(
   .x,
   pull_refs_list = character(),

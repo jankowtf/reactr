@@ -61,9 +61,6 @@ ReactrObservable <- R6Class(
     },
     getValue = function() {     
       .dependents$register()
-# message("getValue:")
-# print(.invalidated)
-# print(.running)
       if (.invalidated || .running) {
         self$.updateValue()
       }
@@ -79,7 +76,6 @@ ReactrObservable <- R6Class(
         invisible(.value)
     },
     .updateValue = function() {
-# print(".updateValue")
       ctx <- shiny:::Context$new(.domain, .label, type = 'observable',
                          prevId = .mostRecentCtxId)
       .mostRecentCtxId <<- ctx$id
@@ -95,9 +91,7 @@ ReactrObservable <- R6Class(
       .running <<- TRUE
       on.exit(.running <<- wasRunning)
 
-      ctx$run(function() {
-# message(".func:")        
-# print(.func)        
+      ctx$run(function() { 
         result <- withVisible(try(shiny:::shinyCallingHandlers(.func()), silent=TRUE))
         .visible <<- result$visible
         .value <<- result$value
@@ -242,6 +236,7 @@ ReactrObservable <- R6Class(
 #' }
 #' @template author
 #' @template references
+#' @import conditionr
 #' @import R6
 #' @export 
 ReactiveShinyObject <- R6Class(
@@ -287,9 +282,6 @@ ReactiveShinyObject <- R6Class(
       cache = TRUE,
       ...
     ) {
-
-#       self <- super$initialize(...)
-# print(self)   
       super$initialize(...)
       .cache <<- cache
       .id <<- id
@@ -307,11 +299,6 @@ ReactiveShinyObject <- R6Class(
       .class <- class(.value)
       .computeChecksum()
       .computeUid()
-#       .register(overwrite = TRUE)
-#       if (length(refs_pull)) {
-#         .registerPullReferences(refs = refs_pull, where = .where)
-#       }
-
       if (.cache && length(refs_pull)) {
         .registerPullReferences(refs = refs_pull, where = .where)
       }
@@ -483,10 +470,8 @@ ReactiveShinyObject <- R6Class(
     },
     .computeUid = function() {
       out <- if (length(.id)) {
-# print(.where)        
         .uid <<- eval(substitute(digest::digest(list(id = ID, where = WHERE)), 
           list(ID = .id, WHERE = capture.output(eval(.where)))))
-# print(.uid)        
         .uid
       } else {
         character()
@@ -677,13 +662,11 @@ ReactiveShinyObject <- R6Class(
   )
 )
 
-# x <- ReactiveShinyObject$new(id = "abcd", func = function() print("hello world!"))
-# x$label
-
 ##------------------------------------------------------------------------------
 ## Functions
 ##------------------------------------------------------------------------------
 
+#' @import yamlr
 exprToFunction2 <- function(
   expr, 
   env = parent.frame(2), 

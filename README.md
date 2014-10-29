@@ -7,6 +7,7 @@ Reactive object bindings with built-in caching and push functionality
 
 ```
 require("devtools")
+devtools::install_github("Rappster/conditionr")
 devtools::install_github("Rappster/yamlr")
 devtools::install_github("Rappster/reactr")
 require("reactr")

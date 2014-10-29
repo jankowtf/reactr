@@ -98,10 +98,10 @@ Creates an reactive object.
 Implicitly, an instance of class
 \code{\link[reactr]{ReactiveObject.S3}} is created of which only field
 \code{value} will be visible to the outside. The rest of the object is
-stored in a hidden way.
+stored in a invisible way.
 
-In order to keep the hidden object accessible and also due to the
-implementation of the caching mechanism, the hidden object is also stored
+In order to keep the invisible object accessible and also due to the
+implementation of the caching mechanism, the invisible object is also stored
 in a registry (see \code{\link[reactr]{getRegistry}}).
 }
 \section{Self-contained reactivity}{

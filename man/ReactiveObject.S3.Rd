@@ -32,7 +32,7 @@ Class representing the system state (S3) and its constructor function.
 \details{
 Instances of this class are implicitly created when calling
 \code{\link[reactr]{setReactiveS3}} and stored in the registry. Objects of
-this class can be thought of as the "hidden parts" of the reactive objects
+this class can be thought of as the "invisible parts" of the reactive objects
 of whom actually only field \code{.value} is visible to the user or other
 functions consuming the reactive object.
 }

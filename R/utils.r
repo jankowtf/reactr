@@ -121,11 +121,13 @@ ii=2
   out
 }
 .transformReactiveFunction <- function(refs, fun) {
-  idx <- if (!is.null(names(refs))) {
-    names(refs)
-  } else {
-    seq(along = refs)
-  }
+#   idx <- unname(if (!is.null(names(refs))) {
+# #     names(refs)
+#     sapply(refs, "[[", "id")
+#   } else {
+#     seq(along = refs)
+#   })
+  idx <- seq(along = refs)
 # ref <- refs[[1]]      
   expr <- lapply(idx, function(ii) {
     ref <- refs[[ii]]
@@ -152,7 +154,7 @@ ii=2
       out <- substitute(ID <- get(X, envir = ENVIR, inherits = FALSE), 
         list(
           ID = id, 
-          X = ii, 
+          X = ref$id, 
           ENVIR = if (!is.null(ref$where)) {
             ref$where
           } else {

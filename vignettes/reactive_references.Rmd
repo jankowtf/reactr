@@ -1,136 +1,141 @@
-```{r, echo=FALSE}
-require("reactr")
-```
-
-
 ---
 title: "Specifying Reactive References"
 author: "Janko Thyson"
 date: "Saturday, October 11, 2014"
 output:
-  html_document:
-    self_contained: no
+  pdf_document
 ---
 
-Currently, the main function in order to set reactive bindings that offer the most flexibility is `setReactiveS3()`.
-
-You currently have three different options in order to specify the function that defines the actual relationship to referenced objects.
-
-## Option 1: via markup in comments (recommended)
-
-The easiest and most compact way of letting `setReactiveS3()` know which objects you are referencing is by specifying them in a special comment that is recognized as "markup":
-
-```{r, eval=FALSE, cache=FALSE}
-## [@object-ref: {id} in {where} as {ref-id}]
+```{r, echo=FALSE}
+suppressMessages(require("reactr"))
 ```
 
-### Explanation
+You currently have three different options in order to specify the function that references other reactive objects and that defines the actual reactive relationship to them.
 
-- `{id}`: name/ID that the referenced object has been assigned to
+## Option 1: via YAML markup (recommended)
+
+The easiest and most compact way of making references recognizable is by specifying them in either in special YAML markup string or wrapping the YAML markup inside a comment:
+
+```{r, eval=FALSE, cache=FALSE}
+## Via string //
+"object-ref: {id: {id}, where: {where}, as {as}]"
+
+## Via comment //
+## object-ref: {id} in {where} as {ref-id}]
+```
+
+### Explanation of markup components
+
+- `{id}`: name/ID that the visible value of the referenced object has been assigned to
 - `{where}` (optional): environment that the referenced object has been assigned to
-- '{ref-id}' (optional): alternative name/ID that is used in the reactive function
-- the leading `##` are optional in the sense that the entire line must simply be a valid comment in R scripts (e.g., could also be `#` or `###` etc.)
+  Default: `parent.frame()`
+- '{as}' (optional): alternative name/ID that is used in the remainder of the  binding function
 
-### Examples
+### Note
+When using comments, the leading `##` are optional in the sense that the entire line must simply be a valid comment in R scripts (e.g., could also be `#` or `###` etc.)
+
+### Example of generic structure
 
 Here are the possible markup constellations
 
 ```{r, eval=FALSE}
-## [@object-ref: x_1]
-## [@object-ref: x_1 in where_1]
-## [@object-ref: x_1 in where_1 as ref_1]
-## [@object-ref: x_1 as ref_1]
+object-ref: {id: x_1}
+object-ref: {id: x_1, where: where_1}
+object-ref: {id: x_1, where: where_1, as: ref_1}
+object-ref: {id: x_1, as: ref_1}
 ```
 
-Actual examples
+### Actual examples
 
 ```{r, eval=TRUE}
 setReactiveS3(id = "x_1", value = 10)
 
 ## With curly brackets //
 setReactiveS3(id = "x_2", value = function() {
-    ## [@object-ref: x_1]
+    "object-ref: {id: x_1}"
     x_1 * 2
   }
 )
 
 ## W/o curly brackets //
 setReactiveS3(id = "x_3", value = function()
-  ## [@object-ref: x_1]
+  ## object-ref: {id: x_1}
   x_1 * 2
 )
 
-## With '{ref-id}' //
-setReactiveS3(id = "x_4", value = function()
-  ## [@object-ref: x_1 as ref_1]
+## With '{as}' //
+setReactiveS3(id = "x_4", value = function() {
+  "object-ref: {id: x_1, as: ref_1}"
   ref_1 * 2
-)
+})
 
 ## Multiple //
-setReactiveS3(id = "x_5", value = function()
-  ## [@object-ref: x_1 in where as ref_1]
-  ## [@object-ref: x_2 as ref_2]
+setReactiveS3(id = "x_5", value = function() {
+  "object-ref: {id: x_1, where: where,as: ref_1}"
+  "object-ref: {id: x_2, as: ref_2}"
   ref_1 + ref_2
-)
+})
 ```
 
-Note that the order matters!
-This is a limitation that is hopefully relaxed in future releases
+Note that the does not order matter!
 
 ```{r, eval=TRUE}
-try(
-  setReactiveS3(id = "x_6", value = function()
-    ## [@object-ref: x_1 as ref_1 in where]
-    ## [@object-ref: x_2 as ref_2]
-    ref_1 + ref_2
-  )
-)
+setReactiveS3(id = "x_6", value = function() {
+  "object-ref: {id: x_1, as: ref_1, where: where}"
+  "object-ref: {id: x_2, as: ref_2}"
+  ref_1 + ref_2
+})
 ```
 
 Clean up 
 
 ```{r, eval=TRUE}
-rm(x_1)
-rm(x_2)
-rm(x_3)
-rm(x_4)
-resetRegistry()
-
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
+rmReactive("x_4")
 ```
 
 ## Option 2: via argument `refs`
 
-You can also specify the references by using the argument `refs`:
+You can also specify the references by using the special argument `refs`:
 
 ```{r, eval=FALSE}
-refs = list({id} = {where}, {id} = {where})
+refs = list(ref_1 = list(id = {id}, where = {where})))
 ```
 
-Actual examples
+### Examples
 
 ```{r, eval=TRUE}
-setReactiveS3(id = "x_1", value = 10)
-where <- environment()
+resetRegistry()
+where_1 <- new.env()
+
+setReactiveS3(id = "x_1", value = 10, where = where_1)
 
 ## With curly brackets //
-setReactiveS3(id = "x_2", value = function(refs = list(x_1 = where)) {
-  x_1 * 2
-})
+setReactiveS3(id = "x_2", value = function(
+    refs = list(ref_1 = list(id = "x_1", where = where_1))
+  ) {
+    x_1 * 2
+  })
+
 ## W/o curly brackets //
-setReactiveS3(id = "x_3", value = function(refs = list(x_1 = where))
-  x_1 * 2
+setReactiveS3(id = "x_3", value = function(
+    refs = list(ref_1 = list(id = "x_1", where = where_1))
+  ) x_1 * 2
 )
+
 ## Without explicit 'where' //
-setReactiveS3(id = "x_4", value = function(refs = list(x_1 = NULL))
+setReactiveS3(id = "x_4", value = function(
+  refs = list(ref_1 = list(id = "x_1")))
   x_1 * 2
 )
 
 ## Clean up //
-rm(x_1)
-rm(x_2)
-rm(x_3)
-rm(x_4)
-resetRegistry()
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
+rmReactive("x_4")
 ```
 
 ## Option 3: via explicit code 
@@ -141,20 +146,26 @@ You can also specify the references by using lines that start with
 .ref_*
 ```
 
-and request the referenced object via 
+followd by `<-` and a call to `get()` of the form:
 
 ```{r, eval=FALSE}
 get({id}, {where})
 ```
 
-### Examples
+### Examples of generic structure
 
 ```{r, eval=FALSE}
 .ref_1 <- get(x = "x_1", envir = where_1)
 .ref_2 <- get("x_1", where_1)
 ```
 
-Actual examples
+#### NOTE
+
+1. The recognition mechanism relies on names/IDs starting with `ref_` to properly identify references
+2. To be absolutely sure you retrieve the correct object, it is recommended to use `inherits = FALSE`
+3. All environment objects that are used inside the binding functions should be passed along as additional arguments to either `setReactiveS3()` or `setShinyReactive()`
+
+### Actual examples
 
 ```{r, eval=TRUE}
 setReactiveS3(id = "x_1", value = 10)
@@ -179,9 +190,23 @@ setReactiveS3(id = "x_4", value = function()
   ## and a new line
 )
 
-rm(x_1)
-rm(x_2)
-rm(x_3)
-rm(x_4)
-resetRegistry()
+## Explicit environments //
+where_1 <- new.env()
+
+setReactiveS3(id = "x_1", value = 10, where = where_1)
+setReactiveS3(id = "x_2", value = function() {
+  .ref_1 <- get(x = "x_1", where_1, inherits = FALSE)
+  .ref_1 * 2
+}, where_1 = where_1)
+
+where_1$x_1
+## --> `x_1` is in `where_1`
+x_2
+## --> `x_2` is in .GlobalEnv but references `x_1` from `where_1`
+
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
+rmReactive("x_4")
+rm(where_1)
 ```

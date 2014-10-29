@@ -30,7 +30,7 @@ It is a declared goal of this package to re-use as much of the existing function
 - [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.Rmd)
 - [Convenience functions](https://github.com/Rappster/reactr/blob/master/vignettes/convenience_functions.pdf)
 - [Pushing](https://github.com/Rappster/reactr/blob/master/vignettes/pushing.Rmd)
-- [Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/reactive_references.Rmd)
+- [Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/reactive_references.pdf)
 - [Relations to Shiny](https://github.com/Rappster/reactr/blob/master/vignettes/relations_to_shiny.Rmd)
 - [Registry](https://github.com/Rappster/reactr/blob/master/vignettes/registry.Rmd)
 - [Strictness](https://github.com/Rappster/reactr/blob/master/vignettes/strictness.Rmd)

@@ -331,7 +331,7 @@ setReactiveS3 <- function(
               ## Cache new value //
               obj$.value <<- withRestarts(
                 tryCatch(
-                  {
+                  {                
                     out <- value()
                     
                     ## Object state updates //

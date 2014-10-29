@@ -26,7 +26,7 @@ values$value
 ls(.subset2(values, "impl")$.allValuesDeps)
 .subset2(values, "impl")$.allValuesDeps$initialize
 .subset2(values, "impl")$.allValuesDeps$invalidate
-.subset2(values, "impl")$.allValuesDeps$register
+.subset2(values, "impl")$.allValuesDeps$.register
 .subset2(values, "impl")$.allValuesDeps$self
 ls(.subset2(values, "impl")$.allValuesDeps$self)
 .subset2(values, "impl")$mset
@@ -96,7 +96,7 @@ function ()
 #     ls(this$.dependents)
 #     shiny:::Map$new
 #     this$.dependents$initialize()
-    this$.dependents$register()
+    this$.dependents$.register()
     if (this$.invalidated || this$.running) {
         this$self$.updateValue()
     }

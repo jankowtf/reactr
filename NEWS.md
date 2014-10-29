@@ -1,3 +1,7 @@
+# FIXLIST
+
+- #17
+
 # CHANGES IN reactr VERSION 0.1.8
 
 ## NEW FEATURES

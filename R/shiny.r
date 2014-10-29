@@ -2,9 +2,35 @@
 ## Classes
 ##------------------------------------------------------------------------------
 
-require("R6")
-Observable <- R6Class(
-  'Observable',
+#' @title
+#' Class: ReactrObservable
+#'
+#' @description
+#' Class that implements major parts of the reactivity mechanism of this 
+#' package.
+#' 
+#' @details
+#' Clone of \code{shiny:::Observable}. Only necessary because not all class
+#' components of \code{shiny:::Observable} are exported.
+#' 
+#' @section Fields:
+#' 
+#' The fields correspond to the fields of \code{shiny:::Observable}.
+
+#' @example inst/examples/ReactrObserver.r
+#' @seealso \code{
+#'     \link[reactr]{ReactiveShinyObject},
+#'     \link[reactr]{setShinyReactive},
+#'     \link[shiny]{reactive},
+#'     \link[shiny]{makeReactiveBinding},
+#'     \link[reactr]{setReactiveS3}
+#' }
+#' @template author
+#' @template references
+#' @import R6
+#' @export 
+ReactrObservable <- R6Class(
+  'ReactrObservable',
   portable = FALSE,
   public = list(
     .func = 'function',
@@ -33,9 +59,11 @@ Observable <- R6Class(
       .execCount <<- 0L
       .mostRecentCtxId <<- ""
     },
-    getValue = function() {
+    getValue = function() {     
       .dependents$register()
-
+# message("getValue:")
+# print(.invalidated)
+# print(.running)
       if (.invalidated || .running) {
         self$.updateValue()
       }
@@ -51,6 +79,7 @@ Observable <- R6Class(
         invisible(.value)
     },
     .updateValue = function() {
+# print(".updateValue")
       ctx <- shiny:::Context$new(.domain, .label, type = 'observable',
                          prevId = .mostRecentCtxId)
       .mostRecentCtxId <<- ctx$id
@@ -67,6 +96,8 @@ Observable <- R6Class(
       on.exit(.running <<- wasRunning)
 
       ctx$run(function() {
+# message(".func:")        
+# print(.func)        
         result <- withVisible(try(shiny:::shinyCallingHandlers(.func()), silent=TRUE))
         .visible <<- result$visible
         .value <<- result$value
@@ -75,22 +106,160 @@ Observable <- R6Class(
   )
 )
 
+#' @title
+#' Class: ReactiveShinyObject
+#'
+#' @description
+#' Class that implements major parts of the reactivity mechanism of this 
+#' package.
+#' 
+#' @details
+#' Extends class \code{shiny::Observable}, or, to be more precise its
+#' clone \code{\link[reactr]{ReactrObservable}}.
+#' 
+#' @field .cache \code{\link{logical}}.
+#'    \code{TRUE}: use caching mechanism and everything associated with it;
+#'    \code{FALSE}: no caching.
+#'    Initial: \code{TRUE}.
+#' @field .caller \code{\link{environment}}.
+#'    Referenced environment corresponding to instance of 
+#'    \code{\link[reactr]{SetShinyReactive}} that calls a reference (which can
+#'    also be the object itself).
+#'    Very important in order to fine tune update processes for bi-directional
+#'    bindings.
+#'    Default: \code{self} (after initialization).
+#' @field .checksum \code{\link{character}}.
+#'    Checksum of visible object value.
+#'    Initial: \code{character()}.
+#' @field .class \code{\link{character}}.
+#'    Class of visible object value (\code{.value}). 
+#'    If strongly typed (argument \code{typed = TRUE} in
+#'    \code{\link[reactr]{setShinyReactive}}, then this field is used 
+#'    to determine if an assignment value is valid or not.
+#'    Initial: \code{character()}.
+#' @field condition \code{\link{condition}} (at least by inheritance).
+#'    If a condition has been signaled, this field is assigned a respective 
+#'    custom condition object that is triggered when the visible object value
+#'    (or \code{self$.value}) is requested.
+#'    Also see \code{\link[base]{signalCondition}} and 
+#'    \code{\link[conditionr]{signalCondition}}
+#'    Initial: \code{NULL}.
+#' @field .id \code{\link{character}}.
+#'    Object ID.
+#'    Initial: \code{character()}.
+#' @field .refs_checksum \code{\link{environment}}.
+#'    Environment for storing the cached checksums of pull references.
+#'    Initial: \code{new.env(parent = emptyenv())}.
+#' @field .refs_pull \code{\link{environment}}.
+#'    Environment for storing information of inbound/pull references.
+#'    Initial: \code{new.env(parent = emptyenv())}.
+#' @field .refs_push \code{\link{environment}}.
+#'    Environment for storing information of outbound/push references.
+#'    Initial: \code{new.env(parent = emptyenv())}.
+#' @field .registry \code{\link{environment}}.
+#'    Reference to the registry environment 
+#'    (see \code{\link[reactr]{getRegistry}}. 
+#'    Important for retrieving and comparing checksum values, enabling push
+#'    and other useful things (integrity checks etc.)
+#'    Initial: \code{getRegistry()}.
+#' @field .uid \code{\link{character}}.
+#'    Object ID.
+#'    Initial: \code{character()}. 
+#'    Automatically computed once \code{.id} is 
+#'    specified: 
+#'    \code{digest::digest(list(id = .id, where = capture.output(eval(.where))))}.
+#' @field .where \code{\link{environment}}.
+#'    Environment of reactive object.
+#'    Initial: \code{parent.frame()}.
+#' @field .exists_visible \code{\link{logical}}.
+#'    Field for tracking if the visible object value actually exists already 
+#'    or if this is a mere "empty container" in the registry. 
+#'    It is set to \code{TRUE} when the visible object is actually set/created
+#'    via \code{\link[reactr]{setShinyReactive}}.
+#'    Initial: \code{FALSE}.
+#' @field .has_bidir \code{\link{logical}}.
+#'    Field for signaling that an instance has bi-directional references to
+#'    other objects. \strong{Very} important in order to carry out updates for 
+#'    bi-directional bindings correctly.
+#'    A system-wide check for the existence of bi-directional references is 
+#'    run via \code{$.hasBidirectional} inside 
+#'    \code{\link[reactr]{setShinyReactive}}. The field is set to \code{TRUE}
+#'    if there are any, else it remains \code{FALSE}.
+#'    Initial: \code{FALSE}.
+#' @field .has_cached \code{\link{logical}}.
+#'    Field for tracking if the instance already has a cached value or not.
+#'    If \code{FALSE}, the binding function (if there is any) is executed and 
+#'    after that the field is set to \code{TRUE} to signal that a cached value
+#'    exists.
+#'    Initial: \code{FALSE}.
+#' @field .has_pull_refs \code{\link{logical}}.
+#'    \code{TRUE}: instance has inbound/pull references;
+#'    \code{FALSE}: instance has no inbound/pull references
+#'    Initial: \code{FALSE}.
+#' @field .has_push_refs \code{\link{logical}}.
+#'    \code{TRUE}: instance has outbound/push references;
+#'    \code{FALSE}: instance has no outbound/push references
+#'    Initial: \code{FALSE}.
+#' @field .has_pushed \code{\link{logical}}.
+#'    \code{TRUE}: change has been pushed to all push references;
+#'    \code{FALSE}: change has not been pushed to push references yet.
+#'    Initial: \code{FALSE}.
+#' @field .is_modcycle_complete \code{\link{logical}}.
+#'    \code{TRUE}: modification cycle complete;
+#'    \code{FALSE}: modification cycle not complete yet.
+#'    Only relevant for bi-directional bindings and in case of explicitly
+#'    changing visible object values via \code{\link[base]{<-}} or 
+#'    \code{\link[base]{assign}}. Very important to determine the scope of 
+#'    object updates.
+#'    Initial: \code{TRUE}.
+#' @field .is_invalid \code{\link{logical}}.
+#'    Field for propagating the invalidity of referenced objects to its 
+#'    referencees. It is set to \code{TRUE} when an reactive object is unset or
+#'    removed.
+#'    Initial: \code{FALSE}.
+#' @field .is_running_push \code{\link{logical}}.
+#'    \code{TRUE}: push process is currently running;
+#'    \code{FALSE}: no push process is currently running.
+#'    Initial: \code{FALSE}.
+#' @field .must_push \code{\link{logical}}.
+#'    Field that controls if push is enabled.
+#'    \code{TRUE}: push changes to outbound/push references;
+#'    \code{FALSE}: changes need to be \emph{pulled} by objects referencing this
+#'    instance, no push.
+#'    Initial: \code{FALSE}.
+#' @field .needs_update \code{\link{logical}}.
+#'    Field that controls if update is to be carried out.
+#'    \code{TRUE}: update;
+#'    \code{FALSE}: no update, use cached value
+#'    Initial: \code{TRUE} (in order to trigger initialization).
+#' @example inst/examples/ReactiveShinyObject.r
+#' @seealso \code{
+#'     \link[reactr]{ReactiveShinyObject},
+#'     \link[reactr]{setShinyReactive},
+#'     \link[shiny]{reactive},
+#'     \link[shiny]{makeReactiveBinding},
+#'     \link[reactr]{setReactiveS3}
+#' }
+#' @template author
+#' @template references
 #' @import R6
-Observable3 <- R6Class(
-  'Observable3',
-  inherit = Observable,
+#' @export 
+ReactiveShinyObject <- R6Class(
+  'ReactiveShinyObject',
+  inherit = ReactrObservable,
   portable = FALSE,
   public = list(
-    ## [@change: jat, start]
+    .cache = TRUE,
+    .caller = "environment",
     .checksum = character(0),
     .class = character(0),
     .condition = NULL,
     .id = character(0),
     
-    .registry = "environment", 
-    .refs_pull = "environment",
-    .refs_push = "environment",
     .refs_checksum = "environment",
+    .refs_pull = "environment", 
+    .refs_push = "environment", 
+    .registry = "environment", 
     
     .uid = character(0),
 #     .where = parent.frame(6),
@@ -98,38 +267,59 @@ Observable3 <- R6Class(
 
     ## Questions //
     .exists_visible = TRUE,
+    .has_bidir = FALSE,
     .has_cached = FALSE,
     .has_pull_refs = FALSE,
     .has_push_refs = FALSE,
     .has_pushed = FALSE,
+    .is_modcycle_complete = TRUE,
     .is_invalid = FALSE,
     .is_running_push = FALSE,
     .must_push = FALSE,
     .needs_update = TRUE,
     initialize = function(
       id, 
+      value = NULL,
       where = parent.frame(6), 
-      ## --> Corresponds to environment from which `Observable$new()` is called,
+      ## --> Corresponds to environment from which `ReactrObservable$new()` is called,
       refs_pull = list(),
 #       func = NULL, 
+      cache = TRUE,
       ...
     ) {
-      self <- super$initialize(...)
-      
+
+#       self <- super$initialize(...)
+# print(self)   
+      super$initialize(...)
+      .cache <<- cache
       .id <<- id
-      .where <<- where
-      .registry <<- getRegistry()
+      .refs_checksum <<- new.env(parent = emptyenv())
       .refs_pull <<- new.env(parent = emptyenv())
       .refs_push <<- new.env(parent = emptyenv())
-      .refs_checksum <<- new.env(parent = emptyenv())
-      .needs_update <<- TRUE
+      .registry <<- getRegistry()
+#      .needs_update <<- TRUE
+      .needs_update <<- FALSE
+      .value <<- value
+      .where <<- where
 
       ## Other initialization steps //
-      .uid <<- .computeUid()
-      .register(overwrite = TRUE)
-      if (length(refs_pull)) {
+      .caller <- self
+      .class <- class(.value)
+      .computeChecksum()
+      .computeUid()
+#       .register(overwrite = TRUE)
+#       if (length(refs_pull)) {
+#         .registerPullReferences(refs = refs_pull, where = .where)
+#       }
+
+      if (.cache && length(refs_pull)) {
         .registerPullReferences(refs = refs_pull, where = .where)
       }
+      if (.cache && length(.uid)) {
+        .register(overwrite = TRUE)
+      }
+
+      ## Catch self-reference situations //
       if (.uid %in% ls(.refs_checksum)) {    
         conditionr::signalCondition(
           condition = "NoSelfReferenceAllowed",
@@ -143,6 +333,44 @@ Observable3 <- R6Class(
           type = "error"
         )
       }
+      ## Check for bi-directional references //
+      .hasBidirectional(system_wide = TRUE)
+    },
+    ## Should further updates be blocked as they would lead to inconsitencies
+    ## with respect to the **expected** values of bi-directional references
+    ## when at least one of them has been explicitly modified via `<-`
+    .blockUpdate = function(verbose = FALSE) {
+      out <- FALSE
+      if (  self$.has_bidir && 
+            self$.caller$.uid != self$.uid && 
+            self$.caller$.is_modcycle_complete
+      ) {
+      ## Only relevant for bi-directional relationships:
+      ## --> for cetain systems constellations, it is necessary that 
+      ## certain updates are blocked as they would lead to 
+      ## inconsistencies with respect to **expected** object values
+      ## after bi-directionally referenced objects have been 
+      ## explicitly modified (i.e. `<-` has been used).
+      ## Distinction:
+      ## 1) When **only** A has changed and B is requested 
+      ##    **before** A:
+      ##    --> block update cycle at the point where A is called 
+      ##        by B in order to avoid the re-setting of A to 
+      ##        the **old** (but at this point still current) value 
+      ##        of B (which would happen if the full update cycle 
+      ##        was carried out).
+      ## 2) When **both** A and B have changed **before** 
+      ##    any object has been requested and one of them is 
+      ##    requested **afterwards**:
+      ##    --> carry out full update cycle so the system recognizes
+      ##        the last value that was explicitly set 
+        if (verbose) {
+          message("Intentional update block to ensure consistency")
+        }
+        self$.is_modcycle_complete <- TRUE
+        out <- TRUE
+      }
+      out
     },
     .checkClass = function(v) {
       if (!inherits(v, .class)) {
@@ -170,26 +398,36 @@ Observable3 <- R6Class(
         }
       }
     },
-    .compareChecksums = function(ref_uid, strict_get = 0) {
+    .compareChecksums = function(ref_uid, strict_get = 0, verbose = FALSE) {
       do_update <- FALSE
       ## Get last-known reference checksum //
-      ref_chk_own <- .refs_checksum[[ref_uid]]
+      ref_chk_last <- .refs_checksum[[ref_uid]]
       if (!is.null(.refs_pull[[ref_uid]]$.checksum)) {
       ## --> due to invalidation
-        ref_chk <- .refs_pull[[ref_uid]]$.checksum                 
-        if (is.null(ref_chk_own) || ref_chk != ref_chk_own) {
+        ref_chk_current <- .refs_pull[[ref_uid]]$.checksum      
+        if (is.null(ref_chk_last) || ref_chk_current != ref_chk_last) {
         ## --> checksum missing or reference has changed 
-        ## --> update                    
-          message(paste0("Modified reference: ", ref_uid))
+        ## --> update               
           .updateReferenceChecksum(
             ref = ref_uid, 
-            checksum = ref_chk
+            checksum = ref_chk_current
           )
+          ## Who is calling //
+          self$.refs_pull[[ref_uid]]$.caller <- self
+          
+          if (verbose) {
+            message(paste0("Object: ", self$.uid))
+            message(paste0("Called by: ", self$.caller$.uid))
+            message(paste0("Modified reference: ", ref_uid))
+            message(paste0("\t- Checksum last: ", ref_chk_last))
+            message(paste0("\t- Checksum current: ", ref_chk_current))
+          }
+          
           do_update <- TRUE
         }
       } else {
       ## Check if 'broken-binding' condition exists //
-        if (!is.null(ref_chk_own)) {
+        if (!is.null(ref_chk_last)) {
         ## --> this can only be the case if there has been a reactive 
         ## binding that was valid/working at one point in time
           if (strict_get == 0) {
@@ -255,6 +493,13 @@ Observable3 <- R6Class(
       }
       out
     },
+    .copy = function(id, where = parent.frame(8)) {  
+      if (!is.null(.func)) {
+        setShinyReactive(id = id, value = .func, where = where)
+      } else {
+        setShinyReactive(id = id, value = .value, where = where)
+      }
+    },
     .ensurePullReferencesIntegrity = function(ref_uid) {
       if (exists(ref_uid, envir = .registry, inherits = FALSE)) {     
         assign(ref_uid, 
@@ -278,21 +523,42 @@ Observable3 <- R6Class(
     .getVisible = function() {
       get(.id, .where, inherits = FALSE)
     },
+    .hasBidirectional = function(system_wide = FALSE) {
+      uid <- self$.uid
+      refs_pull <- self$.refs_pull
+      (self$.has_bidir <- any(sapply(ls(refs_pull), function(ref_uid) {
+        true <-  uid %in% ls(refs_pull[[ref_uid]]$.refs_pull)
+        if (system_wide && true && !refs_pull[[ref_uid]]$.has_bidir) {
+        ## --> system wide and not carried out yet in reference          
+          self$.has_bidir <- true
+          ## --> necessary to immediately make that information available 
+          ## system-wide
+          refs_pull[[ref_uid]]$.ensurePullReferencesIntegrity(ref_uid = uid)
+          refs_pull[[ref_uid]]$.hasBidirectional(system_wide = system_wide)
+        }
+        true
+      })))
+    },
     .hasPullReferences = function() {
       (.has_pull_refs <<- length(ls(.refs_pull, all.names = TRUE)) > 0)
     },
     .hasPushReferences = function() {
       (.has_push_refs <<- length(ls(.refs_push, all.names = TRUE)) > 0)
     },
-    .pushToReferences = function() {
+    .isCallerModcycleComplete = function(caller_uid = self$.caller$.uid) {
+      self$.registry[[caller_uid]]$.is_modcycle_complete
+    },
+    .pushToReferences = function(verbose = FALSE) {
       .has_pushed <- FALSE
       .is_running_push <- TRUE
       push_refs_env <- .refs_push
       push_refs <- ls(push_refs_env)
       out <- if (length(push_refs)) {
         sapply(push_refs, function(ref) {
-          message(paste0("Pushing to: ", ref))
-          push_refs_env[[ref]]$getVisible()
+          if (verbose) {
+            message(paste0("Pushing to: ", ref))
+          }
+          push_refs_env[[ref]]$.getVisible()
         })
         TRUE
       } else {
@@ -318,7 +584,11 @@ Observable3 <- R6Class(
           ref_uid <- computeObjectUid(id = ref$id, where = eval(ref$where))
           if (!exists(ref_uid, envir = .registry)) {
           ## Ensure a valid ref instance exists in registry    
-            ref_inst <- Observable2$new(id = ref$id, where = eval(ref$where))
+            ref_inst <- ReactiveShinyObject$new(
+              id = ref$id, 
+              where = eval(ref$where),
+              func = NULL
+            )
             ref_inst$.computeChecksum()
             ref_inst$.register()
           }
@@ -353,399 +623,62 @@ Observable3 <- R6Class(
         })  
       }
     },
-    .updateReferenceChecksum = function(ref, checksum) {
-      assign(ref, checksum, envir = .refs_checksum)
-    }
-  )
-)
-
-# x <- Observable3$new(id = "abcd", func = function() print("hello world!"))
-# x$label
-
-#' @import R6
-#' @import shiny
-Observable2 <- R6Class(
-  'Observable2',
-  inherit = shiny:::Observable,
-  portable = FALSE,
-  public = list(
-    ## [@change: jat, start]
-    .checksum = character(0),
-    .checksums = "environment",
-    .class = character(0),
-    .condition = NULL,
-    .id = character(0),
-    
-    .registry = "environment", 
-    .refs_pull = "environment",
-    .refs_push = "environment",
-    .refs_checksum = "environment",
-    
-    .uid = character(0),
-#     .where = parent.frame(6),
-    .where = "environment",
-
-    ## Questions //
-    .exists_visible = TRUE,
-    .has_cached = FALSE,
-    .has_pull_refs = FALSE,
-    .has_push_refs = FALSE,
-    .has_pushed = FALSE,
-    .is_invalid = FALSE,
-    .is_running_push = FALSE,
-    .must_push = FALSE,
-    .needs_update = TRUE,
-    ## [@change: jat, end]
-#     .func = 'function',
-#     .label = character(0),
-#     .domain = NULL,
-#     .dependents = 'Dependents',
-#     .invalidated = logical(0),
-#     .running = logical(0),
-#     .value = NULL,
-#     .visible = logical(0),
-#     .execCount = integer(0),
-#     .mostRecentCtxId = character(0),
-
-    initialize = function(
-      id, 
-      where = parent.frame(6), 
-      ## --> Corresponds to environment from which `Observable$new()` is called,
-      refs_pull = list(),
-      func = NULL, 
-      label = deparse(substitute(func)),
-      domain = shiny:::getDefaultReactiveDomain()
-    ) {
-      if (length(formals(func)) > 0)
-        stop("Can't make a reactive expression from a function that takes one ",
-          "or more parameters; only functions without parameters can be ",
-          "reactive.")
-      .func <<- func
-      .label <<- label
-      .domain <<- domain
-      .dependents <<- shiny:::Dependents$new()
-      .invalidated <<- TRUE
-      .running <<- FALSE
-      .execCount <<- 0L
-      .mostRecentCtxId <<- ""
-      ## [@change: jat, start]
-#       print(ls(.where))
-      .id <<- id
-      .where <<- where
-      .registry <<- getRegistry()
-      .checksums <<- new.env(parent = emptyenv())
-      .refs_pull <<- new.env(parent = emptyenv())
-      .refs_push <<- new.env(parent = emptyenv())
-      .refs_checksum <<- new.env(parent = emptyenv())
-      .needs_update <<- TRUE
-
-      ## Other initialization steps //
-      .uid <<- .computeUid()
-      .register(overwrite = TRUE)
-      if (length(refs_pull)) {
-        .registerPullReferences(refs = refs_pull, where = .where)
-      }
-      if (.uid %in% ls(.refs_checksum)) {    
-        conditionr::signalCondition(
-          condition = "NoSelfReferenceAllowed",
-          msg = c(
-            Reason = "tried to set a self-reference",
-            ID = .id,
-            UID = .uid,
-            Location = capture.output(.where)
-          ),
-          ns = "reactr",
-          type = "error"
+    .remove = function() {
+      out <- if (exists(.id, envir = .where)) {
+        tryCatch({
+            ## Propagate invalidity to dependees //
+            .is_invalid <<- TRUE
+            .unregister()
+            rm(list = .id, envir = .where, inherits = FALSE)        
+          },
+          error = function(cond) {
+            stop("Removal failed")
+          }
         )
-      }
-print("initialization")
-      ## [@change: jat, end]
-    },
-    getValue = function() {
-print("getValue()/start")      
-      .dependents$register()
-      ## [@change: jat, start]
-#       message("Observable2$getValue()/.dependents$.dependents$keys():")
-#       tmp_keys <- .dependents$.dependents$keys()
-#       print(tmp_keys)
-#       message("Observable2$getValue()/.dependents$.dependents$values():")
-#       print(.dependents$.dependents$values())
-#       message("Observable2$getValue()/.dependents$.dependents$values()/first value:")
-#       print(ls(.dependents$.dependents$values()[[tmp_keys[[1]]]]))
-#       message("Observable2$getValue()/.dependents$.dependents$private$env:")
-#       print(ls(.dependents$.dependents$private$env))
-
-      ## HERE:
-      ## Here would have to go a comparison of all hash values of dependents
-      ## in order to determine if an update is neccessary or not.
-      ## The check result would go into variable/field '.needs_update'
-      ## which in turn would then also considered inside the 'if()' part:
-      ##          if (.invalidated || .running || .needs_update)
-      ## Pseudo:
-      .checkIfUpdateIsNeeded <- function() {
-#        inst$getHash()
-        TRUE
-      }
-      .needs_update <- .checkIfUpdateIsNeeded()
-
-      if (.invalidated || .running || .needs_update) {
-        self$.updateValue()
-      }
-      ## [@change: jat, end]
-      shiny:::.graphDependsOnId(getCurrentContext()$id, .mostRecentCtxId)
-
-      if (identical(class(.value), 'try-error'))
-        stop(attr(.value, 'condition'))
-print("getValue()/end")
-      if (.visible)
-        .value
-      else
-        invisible(.value)
-    },
-    .updateValue = function() {
-      ctx <- shiny:::Context$new(.domain, .label, type = 'observable',
-        prevId = .mostRecentCtxId)
-#      message("Observable2$.updateValue()/ctx:")
-#      print(ctx)
-#      print(ls(ctx))
-      .mostRecentCtxId <<- ctx$id
-      ctx$onInvalidate(function() {
-          .invalidated <<- TRUE
-          .dependents$invalidate()
-        })
-      .execCount <<- .execCount + 1L
-#      message("Observable2$.updateValue()/.execCount:")
-#      print(.execCount)
-      .invalidated <<- FALSE
-
-      wasRunning <- .running
-      .running <<- TRUE
-      on.exit(.running <<- wasRunning)
-print("updateValue()/before")
-      ctx$run(function() {
-          result <- withVisible(try(shiny:::shinyCallingHandlers(.func()), silent=TRUE))
-          .visible <<- result$visible
-          .value <<- result$value
-        })
-print("updateValue()/after")  
-    },
-    ## {@change: jt, start}
-    .checkClass = function(v) {
-      if (!inherits(v, .class)) {
-        num_clss <- c("integer", "numeric")
-        if (all(c(class(v), .class) %in% num_clss)) {
-          
-        } else {
-          conditionr::signalCondition(
-            call = substitute(
-              assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-              list(ID = .id, VALUE = v, WHERE = .where)
-            ),
-            condition = "AbortedWithClassError",
-            msg = c(
-              Reason = "class of assignment value does not inherit from initial class",
-              ID = .id,
-              UID = .uid,
-              Location = capture.output(.where),
-              "Class expected" = .class,
-              "Class provided" = class(v)
-            ),
-            ns = "reactr",
-            type = "error"
-          )
-        }
-      }
-    },
-    .compareChecksums = function(ref_uid, strict_get = 0) {
-      do_update <- FALSE
-      ## Get last-known reference checksum //
-      ref_chk_own <- .refs_checksum[[ref_uid]]
-      if (!is.null(.refs_pull[[ref_uid]]$.checksum)) {
-      ## --> due to invalidation
-        ref_chk <- .refs_pull[[ref_uid]]$.checksum                 
-        if (is.null(ref_chk_own) || ref_chk != ref_chk_own) {
-        ## --> checksum missing or reference has changed 
-        ## --> update                    
-          message(paste0("Modified reference: ", ref_uid))
-          .updateReferenceChecksum(
-            ref = ref_uid, 
-            checksum = ref_chk
-          )
-          do_update <- TRUE
-        }
-      } else {
-      ## Check if 'broken-binding' condition exists //
-        if (!is.null(ref_chk_own)) {
-        ## --> this can only be the case if there has been a reactive 
-        ## binding that was valid/working at one point in time
-          if (strict_get == 0) {
-            ## Do nothing //
-          } else if (strict_get == 1) {                    
-            conditionr::signalCondition(
-              call = substitute(
-                get(x= ID, envir = WHERE, inherits = FALSE),
-                list(ID = .id, WHERE = .where)
-              ),
-              condition = "BrokenReactiveReference",
-              msg = c(
-                Reason = "broken reactive reference",
-                ID = .id,
-                UID = .uid,
-                Location = capture.output(.where),
-                "Reference UID" = ref_uid
-              ),
-              ns = "reactr",
-              type = "warning"
-            )
-            .value <<- NULL
-          } else if (strict_get == 2) {
-            cond <- conditionr::signalCondition(
-              call = substitute(
-                get(x= ID, envir = WHERE, inherits = FALSE),
-                list(ID = .id, WHERE = .where)
-              ),
-              condition = "BrokenReactiveReference",
-              msg = c(
-                Reason = "broken reactive reference",
-                ID = id,
-                UID = .uid,
-                Location = capture.output(.where),
-                "Reference UID" = ref_uid
-              ),
-              ns = "reactr",
-              type = "error",
-              signal = FALSE
-            )
-            
-            ## Transfer condition //
-            .condition <<- cond
-          }
-        }
-      }
-      return(do_update)
-    },
-    .computeChecksum = function() {
-      chk <- digest::digest(.value)
-      .checksum <<- chk
-      chk
-    },
-    .computeUid = function() {
-      out <- if (length(.id)) {
-print(.where)        
-        .uid <<- eval(substitute(digest::digest(list(id = ID, where = WHERE)), 
-          list(ID = .id, WHERE = capture.output(eval(.where)))))
-print(.uid)        
-        .uid
-      } else {
-        character()
-      }
-      out
-    },
-    .ensurePullReferencesIntegrity = function(ref_uid) {
-      if (exists(ref_uid, envir = .registry, inherits = FALSE)) {     
-        assign(ref_uid, 
-          get(ref_uid, envir = .registry, inherits = FALSE), 
-          envir = .refs_pull
-        )      
-      }
-      
-      ## Handle invalidation of referenced objects //
-      ## Ensures that "in-object" reference (as compared to the 
-      ## "in-registry" reference) is updated once a reference has 
-      ## become invalid
-      if (  is.null(.refs_pull[[ref_uid]]) ||
-            .refs_pull[[ref_uid]]$.is_invalid
-      ) {                 
-        .refs_pull[[ref_uid]] <- .registry[[ref_uid]]
-      }
-      
-      TRUE
-    },
-    .getVisible = function() {
-      get(.id, .where, inherits = FALSE)
-    },
-    .hasPullReferences = function() {
-      (.has_pull_refs <<- length(ls(.refs_pull, all.names = TRUE)) > 0)
-    },
-    .hasPushReferences = function() {
-      (.has_push_refs <<- length(ls(.refs_push, all.names = TRUE)) > 0)
-    },
-    .pushToReferences = function() {
-      .has_pushed <- FALSE
-      .is_running_push <- TRUE
-      push_refs_env <- .refs_push
-      push_refs <- ls(push_refs_env)
-      out <- if (length(push_refs)) {
-        sapply(push_refs, function(ref) {
-          message(paste0("Pushing to: ", ref))
-          push_refs_env[[ref]]$getVisible()
-        })
-        TRUE
-      } else {
-        FALSE
-      }
-      .is_running_push <- FALSE
-      .has_pushed <- TRUE
-      out
-    },
-    .register = function(overwrite = FALSE) {
-      out <- if (!exists(.uid, envir = .registry) || overwrite) {     
-        assign(.uid, self, envir = .registry)      
         TRUE
       } else {
         FALSE
       }
       out
     },
-    .registerPullReferences = function(refs = list(), where = parent.frame(6)) {
-      out <- if (length(refs)) {
-        .has_pull_refs <<- TRUE
-        sapply(refs, function(ref) {
-          ref_uid <- computeObjectUid(id = ref$id, where = eval(ref$where))
-          if (!exists(ref_uid, envir = .registry)) {
-          ## Ensure a valid ref instance exists in registry    
-            ref_inst <- Observable2$new(id = ref$id, where = eval(ref$where))
-            ref_inst$.computeChecksum()
-            ref_inst$.register()
-          }
-          ## Pointer //
-          assign(ref_uid, .registry[[ref_uid]], envir = .refs_pull)
-          ## Cached checksums //
-          .updateReferenceChecksum(
-            ref = ref_uid, 
-            checksum = .refs_pull[[ref_uid]]$.checksum
-          )
-        })
+    .unregister = function() {
+      out <- if (exists(.uid, envir = .registry)) {
+        ## Propagate invalidity to dependees //
+        .is_invalid <- TRUE
+        rm(list = .uid, envir = .registry, inherits = FALSE)      
         TRUE
       } else {
         FALSE
       }
       out
     },
-    .registerPushReferences = function() {
-      out <- if (.hasPullReferences()) {
-        .must_push <- TRUE
-#         .has_push_refs <- TRUE
-        sapply(ls(.refs_pull), function(ref_uid) {
-          ## Pointer //
-          assign(ref_uid, .registry[[ref_uid]], envir = .refs_push)
-          if (!exists(.uid, envir = .refs_pull[[ref_uid]]$.refs_push)) {
-          ## Ensure a push reference is created //
-            assign(.uid, self, .refs_pull[[ref_uid]]$.refs_push)
-#             .refs_pull[[ref_uid]]$.has_push_refs <- TRUE
-            TRUE
-          } else {
-            FALSE
-          }
-        })  
+    .unset = function() {
+      if (exists(.id, envir = .where, inherits = FALSE)) {
+        has_binding <- try(bindingIsActive(.id, .where))
+        if (inherits(has_binding, "try-error")) {
+          has_binding <- FALSE
+        } 
+        if (has_binding) {
+          tmp <- get(.id, envir = .where, inherits = FALSE)
+          rm(list = .id, envir = .where, inherits = FALSE)
+          assign(.id, tmp, .where)
+          ## Propagate invalidity to dependees //
+          .is_invalid <<- TRUE
+          .unregister()
+          TRUE
+        }
+      } else {
+        FALSE
       }
     },
     .updateReferenceChecksum = function(ref, checksum) {
       assign(ref, checksum, envir = .refs_checksum)
     }
-    ## {@change: jt, end}
   )
 )
+
+# x <- ReactiveShinyObject$new(id = "abcd", func = function() print("hello world!"))
+# x$label
 
 ##------------------------------------------------------------------------------
 ## Functions
@@ -759,295 +692,53 @@ exprToFunction2 <- function(
 ) {
   
   # Get the quoted expr from two calls back
-    ## [@change: jat, start]
   expr_sub <- eval(substitute(substitute(expr)), parent.frame(caller_offset))
 #   expr_sub <- yamlr::captureExpression(expr = expr, caller_offset = 2)
-# print(expr_sub)
-  ## Retrieve dependencies from YAML markup
-#   expr_sub <- .processReferenceYaml(expr = expr_sub, where = env)
-# print(class(expr_sub))
+
+  ## Retrieve dependencies from YAML markup //
   yaml <- yamlr::processYaml(
-    from = expr_sub, 
+    from = if (class(expr_sub) == "{") {
+      expr_sub 
+    } else {
+      eval(expr_sub)
+    }, 
     ctx = yamlr::YamlContext.ObjectReference.S3(),
     where = env
   )
   expr_sub <- yaml$src
-# print(expr_sub)
-# stop("intentional")
-  ## [@change: jat, end]
 
   # Check if expr is a function, making sure not to evaluate expr, in case it
   # is actually an unquoted expression.
   # If expr is a single token, then indexing with [[ will error; if it has multiple
   # tokens, then [[ works. In the former case it will be a name object; in the
   # latter, it will be a language object.
-  if (!is.null(expr_sub) && !is.name(expr_sub) && expr_sub[[1]] == as.name('function')) {
-    # Get name of function that called this function
-    called_fun <- sys.call(-1 * caller_offset)[[1]]
-
-    shinyDeprecated(msg = paste("Passing functions to '", called_fun,
-        "' is deprecated. Please use expressions instead. See ?", called_fun,
-        " for more information.", sep=""))
-    return(expr)
-  }
+#   if (  !is.null(expr_sub) && 
+#           !is.name(expr_sub) && 
+#           (is.function(expr_sub) || expr_sub[[1]] == "function)
+#       ) {
+#     # Get name of function that called this function
+#     called_fun <- sys.call(-1 * caller_offset)[[1]]
+# 
+#     shiny:::shinyDeprecated(msg = paste("Passing functions to '", called_fun,
+#         "' is deprecated. Please use expressions instead. See ?", called_fun,
+#         " for more information.", sep=""))
+#     return(expr)
+#   }
 
   if (quoted) {
     # expr is a quoted expression
-    yaml$src <- shiny:::makeFunction(body=expr, env=env)
+    yaml$src <- shiny:::makeFunction(body = expr, env = env)
   } else {
     # expr is an unquoted expression
-    yaml$src <- shiny:::makeFunction(body=expr_sub, env=env)
+    yaml$src <- shiny:::makeFunction(
+      body = if (class(expr_sub) == "{") {
+        expr_sub 
+      } else {
+        body(eval(expr_sub))
+      }, 
+      env = env
+    )
   }
   yaml
 }
 
-#' @title
-#' Set Reactive Shiny Object with Extended Features
-#'
-#' @description 
-#' Creates an reactive object.
-#'  
-#' @param id \code{\link{character}}.
-#'    Name of the object to set.
-#' @template threedots
-#' @example inst/examples/setReactiveS3.r
-#' @seealso \code{
-#'     \link[reactr]{setReactiveS3}
-#' }
-#' @template author
-#' @template references
-#' @export 
-#' @import shiny
-reactive2 <- function(
-  x, 
-  env = parent.frame(), 
-  quoted = FALSE, 
-  label = NULL,
-  domain = getDefaultReactiveDomain(), 
-  ## JAT //
-  id,
-  integrity = TRUE,
-  push = FALSE,
-  typed = FALSE
-) {
-  
-  ## Ensure that shiny let's us do this //
-  shiny_opt <- getOption("shiny.suppressMissingContextError")
-  if (is.null(shiny_opt) || !shiny_opt) {
-    options(shiny.suppressMissingContextError = TRUE)  
-  }
-  
-  yaml <- exprToFunction2(x, env, quoted)
-# yaml_tmp <<- yaml  
-  fun <- yaml$src
-print(fun)
-  # Attach a label and a reference to the original user source for debugging
-  if (is.null(label))
-    label <- sprintf('reactive(%s)', paste(deparse(body(fun)), collapse='\n'))
-  srcref <- attr(substitute(x), "srcref")
-  if (length(srcref) >= 2) attr(label, "srcref") <- srcref[[2]]
-  attr(label, "srcfile") <- shiny:::srcFileOfRef(srcref[[1]])
-  o <- Observable3$new(
-    id = id, 
-    where = env,
-    refs_pull = yaml$parsed,
-    func = fun, 
-    label = label, 
-    domain = domain
-  )
-o <<- o
-  shiny:::registerDebugHook(".func", o, "Reactive")
-
-  ## Some preparations //
-  o$.class <- class(o$.value)
-
-  ## Push //
-  if (push) {
-    o$.registerPushReferences()
-  }
-  
-# o <<- o
-#   stop("intentionalStop")
-  makeActiveBinding(
-    id,
-    env = env,
-    fun = local({
-      o
-      function(v) {
-        if (missing(v)) {
-          
-          ##--------------------------------------------------------------------
-          ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
-          ##--------------------------------------------------------------------   
-          
-          if (o$.hasPullReferences()) {
-            needs_update <- sapply(ls(o$.refs_pull), function(ref_uid) {
-              ## Ensure integrity //
-              if (integrity) {
-                o$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
-              }
-              ## Compare checksums //
-              (needs_update <- o$.compareChecksums(
-                ref_uid = ref_uid, 
-                strict_get = strict_get
-              ))
-            })
-          } else {
-            needs_update <- FALSE
-          }
-        
-          ##----------------------------------------------------------------
-          ## Actual update or initial caching //
-          ##----------------------------------------------------------------
-  
-          if (any(needs_update) || !o$.has_cached) {
-            if (!o$.has_cached) {
-              message("Initializing ...")  
-            }
-            if (any(needs_update)) {
-              message("Updating ...")  
-            }
-            
-            ## Cache new value //
-            o$.value <<- withRestarts(
-              tryCatch(
-                {     
-                  out <- o$getValue()
-                  o$.condition <<- NULL
-                  o$.has_cached <<- TRUE
-                  out 
-                ## For debugging/testing purposes 
-  #                     stop("Intentional update fail"),
-                },
-                warning = function(cond) {
-                  invokeRestart("muffleWarning")
-                },
-                error = function(cond) {
-                  invokeRestart("ReactiveUpdateFailed", cond = cond)
-                }
-              ),
-              muffleWarning = function(cond) {
-                message(cond)
-                invokeRestart("muffleWarning")
-              },
-              ReactiveUpdateFailed = function(cond) {
-                registry <- getRegistry()
-                ## Custom condition //
-                cond <- conditionr::signalCondition(
-                  condition = "AbortedReactiveUpdateWithError",
-                  msg = c(
-                    "Update failed",
-                    Reason = conditionMessage(cond),
-                    ID = o$.id,
-                    UID = o$.uid,
-                    Location = capture.output(o$.where)
-                  ),
-                  ns = "reactr",
-                  type = "error",
-                  signal = FALSE
-                )
-                ## Transfer condition //
-                o$.condition <<- cond
-                NULL
-              }
-            )
-            ## Update fields //
-            o$.computeChecksum()
-          }
-        } else {
-        
-        ##--------------------------------------------------------------------
-        ## Handler for 'set' (i.e. 'assign()' or '<-') //
-        ##--------------------------------------------------------------------   
-          
-        message("----- set (reactive) -----")
-        
-        if (typed) {
-          o$.checkClass(v = v)
-        }
-        
-        ## Set //
-        if (.hasPullReferences()) {
-          if (strict_set == 0) {
-            o$.value <<- v    
-          } else if (strict_set == 1) {
-            ## Do nothing //
-          } else if (strict_set == 2) {
-            conditionr::signalCondition(
-              call = substitute(
-                assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-                list(ID = o$.id, VALUE = v, WHERE = o$.where)
-              ),
-              condition = "AbortedWithReactiveDependencyWarning",
-              msg = c(
-                Reason = "trying to set value of object with reactive dependency",
-                ID = o$.id,
-                UID = o$.uid,
-                Location = capture.output(o$.where),
-                References = paste(ls(o$.refs_pull, all.names = TRUE), collapse = ", ")
-              ),
-              ns = "reactr",
-              type = "warning"
-            )
-          } else if (strict_set == 3) {
-            conditionr::signalCondition(
-              call = substitute(
-                assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-                list(ID = o$.id, VALUE = v, WHERE = o$.where)
-              ),
-              condition = "AbortedWithReactiveDependencyError",
-              msg = c(
-                Reason = "trying to set value of object with reactive dependency",
-                ID = o$.id,
-                UID = o$.uid,
-                Location = capture.output(o$.where),
-                References = paste(ls(o$.refs_pull, all.names = TRUE), collapse = ", ")
-              ),
-              ns = "reactr",
-              type = "error"
-            )
-          }
-        } else {
-          o$.value <<- v 
-        }
-        
-        ## Update checksum //
-        o$.computeChecksum()
-        
-        ## Push //
-        if (  o$.must_push &&
-              o$.hasPushReferences() && 
-              !o$.has_pushed && 
-              !o$.is_running_push
-        ) {
-          message("Pushing ...")
-          o$.pushToReferences()
-          ## Reset value of push control field //
-          o$.has_pushed <- FALSE
-        }
-      }
-
-      ##------------------------------------------------------------------------
-      ## Return //
-      ##------------------------------------------------------------------------
-
-      ## Condition handling //
-      if (!is.null(o$.condition)) {           
-        if (inherits(o$.condition, "BrokenReactiveReference")) {
-          o$.value <- stop(o$.condition)
-        } else {            
-          o$.value <- stop(o$.condition)
-        }
-      }
-      o$.value
-    }
-  })
-)
-#   structure(o$getValue, observable = o, class = "reactive2")
-#   structure(o$.cache, observable = o, class = "reactive2")
-#   return(o$.value)
-
-  ## Initialize //
-  (out <- get(id, envir = env, inherits = FALSE))
-  
-}

@@ -12,31 +12,31 @@ test_that("ReactiveObject.S3", {
     ), 
     "ReactiveObject.S3"
   )
-  expect_equal(res$value, 10)
-  expect_equal(res$checksum, digest::digest(10))
+  expect_equal(res$.value, 10)
+  expect_equal(res$.checksum, digest::digest(10))
 
   ## Register and unregister in registry //
   resetRegistry()
   registry <- getRegistry()
 
-  expect_true(res$register())
-  expect_true(exists(res$uid, registry, inherits = FALSE))
-  expect_true(res$unregister())
-  expect_false(exists(res$uid, registry, inherits = FALSE))
+  expect_true(res$.register())
+  expect_true(exists(res$.uid, registry, inherits = FALSE))
+  expect_true(res$.unregister())
+  expect_false(exists(res$.uid, registry, inherits = FALSE))
 
   ## Remove //
-  assign(res$id, "hello world!", res$where)
+  assign(res$.id, "hello world!", res$.where)
   expect_equal(x_1, "hello world!")
-  expect_true(exists(res$id, res$where, inherits = FALSE))
-  expect_true(res$remove())
-  expect_false(exists(res$id, res$where, inherits = FALSE))
-  expect_error(get("x_1", envir = where, inherits = FALSE))
+  expect_true(exists(res$.id, res$.where, inherits = FALSE))
+  expect_true(res$.remove())
+  expect_false(exists(res$.id, res$.where, inherits = FALSE))
+  expect_error(get("x_1", inherits = FALSE))
 
   ## Copy //
   resetRegistry()
-  expect_true(res$register())
+  expect_true(res$.register())
   ls(registry)
-  expect_equal(res$copy(id = "x_copied"), 10)
+  expect_equal(res$.copy(id = "x_copied"), 10)
   ls(registry)
   expect_equal(x_copied, 10)
   
@@ -48,9 +48,10 @@ test_that("ReactiveObject.S3/setReactiveS3", {
   registry <- getRegistry()
   setReactiveS3(id = "x_1", value = 10)
   obj <- getFromRegistry("x_1")
+  expect_is(obj, "ReactiveObject.S3")
 
   ## Copy //
-  obj$copy(id = "x_1_copied")
+  obj$.copy(id = "x_1_copied")
   expect_true(exists("x_1_copied"))
   expect_equal(x_1_copied, 10)
   expect_equal(x_1_copied, x_1)
@@ -62,8 +63,11 @@ test_that("ReactiveObject.S3/setReactiveS3", {
   ## Unset //
   env <- environment()
   expect_true(bindingIsActive("x_1", env))
-  obj$unset()
+  obj$.unset()
   expect_false(bindingIsActive("x_1", env))
-  expect_false(exists(obj$uid, registry))
+  expect_false(exists(obj$.uid, registry))
+  
+  ## Clean up //
+  removeReactive("x_1")
 
 })

@@ -1,6 +1,6 @@
 Package: reactr
 Type: Package
-Title: Reactive object bindings with built-in caching
+Title: Reactive object bindings with built-in caching and push functionality
 Version: 0.1.8
 Date: 2014-10-17 00:16:08
 Author: Janko Thyson [aut, cre]

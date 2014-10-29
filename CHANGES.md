@@ -1,3 +1,33 @@
+# Version 0.1.9
+ - fixes #25 getBinding() removeReactive() --> rmReactive() removeFromRegistry() --> rmFromRegistry() conenvience functions
+ - Merge branch 'master' into develop
+ - modified dependencies in README.md
+ - Modified dependencies
+ - Merge branch 'pre-release-0.2'
+ - Merge branch 'develop' into pre-release-0.2
+ - modified README.md
+ - Merge branch 'master' into develop
+ - Merge branch 'master' into pre-release-0.2
+ - modified README.md
+ - Merge branch 'develop'
+ - Merge branch 'develop' into pre-release-0.2
+ - modified README.md
+ - Merge branch 'master' into develop
+ - Merge branch 'pre-release-0.2'
+ - fixes #17 major commit for milestone pre-release v0.2
+ - intermediate release
+ - Merge branch 'master' into develop
+ - Merge branch 'pre-release-0.2'
+ - fixes #18 fixes #19
+ - misc bugfixes
+ - part way through refactoring
+ - getReactive()
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.8'
+ - build commit v0.1.8
+
+----------
+
 # Version 0.1.8
  - modified README.md
  - Merge branch 'master' into develop

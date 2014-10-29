@@ -26,9 +26,9 @@ It is a declared goal of this package to re-use as much of the existing function
 
 ### Vignettes
 
-- [Bi-directional Bindings](https://github.com/Rappster/reactr/blob/master/vignettes/bidirectional_bindings.pdf)
+- [Bi-Directional Bindings](https://github.com/Rappster/reactr/blob/master/vignettes/bidirectional_bindings.pdf)
 - [Caching](https://github.com/Rappster/reactr/blob/master/vignettes/caching.pdf)
-- [Convenience functions](https://github.com/Rappster/reactr/blob/master/vignettes/convenience_functions.pdf)
+- [Convenience Functions](https://github.com/Rappster/reactr/blob/master/vignettes/convenience_functions.pdf)
 - [Pushing](https://github.com/Rappster/reactr/blob/master/vignettes/pushing.Rmd)
 - [Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/reactive_references.pdf)
 - [Relations to Shiny](https://github.com/Rappster/reactr/blob/master/vignettes/relations_to_shiny.Rmd)
@@ -129,9 +129,7 @@ rmReactive("x_2")
   
     with `{number}` being an arbitrary number or other symbol, `{id}` being the referenced object's name/ID and `{where}` being the environment where the value belonging to `{id}` was assigned to (e.g. `.ref_1 <- get{"x_1", where_1}`).
 
-  See vignette [Specifying Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/reactive_references.Rmd) for details.
-
-2. The environment in which to set a reactive object can be chosen via argument `where`
+  See vignette [Reactive References](https://github.com/Rappster/reactr/blob/master/vignettes/reactive_references.Rmd) for details.
 
 3. Strictness levels can be defined for 
 

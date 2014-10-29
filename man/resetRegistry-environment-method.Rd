@@ -49,7 +49,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 \seealso{
 \code{
    \link[reactr]{resetRegistry},
-    \link[reactr]{removeFromRegistryByUid}
+    \link[reactr]{rmFromRegistryByUid}
 }
 }
 

@@ -17,7 +17,7 @@ test_that("setReactiveS3/explicit 'where'", {
 
   where <- environment()
   resetRegistry()
-  removeReactive("x_1")
+  rmReactive("x_1")
   
   value <- Sys.time()
   expect_equal(
@@ -80,8 +80,8 @@ test_that("setReactiveS3/explicit 'where'", {
   }
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
 #   resetRegistry()
   
 })
@@ -106,8 +106,8 @@ test_that("setReactiveS3/no explicit 'where'", {
   expect_equal(x_2, x_1 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
  
@@ -134,8 +134,8 @@ test_that("setReactiveS3/set dependent object", {
   expect_equal(x_2, 20 * 2) ## update (x_2:x_1:20)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -191,9 +191,9 @@ test_that("setReactiveS3/threeway", {
   }
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
-  removeReactive("x_3")
+  rmReactive("x_1")
+  rmReactive("x_2")
+  rmReactive("x_3")
 #   resetRegistry()
   
 })
@@ -275,8 +275,8 @@ test_that("setReactiveS3/bidirectional/identity", {
   expect_equal(x_2 , 1) ## update (x_2:x_1:1)
 
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
 #   resetRegistry()
   
 })
@@ -327,9 +327,9 @@ test_that("setReactiveS3/bidirectional/identity/wait", {
   expect_equal(x_3, x_2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
-  removeReactive("x_3")
+  rmReactive("x_1")
+  rmReactive("x_2")
+  rmReactive("x_3")
 #   resetRegistry()
   
 })
@@ -385,8 +385,8 @@ test_that("setReactiveS3/bidirectional/function/steady", {
   expect_equal(x_1, x_2 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
 #   resetRegistry()
   
 })
@@ -428,8 +428,8 @@ test_that("setReactiveS3/bidirectional/function/unsteady", {
   expect_equal(x_2, x_1 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
 #   resetRegistry()
   
 })
@@ -460,8 +460,8 @@ test_that("setReactiveS3/bidirectional/function/unsteady", {
   expect_equal(x_1, x_2 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
 #   resetRegistry()
   
 })
@@ -542,8 +542,8 @@ test_that("setReactiveS3/late bidirectional", {
   expect_equal(x_2 , 1) ## update (x_2:x_1:1)
 
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -567,7 +567,7 @@ test_that("setReactiveS3/scenario 1", {
   
   ## Clean up //
   suppressWarnings(rm(where_1))
-  removeReactive("x_2")
+  rmReactive("x_2")
   resetRegistry()
   
 })
@@ -586,7 +586,7 @@ test_that("setReactiveS3/scenario 2", {
   
   ## Clean up //
   suppressWarnings(rm(where))
-  removeReactive("x_1")
+  rmReactive("x_1")
 #   resetRegistry()
   
 })  
@@ -703,7 +703,7 @@ test_that("setReactiveS3/via arguments/scenario 2", {
   ## Clean up //
   suppressWarnings(rm(where_1))
   suppressWarnings(rm(where_2))
-  removeReactive("x_3")
+  rmReactive("x_3")
   resetRegistry()
 
 })  
@@ -715,34 +715,34 @@ context("setReactiveS3: strictness (instantiation)")
 test_that("setReactiveS3: strictness", {
   
   expect_equal(setReactiveS3(id = "x_1", value = 10, strict = 0), 10)
-  removeReactive("x_1")
+  rmReactive("x_1")
   resetRegistry()
   expect_warning(expect_equal(setReactiveS3(id = "x_1", value = 10, strict = 1), 10))
-  removeReactive("x_1")
+  rmReactive("x_1")
   resetRegistry()
   expect_error(setReactiveS3(id = "x_1", value = 10, strict = 2))
   
-  removeReactive("x_1")
+  rmReactive("x_1")
   resetRegistry()
   expect_equal(setReactiveS3(id = "x_1", value = 10), 10)
   expect_warning(setReactiveS3(id = "x_1", value = 10, strict = 1))
   expect_error(setReactiveS3(id = "x_1", value = 10, strict = 2))
   
-  removeReactive("x_1")
+  rmReactive("x_1")
   resetRegistry()
   x_1 <- 10
   expect_equal(setReactiveS3(id = "x_1", value = 10), 10)
-  removeReactive("x_1")
+  rmReactive("x_1")
   resetRegistry()
   x_1 <- 10
   expect_warning(setReactiveS3(id = "x_1", value = 10, strict = 1))
-  removeReactive("x_1")
+  rmReactive("x_1")
   resetRegistry()
   x_1 <- 10
   expect_error(setReactiveS3(id = "x_1", value = 10, strict = 2))
   
   ## Clean up //
-  removeReactive("x_1")
+  rmReactive("x_1")
   
 })
 
@@ -773,7 +773,7 @@ test_that("setReactiveS3: strictness (get)", {
     ls(registry[[uid]][[uid]])
   }
   expect_equal(x_2, 20)
-  removeReactive("x_1")
+  rmReactive("x_1")
   expect_equal(x_2, 20)
   expect_equal(x_2, 20)
   
@@ -789,7 +789,7 @@ test_that("setReactiveS3: strictness (get)", {
     }, strict_get = 0)
   
   expect_equal(x_2, 20)
-  removeReactive("x_1")
+  rmReactive("x_1")
   expect_equal(x_2, 20)
   expect_equal(x_2, 20)
   
@@ -805,7 +805,7 @@ test_that("setReactiveS3: strictness (get)", {
     }, strict_get = 1)
   
   expect_equal(x_2, 20)
-  removeReactive("x_1")
+  rmReactive("x_1")
   expect_warning(expect_equal(x_2, NULL))
   expect_warning(expect_equal(x_2, NULL))
   
@@ -821,13 +821,13 @@ test_that("setReactiveS3: strictness (get)", {
     }, strict_get = 2)
   
   expect_equal(x_2, 20)
-  removeReactive("x_1")
+  rmReactive("x_1")
   expect_error(x_2)
   expect_error(x_2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -887,8 +887,8 @@ test_that("setReactiveS3(): strictness (set)", {
   expect_equal(x_2, 20)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -920,7 +920,7 @@ test_that("setReactiveS3: self-reference", {
   }))
   
   ## Clean up //
-  removeReactive("x_1")
+  rmReactive("x_1")
   
 })
 
@@ -956,8 +956,8 @@ test_that("setReactiveS3/yaml/where", {
   )
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   suppressWarnings(rm(where))
   
   where_1 <- new.env()
@@ -972,8 +972,8 @@ test_that("setReactiveS3/yaml/where", {
   )
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   suppressWarnings(rm(where_1))
   
 })
@@ -996,8 +996,8 @@ test_that("setReactiveS3/yaml/no where", {
   expect_equal(x_2, x_1 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
  
 })
 
@@ -1020,8 +1020,8 @@ test_that("setReactiveS3/yaml/where/as", {
   expect_equal(x_2, x_1 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   suppressWarnings(rm(where))
   
 })
@@ -1045,8 +1045,8 @@ test_that("setReactiveS3/yaml/where/messed up", {
   expect_equal(x_2, x_1 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   suppressWarnings(rm(where))
   
 })  
@@ -1074,8 +1074,8 @@ test_that("setReactiveS3/yaml/where/mixed", {
   expect_equal(x_2, x_1 * 2)
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   suppressWarnings(rm(where))
   
 })
@@ -1118,10 +1118,10 @@ test_that("setReactiveS3/recognition/.ref_*", {
   )
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
-  removeReactive("x_3")
-  removeReactive("x_4")
+  rmReactive("x_1")
+  rmReactive("x_2")
+  rmReactive("x_3")
+  rmReactive("x_4")
   
 })
 
@@ -1157,10 +1157,10 @@ test_that("setReactiveS3/recognition/args", {
     x_1
   )
   
-  removeReactive("x_1")
-  removeReactive("x_2")
-  removeReactive("x_3")
-  removeReactive("x_4")
+  rmReactive("x_1")
+  rmReactive("x_2")
+  rmReactive("x_3")
+  rmReactive("x_4")
   
 })
 
@@ -1233,15 +1233,15 @@ test_that("setReactiveS3/recognition/yaml", {
     x_1 + x_2 
   )
   
-  removeReactive("x_1")
-  removeReactive("x_2")
-  removeReactive("x_3")
-  removeReactive("x_4")
-  removeReactive("x_5")
-  removeReactive("x_6")
-  removeReactive("x_7")
-  removeReactive("x_8")
-  removeReactive("x_9")
+  rmReactive("x_1")
+  rmReactive("x_2")
+  rmReactive("x_3")
+  rmReactive("x_4")
+  rmReactive("x_5")
+  rmReactive("x_6")
+  rmReactive("x_7")
+  rmReactive("x_8")
+  rmReactive("x_9")
   
 })
 
@@ -1290,8 +1290,8 @@ test_that("setReactiveS3/push", {
   expect_error(x_2)
 
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -1341,8 +1341,8 @@ test_that("ensureIntegrity", {
     )
   }
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
   
 })
 
@@ -1359,7 +1359,7 @@ test_that("ensureIntegrity/typed", {
   expect_error(x_1 <- TRUE)
   
   ## Clean up //
-  removeReactive("x_1")
+  rmReactive("x_1")
   
 })
 
@@ -1374,7 +1374,7 @@ test_that("ensureIntegrity/typed/for initial NULL", {
   ## --> overwriting initial `NULL` is perfectly fine
   
   ## Clean up //
-  removeReactive("x_1")
+  rmReactive("x_1")
   
 })
 
@@ -1393,8 +1393,8 @@ test_that("setReactiveS3/no cache", {
   expect_equal(showRegistry(), character())
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_2")
+  rmReactive("x_1")
+  rmReactive("x_2")
 
 })
 

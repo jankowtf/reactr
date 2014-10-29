@@ -81,7 +81,7 @@ setMethod(
 #' @inheritParams getFromRegistry
 #' @param id \code{\link{character}}.
 #' @param where \code{\link{environment}}.
-#' @return \code{\link{ReactiveObject.S3}}. Stored hidden instance of reactive
+#' @return \code{\link{ReactiveObject.S3}}. Stored invisible instance of reactive
 #'    object.
 #' @example inst/examples/getFromRegistry.r
 #' @seealso \code{

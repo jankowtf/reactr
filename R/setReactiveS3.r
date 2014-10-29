@@ -12,10 +12,10 @@
 #' Implicitly, an instance of class 
 #' \code{\link[reactr]{ReactiveObject.S3}} is created of which only field
 #' \code{value} will be visible to the outside. The rest of the object is
-#' stored in a hidden way.
+#' stored in a invisible way.
 #' 
-#' In order to keep the hidden object accessible and also due to the 
-#' implementation of the caching mechanism, the hidden object is also stored
+#' In order to keep the invisible object accessible and also due to the 
+#' implementation of the caching mechanism, the invisible object is also stored
 #' in a registry (see \code{\link[reactr]{getRegistry}}).
 #' 
 #' @section Self-contained reactivity:
@@ -238,7 +238,7 @@ setReactiveS3 <- function(
   }
 
   ## Clean up //
-#   removeReactive(id = id, where = where)
+#   rmReactive(id = id, where = where)
 
   ## Instance of class 'ReactiveObject.S3' //
   obj <- reactr::ReactiveObject.S3(
@@ -246,11 +246,12 @@ setReactiveS3 <- function(
 #     value = value_initial,
     value = if (!is_reactive) value,
     where = where,
-    pull_refs_list = pull_refs,
-    has_cached = FALSE,
-    func = func,
+    ## Alphabetically //
+    cache = cache,
     exists_visible = TRUE,
-    cache = cache
+    func = func,
+    has_cached = FALSE,
+    pull_refs_list = pull_refs
   )
 
   ## Push //

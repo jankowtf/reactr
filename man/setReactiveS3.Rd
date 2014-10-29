@@ -98,10 +98,10 @@ Creates an reactive object.
 Implicitly, an instance of class
 \code{\link[reactr]{ReactiveObject.S3}} is created of which only field
 \code{value} will be visible to the outside. The rest of the object is
-stored in a hidden way.
+stored in a invisible way.
 
-In order to keep the hidden object accessible and also due to the
-implementation of the caching mechanism, the hidden object is also stored
+In order to keep the invisible object accessible and also due to the
+implementation of the caching mechanism, the invisible object is also stored
 in a registry (see \code{\link[reactr]{getRegistry}}).
 }
 \section{Self-contained reactivity}{
@@ -242,8 +242,8 @@ setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
 try(x_2 <- 500)
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------  
 ## Typed //
@@ -262,8 +262,8 @@ x_1
 (x_1 <- "hello world")
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------  
 ## Verbose //
@@ -310,8 +310,8 @@ x_2
 ## --> update according to binding function
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------  
 ## In custom environment //
@@ -359,8 +359,8 @@ where_1$x_2
 ## --> referenced value for `x_1` in `where_1` changed --> update and re-cache
 
 ## Clean up //
-removeReactive("x_1", where_1)
-removeReactive("x_2", where_1)
+rmReactive("x_1", where_1)
+rmReactive("x_2", where_1)
 suppressWarnings(rm(where_1))
 
 ################################################################################
@@ -427,9 +427,9 @@ x_3
 x_3 
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
-removeReactive("x_3")
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
 
 ##------------------------------------------------------------------------------
 ## Scenario 1: one-directional (3)
@@ -475,9 +475,9 @@ x_3
 ## --> affected by change of `x_2` --> update
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
-removeReactive("x_3")
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
 
 ##------------------------------------------------------------------------------
 ## Scenario 4: bi-directional (1)
@@ -525,8 +525,8 @@ x_1
 x_2
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------
 ## Scenario 5: bi-directional (2)
@@ -575,8 +575,8 @@ x_1
 x_2
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------
 ## Scenario 6: bi-directional (3)
@@ -628,8 +628,8 @@ x_2
 x_1
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ################################################################################
 ## Additional features / misc //
@@ -682,8 +682,8 @@ x_2
 ## --> the cached value corresponding to the last push cycle
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------
 ## Using reactive bindings in more complex data structure //
@@ -745,9 +745,9 @@ x_3
 
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
-removeReactive("x_3")
+rmReactive("x_1")
+rmReactive("x_2")
+rmReactive("x_3")
 
 ##------------------------------------------------------------------------------  
 ## Disabled caching //
@@ -777,8 +777,8 @@ x_1 <- 30
 x_2
 
 ## Bi-directional bindings are not possible //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 setReactiveS3(id = "x_1", value = function() "object-ref: {id: x_2}", 
               cache = FALSE)
 ## NOTE:
@@ -798,8 +798,8 @@ setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
 ## Addressed in issue #24 (https://github.com/Rappster/reactr/issues/24).
 
 ## Push updates are not possible //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 setReactiveS3(id = "x_1", value = 10, cache = FALSE)
 setReactiveS3(
   id = "x_2", 
@@ -820,8 +820,8 @@ x_2
 ## --> `x_2` needs to pull its updates --> push disabled as caching is disabled
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 
 ##------------------------------------------------------------------------------  
 ## Class used //
@@ -835,7 +835,7 @@ setReactiveS3(id = "x_1", value = 10)
 (inst <- getFromRegistry("x_1"))
 class(inst)
 inst$.value
-removeReactive("x_1")
+rmReactive("x_1")
 
 ################################################################################
 ## Profiling //
@@ -1211,8 +1211,8 @@ identical(reg_x_1, reg_x_1_through_x_2)
 ## for a lot of situations, including push updates and integrity checks.
 
 ## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
+rmReactive("x_1")
+rmReactive("x_2")
 resetRegistry()
 
 }

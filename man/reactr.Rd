@@ -28,7 +28,7 @@ The core functions/methods of this package:
      Removes reactive binding from an object and turns it into a regularly
      assigned object again.
    }
-   \item{\code{\link[reactr]{removeReactive}}: }{
+   \item{\code{\link[reactr]{rmReactive}}: }{
      Removes an reactive object from its environment completely.
      This is equivalent to \code{\link[base]{rm}} with a previous call to
      \code{\link[reactr]{unsetReactive}}

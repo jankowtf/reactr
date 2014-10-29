@@ -10,7 +10,7 @@
 #' by \code{\link[base]{makeActiveBinding}}. 
 #' 
 #' Note that it is \strong{not} equivalent to removing/deleting the object! 
-#' See \code{\link[reactr]{removeReactive}} for this purpose.
+#' See \code{\link[reactr]{rmReactive}} for this purpose.
 #' 
 #' @section Implications with respect objects depending on this object:
 #' 

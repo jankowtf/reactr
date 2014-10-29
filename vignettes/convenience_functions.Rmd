@@ -1,0 +1,188 @@
+---
+title: "Convenience Functions"
+author: "Janko Thyson"
+date: "Thursday, October 29, 2014"
+output:
+  pdf_document
+---
+
+```{r, echo=FALSE}
+suppressMessages(require("reactr"))
+```
+
+## Reactive objects (focus *visible* part)
+
+Example objects
+
+```{r}
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+```
+
+### Compute object UID
+
+```{r}
+computeObjectUid(id = "x_1")
+computeObjectUid(id = "x_2")
+```
+
+
+### Copy reactive objects
+
+```{r}
+copyReactive(id_from = "x_1", id_to = "x_1_copy")
+x_1_copy
+```
+
+### Get reactive
+
+```{r}
+getReactive(id = "x_1")
+getReactive(id = "x_1", hidden = TRUE)
+getReactive(id = "x_2")
+```
+
+### Is reactive 
+
+```{r}
+isReactive(id = "x_1")
+isReactive(id = "x_2")
+x_3 <- "hello world!"
+isReactive(id = "x_3")
+```
+
+## Unset reactive
+
+```{r}
+unsetReactive(id = "x_1")
+isReactive(id = "x_1")
+```
+
+## Removing reactive 
+
+```{r}
+rmReactive(id = "x_1")
+exists("x_1")
+## --> already unset
+rmReactive(id = "x_2")
+exists("x_2")
+```
+
+## Reactive objects (focus *invisible* part)
+
+Example objects 
+
+```{r}
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() {
+  "object-ref: {id: x_1}"
+  x_1 * 2
+})
+```
+
+
+### Get binding function
+
+```{r}
+getBinding(id = "x_1")
+getBinding(id = "x_2")
+```
+
+### Get checksum of visible value
+
+```{r}
+getChecksum(id = "x_1")
+getChecksum(id = "x_2")
+```
+
+### Get reactive 
+
+```{r}
+getReactive(id = "x_1", hidden = TRUE)
+getReactive(id = "x_2", hidden = TRUE)
+```
+
+### Show pull references
+
+```{r}
+showPullRefs(id = "x_1")
+showPullRefs(id = "x_2")
+```
+
+### Show push references
+
+```{r}
+showPushRefs(id = "x_1")
+showPushRefs(id = "x_2")
+
+setReactiveS3(id = "x_2", value = function() {
+  "object-ref: {id: x_1}"
+  x_1 * 2
+}, push = TRUE)
+showPushRefs(id = "x_2")
+```
+
+Clean up 
+
+```{r}
+rmReactive("x_1")
+rmReactive("x_2")
+```
+
+## Registry
+
+Example objects 
+
+```{r}
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+```
+
+### Get registry 
+
+```{r}
+reg <- getRegistry()
+ls(reg)
+```
+
+### Show registry
+
+```{r}
+showRegistry()
+```
+
+### Get from registry
+
+```{r}
+getFromRegistry(id = "x_1")
+getFromRegistry(id = "x_2")
+
+getFromRegistryByUid(computeObjectUid("x_1"))
+getFromRegistryByUid(computeObjectUid("x_2"))
+```
+
+### Remove from registry
+
+```{r}
+computeObjectUid("x_1") %in% showRegistry()
+rmFromRegistry("x_1")
+computeObjectUid("x_1") %in% showRegistry()
+
+computeObjectUid("x_2") %in% showRegistry()
+rmFromRegistryByUid(computeObjectUid("x_2"))
+computeObjectUid("x_2") %in% showRegistry()
+```
+
+### Reset registry 
+
+```{r}
+## Ensure content that might previously have been removed //
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+
+## Reset //
+showRegistry()
+resetRegistry()
+showRegistry()
+```
+

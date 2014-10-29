@@ -41,7 +41,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 \seealso{
 \code{
   	\link[reactr]{getRegistry-environment-method},
-    \link[reactr]{removeFromRegistryByUid}
+    \link[reactr]{rmFromRegistryByUid}
 }
 }
 

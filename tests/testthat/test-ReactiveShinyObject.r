@@ -80,7 +80,7 @@ test_that("ReactiveShinyObject/setReactiveS3", {
   expect_false(exists(obj$.uid, registry))
   
   ## Clean up //
-  removeReactive("x_1")
-  removeReactive("x_1_copied")
+  rmReactive("x_1")
+  rmReactive("x_1_copied")
 
 })

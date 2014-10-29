@@ -4,14 +4,14 @@
 #' @description 
 #' Retrieves an reactive object, or, to be more precise, the \strong{visible}
 #' part of the object which corresponds to the \code{value} field of the 
-#' hidden instance of class \code{\link[reactr]{ReactiveObject.S3}}.
+#' invisible instance of class \code{\link[reactr]{ReactiveObject.S3}}.
 #'   	
 #' @param id \strong{Signature argument}.
 #'    Object containing name/ID information.
 #' @param where \strong{Signature argument}.
 #'    Object containing location information.
 #' @param hidden \code{\link{logical}}.
-#'    \code{TRUE}: retrieve entire \strong{hidden} object/instance from registry;
+#'    \code{TRUE}: retrieve entire \strong{invisible} object/instance from registry;
 #'    \code{FALSE}: retrieve the visible part of the object/instance.
 #' @template threedots
 #' @example inst/examples/getReactive.r

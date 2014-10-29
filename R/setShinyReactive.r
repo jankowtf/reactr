@@ -70,6 +70,44 @@
 #'    Value or reactive binding.
 #' @param where \code{\link{environment}}.
 #'    Environment in which to create the object.
+#' @param quoted See \code{\link[shiny]{reactive}}.
+#'    Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.
+#' @param label See \code{\link[shiny]{reactive}}.
+#'    Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.
+#' @param domain See \code{\link[shiny]{reactive}}.
+#'    Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.
+#' @param cache \code{\link{logical}}.
+#'    \code{TRUE}: use caching mechanism;
+#'    \code{FALSE}: no caching mechanism used.
+#'    Theoretically, \code{cache = FALSE} should result in less overhead 
+#'    (no registry) and faster processing of \code{get} and \code{set}  
+#'    operations for objects. However, the benchmark with respect to the 
+#'    processing of \code{get} and \code{set} operations are still 
+#'    ambiguous at this point (see profiling in examples).
+#'    Note that \emph{bi-directional bindings} and \emph{push propagation} of 
+#'    changes are only available if \code{cache = TRUE}.
+#' @param integrity \code{\link{logical}}.
+#'    \code{TRUE}: ensures structural integrity of underlying reactive object
+#'    (instance of class \code{\link[reactr]{ReactiveShinyObject}}).
+#'    \code{FALSE}: no integrity measures are carried out.
+#'    Note that \code{TRUE} adds a minimal overhead of 2.3e-08 seconds 
+#'    to the runtime. See details.
+#' @param push \code{\link{logical}}.
+#'    \code{TRUE}: immediately propagate changes to objects referencing this 
+#'    object by implicitly calling/requesting them and thus executing their 
+#'    binding functions (corresponds to a \strong{push paradigm});
+#'    \code{FALSE}: objects referencing this object will only know of the change
+#'    in this object if they are called/requested themselves as this would 
+#'    then trigger the execution of their binding functions 
+#'    (corresponds to a \strong{pull paradigm}).
+#' @param typed \code{\link{logical}}.
+#'    \code{TRUE}: checks class validity of assignment value specified via
+#'    \code{value} and throws an error if classes do not match or if the class 
+#'    of the assignment value does not inherit from the class of field value 
+#'    \code{.value} at initialization;
+#'    \code{FALSE}: no class check is performed.
+#'    Note that initial values of \code{NULL} are disregarded, i.e. each value
+#'    will be a valid value for overwriting \code{NULL} values in \code{.value}.
 #' @param strict \code{\link{numeric}}.
 #'    Relevant when initially setting a reactive object
 #'    \itemize{
@@ -97,21 +135,17 @@
 #'    dependency on other objects.
 #'    reactive relationship.
 #'    \itemize{
-#'      \item{\code{0}: } {
-#'      
-#'      Value that is actually determined by reactive binding is 
-#'      overwritten and cached until on of the referenced objects is updated
-#'      again (which then also triggers an updated of the object and thus a
-#'      complete restoring of the reactive relationship)
-#'      }
-#'      \item{\code{1}: } {ignore without warning}
-#'      \item{\code{2}: } {ignore with Warning}
-#'      \item{\code{3}: } {stop with error}
+#'      \item{\code{0}: } {ignore without warning}
+#'      \item{\code{1}: } {ignore with Warning}
+#'      \item{\code{2}: } {stop with error}
 #'    }
 #' @param verbose \code{\link{logical}}.
 #'    \code{TRUE}: output certain status information;
 #'    \code{FALSE}: no status information.
-#' @template threedots
+#' @param ... Further arguments to be passed to subsequent functions/methods.
+#'    In particular, all environments of references that you are referring to
+#'    in the body of the binding function. 
+#'    See section \emph{Referenced environments}.
 #' @example inst/examples/setShinyReactive.r
 #' @seealso \code{
 #'     \link[reactr]{setReactiveS3}
@@ -124,16 +158,18 @@ setShinyReactive <- function(
     id,
     value = NULL,
     where = parent.frame(),
-    ## from `reactive()` //
+    ## From `reactive()` //
     quoted = FALSE, 
     label = NULL,
     domain = shiny:::getDefaultReactiveDomain(), 
+    ## Additional //
+    cache = TRUE,
     integrity = TRUE,
     push = FALSE,
     typed = FALSE,
     strict = c(0, 1, 2),
     strict_get = c(0, 1, 2),
-    strict_set = c(0, 1, 2, 3),
+    strict_set = c(0, 1, 2),
     verbose = FALSE,
     ...
   ) {
@@ -144,7 +180,7 @@ setShinyReactive <- function(
   strict_get <- as.numeric(match.arg(as.character(strict_get), 
                                  as.character(c(0, 1, 2))))
   strict_set <- as.numeric(match.arg(as.character(strict_set), 
-                                 as.character(c(0, 1, 2, 3))))
+                                 as.character(c(0, 1, 2))))
   
   ## Ensure that shiny let's us do this //
   shiny_opt <- getOption("shiny.suppressMissingContextError")
@@ -178,26 +214,29 @@ setShinyReactive <- function(
 # print(refs_pull)    
   }
 
-  o <- Observable3$new(
+  o <- ReactiveShinyObject$new(
     id = id, 
     value = if (!is_reactive) value,
     where = where,
     refs_pull = refs_pull,
     func = func, 
     label = label, 
-    domain = domain
+    domain = domain,
+    cache = cache
   )
 # print(ls(o$.refs_pull))
   if (is_reactive) {
     shiny:::registerDebugHook(".func", o, "Reactive")
   }
 
-  ## Class //
-  o$.class <- class(o$.value)
-  ## Register //
-  o$.register(overwrite = TRUE)
+#   ## Class //
+#   o$.class <- class(o$.value)
+#   ## Register //
+#   o$.register(overwrite = TRUE)
   ## Check prerequisites //
   checkReactivityPrerequisites(input = o, strict = strict)
+#   ## Check for bi-directional references //
+#   o$.hasBidirectional(system_wide = TRUE)
   ## Push //
   if (push) {
     o$.registerPushReferences()
@@ -250,31 +289,39 @@ setShinyReactive <- function(
           ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
           ##--------------------------------------------------------------------   
           
-          if (o$.hasPullReferences()) {
-# print(ls(o$.refs_pull))            
-            needs_update <- sapply(ls(o$.refs_pull), function(ref_uid) {
-# message("ref_uid:")
-# print(ref_uid)
-              ## Ensure integrity //
-              if (integrity) {
-                o$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
+          if (cache) {
+            if (o$.hasPullReferences()) {
+              needs_update <- sapply(ls(o$.refs_pull), function(ref_uid) {
+                ## Ensure integrity //
+                if (integrity) {
+                  o$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
+                }
+                ## Compare checksums //
+                (needs_update <- o$.compareChecksums(
+                  ref_uid = ref_uid, 
+                  strict_get = strict_get,
+                  verbose = verbose
+                ))
+              })
+              ## Handle scope of update cycle //
+              if (needs_update && o$.blockUpdate(verbose = verbose)) {
+                needs_update <- FALSE
               }
-              ## Compare checksums //
-              (needs_update <- o$.compareChecksums(
-                ref_uid = ref_uid, 
-                strict_get = strict_get,
-                verbose = verbose
-              ))
-            })
+              if (o$.needs_update) {
+                needs_update <- TRUE
+              }
+            } else {
+  #             needs_update <- FALSE
+              needs_update <- o$.needs_update
+            }
           } else {
-            needs_update <- FALSE
+            needs_update <- TRUE
           }
         
           ##----------------------------------------------------------------
           ## Actual update or initial caching //
           ##----------------------------------------------------------------
-# message("needs_update:")
-# print(needs_update)  
+
           if (is_reactive && (any(needs_update) || !o$.has_cached)) {
             if (verbose) {
               if (!o$.has_cached) {
@@ -285,36 +332,22 @@ setShinyReactive <- function(
               }
             }
             
-            ## Cache new value //
-# message(".has_cached:")
-# print(o$.has_cached)            
+            ## Cache new value //        
             o$.value <<- withRestarts(
               tryCatch(
                 {     
-                  ## Handle predence of cached values vs. calling binding
-                  ## functions in situations where bi-directional 
-                  ## relationships exist, the value of one object has 
-                  ## been **explicitly** set but then the **other** object
-                  ## was called before the object itself was called.
-                  ## Withough this `.force_cached` mechanism, the explicit
-                  ## setting would be overwritten as the request of the
-                  ## other object would trigger the binding function of 
-                  ## this object and thus the explicit change would be lost
-                  if (o$.has_cached && o$.force_cached) {
-                    out <- o$.value
-                  } else {                  
-                    if (o$.invalidated) {                      
-                      out <- o$getValue()
-                    } else {
-                      out <- o$.updateValue()
-                    }
-## TODO: issue #20        
-                    o$.force_cached <- FALSE
+                  if (o$.invalidated) {                      
+                    out <- o$getValue()
+                  } else {
+                    out <- o$.updateValue()
                   }
-                  
-                  
-                  o$.condition <<- NULL
-                  o$.has_cached <<- TRUE
+## TODO: issue #20        
+
+                  ## Object status updates //
+                  o$.condition <- NULL                                    
+                  o$.has_cached <- TRUE
+                  o$.needs_update <- FALSE
+
                   out 
                 ## For debugging/testing purposes 
   #                     stop("Intentional update fail"),
@@ -357,6 +390,13 @@ setShinyReactive <- function(
             ## Update fields //
             o$.computeChecksum()
           }
+  
+          ## Object statue updates //
+          o$.caller <- o
+          ## --> after an calling cycle is complete, the caller field
+          ## can be reset so that for "self-requests" everything is handled 
+          ## appropriately.
+          o$.is_modcycle_complete <- TRUE
         } else {
         
           ##--------------------------------------------------------------------
@@ -371,10 +411,11 @@ setShinyReactive <- function(
           if (o$.hasPullReferences()) {
             if (strict_set == 0) {
               o$.value <<- v    
-              o$.force_cached <- TRUE
+              if (!o$.has_bidir) {
+                o$.needs_update <- TRUE
+              }
+              o$.is_modcycle_complete <- FALSE
             } else if (strict_set == 1) {
-              ## Do nothing //
-            } else if (strict_set == 2) {
               conditionr::signalCondition(
                 call = substitute(
                   assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
@@ -391,7 +432,7 @@ setShinyReactive <- function(
                 ns = "reactr",
                 type = "warning"
               )
-            } else if (strict_set == 3) {
+            } else if (strict_set == 1) {
               conditionr::signalCondition(
                 call = substitute(
                   assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
@@ -417,7 +458,8 @@ setShinyReactive <- function(
           o$.computeChecksum()
           
           ## Push //
-          if (  o$.must_push &&
+          if (  cache && 
+                o$.must_push &&
                 o$.hasPushReferences() && 
                 !o$.has_pushed && 
                 !o$.is_running_push

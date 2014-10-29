@@ -8,11 +8,19 @@
 ## In parent environment (parent.frame()) //
 ##------------------------------------------------------------------------------
 
-## NOTE
+## NOTE:
 ## Be careful what you do as this alters objects in .GlobalEnv due to 
 ## the default value of `where` being equal to  `parent.frame()`!
 
+## Set reactive object that can be referenced by others //
 setReactiveS3(id = "x_1", value = 10)
+
+## Set reactive object that has a reactive binding to 'x_1' //
+## NOTE:
+## All the comments in `function()` below are just to tell you exactly what's
+## going on. They are **not** required (see below/next section for much more 
+## concise forms for specifying the binding functions)
+
 setReactiveS3(id = "x_2", 
   value = function() {
     ########################################
@@ -59,28 +67,37 @@ setReactiveS3(id = "x_2",
     ref_1 * 2
   }
 )
+
+## Inspect //
 x_1
 x_2
+
+## Modification of `x_1` and implications on `x_2` //
 (x_1 <- 50)
 x_2
-## --> update
+## --> update according to binding function
 x_2
 ## --> cached value, no update
+## For subsequent requests of `x_2` and as long as `x_1` has not changed
+## again it is safe to return the value that has been cached after the last
+## update cycle was completed --> possible efficiency increase for more 
+## situations where binding functions are more complex or the amount of data 
+## stored in referenced objects is significantly big. 
 
-## Explicit setting of object that actually "only" has a reactive
-## binding to another variable (no bi-directionality)
+## Trying to explicit change the value of an object that has one-directionally
+## references another object (i.e. no bi-directionality)
 x_2 <- 500
 x_2
-## --> currently this passes the prerequisite check which might lead to 
-## system ambiguities.
-## This is already addressed in GitHub issue #5 and subject to change in 
-## future releases
+## --> in case `strict_set = 0` (default) this is gracefully disregarded. 
+## Otherwise a warning or an error is issued:
 
-x_1 <- 100
-## --> once the referenced variable is updated, the reactive binding
-## kicks in again
-x_2
-## --> update
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
+              strict_set = 1)
+try(x_2 <- 500)
+
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
+              strict_set = 2)
+try(x_2 <- 500)
 
 ## Clean up //
 removeReactive("x_1")
@@ -97,6 +114,11 @@ x_1 <- 20
 x_2
 try(x_1 <- "hello world")
 
+## Overwriting initial `NULL` values is fine //
+setReactiveS3(id = "x_1", typed = TRUE)
+x_1
+(x_1 <- "hello world")
+
 ## Clean up //
 removeReactive("x_1")
 removeReactive("x_2")
@@ -105,86 +127,99 @@ removeReactive("x_2")
 ## Verbose //
 ##------------------------------------------------------------------------------
 
+## To better understand what's actually going on below the surface and how 
+## the caching mechanism works, you can set `verbose = TRUE`
+
 setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", verbose = TRUE)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", 
+              verbose = TRUE)
 
 x_1 <- 20
 x_2
+## --> Object UID: 
+##     The only required information to compute an object's UID are its name/ID
+##     and the environment that it has been assigned to. Thus 
+##     `computeObjectUid("x_2", where = .GlobalEnv)` yields:
+##     ab22808532ff42c87198461640612405
+## --> UID of calling object:
+##     Object `x_2` "calls itself". While this may seem obvious, there are 
+##     situations where objects are called by **other** objects (especially in
+##     case of bi-directionally referenced objects)
+## --> Information about modified references:
+##     We are informed that the value of the reference with the UID 
+##     2fc2e352f72008b90a112f096cd2d029 (corresponds to 
+##     `computeObjectUid("x_1", where = .GlobalEnv)`) has changed
+##     --> `x_2` needs to be updated by executing its binding function.
+## --> Checksum comparision:
+##     In addition to the information which reference has change, we are 
+##     presented the actual checksums of the referenced object's visible value:
+##     1) The one that `x_2` stored after completing the last update 
+##        (or initialization) cycle
+##     2) The current checksum of `x_1` after the visible value has been changed
+##        from `10` to `20`
+##     Checksums are simply computed by running `digest::digest({value}) with 
+##     {value} being the visible value of a reactive object.
+## --> Information that update will be performed ("Updating ...")
+
 x_2
+## --> cached value, no update since `x_1` has not changed again
 x_1 <- 30
 x_2
+## --> update according to binding function
 
 ## Clean up //
 removeReactive("x_1")
 removeReactive("x_2")
-
-##------------------------------------------------------------------------------  
-## No cache //
-##------------------------------------------------------------------------------
-
-## As no caching is required, there is no need to keep a registry either
-## --> more lightweight and thus faster, but features like "bi-directional 
-## bindings" and "push updates" are not available that way.
-
-setReactiveS3(id = "x_1", value = 10, cache = FALSE)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", cache = FALSE)
-
-showRegistry()
-## --> empty
-
-x_1 <- 20
-x_2
-
-## Clean up //
-removeReactive("x_1")
-removeReactive("x_2")
-
-## No bi-directional bindings possible //
-## --> results in infinite recursion
-try(setReactiveS3(id = "x_1", value = function() "object-ref: {id: x_2}", 
-                  cache = FALSE))
-try(setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", 
-                  cache = FALSE))
 
 ##------------------------------------------------------------------------------  
 ## In custom environment //
 ##------------------------------------------------------------------------------
 
-where <- new.env()
+## NOTE:
+## It is recommended **not** to use the name/ID `where` when explicitly 
+## stating environments as this might lead to inconsitencies with the argument 
+## `where` of `setReactiveS3()`. 
+## Also, even though it might often not be required due to the lexical scoping
+## mechanism of R, it is probably a good idea to pass along all objects 
+## denoting explicitly to use environments as additional arguments of 
+## `setReactiveS3()` as that way they can unambigously be referenced inside
+## the function and all of its helper functions.
+
+where_1 <- new.env()
 
 ## Set variable that others can have reactive bindings to //
-setReactiveS3(id = "x_1", value = 10, where = where)
+setReactiveS3(id = "x_1", value = 10, where = where_1)
 
 ## Set variable that has reactive binding to `x_1`
 setReactiveS3(id = "x_2", 
   value = function() {
-    "object-ref: {id: x_1, as: ref_1}"
+    "object-ref: {id: x_1, where: where_1, as: ref_1}"
     ref_1 * 2
   }, 
-  where = where
+  where = where_1, where_1 = where_1
 )
 
 ## Get current variable value //
-where$x_1
-where$x_2
-## --> value cached at initialization is used; no update as `x_1` in `where`
+where_1$x_1
+where_1$x_2
+## --> value cached at initialization is used; no update as `x_1` in `where_1`
 ## has not changed yet
-(where$x_1 <- 100)
-## --> `x_1` in `where` is updated
-where$x_2
-## --> referenced value for `x_1` in `where` changed --> update and re-cache
-where$x_2
+(where_1$x_1 <- 100)
+## --> `x_1` in `where_1` is updated
+where_1$x_2
+## --> referenced value for `x_1` in `where_1` changed --> update and re-cache
+where_1$x_2
 ## --> cached value is used until reference changes again
-where$x_2
-where$x_2
-(where$x_1 <- 50)
-where$x_2
-## --> referenced value for `x_1` in `where` changed --> update and re-cache
+where_1$x_2
+where_1$x_2
+(where_1$x_1 <- 50)
+where_1$x_2
+## --> referenced value for `x_1` in `where_1` changed --> update and re-cache
 
 ## Clean up //
-removeReactive("x_1", where)
-removeReactive("x_2", where)
-suppressWarnings(rm(where))
+removeReactive("x_1", where_1)
+removeReactive("x_2", where_1)
+suppressWarnings(rm(where_1))
 
 ################################################################################
 ## Reactive scenarios
@@ -224,7 +259,6 @@ getReactive("x_2")
 ## --> cached value
 x_2 
 ## --> cached value
-
 
 ##------------------------------------------------------------------------------
 ## Scenario 1: one-directional (2)
@@ -380,6 +414,7 @@ setReactiveS3(id = "x_2", value = function() {
 ## function
 x_1
 x_2
+## Addressed in issue #11
 
 ## Setting `x_1`:
 x_1 <- 10
@@ -412,30 +447,36 @@ removeReactive("x_2")
 ##   `A` uses transformed value of `B` and `B` uses transformed value of `A`. 
 ##   The binding functions used result in a **non-steady state**.
 
+## It's better to use `verbose = TRUE` to comprehend what's going on
+
 setReactiveS3(id = "x_1", value = function() {
   ## object-ref: {id: x_2}
   x_2 * 2
-})
+}, verbose = TRUE)
 setReactiveS3(id = "x_2", value = function() {
   ## object-ref: {id: x_1}
   x_1 * 4
-})
+}, verbose = TRUE)
 
-## Setting `x_1`:
+## Setting value of `x_1`:
 x_1 <- 10
 x_1
-## --> 10 * 4 * 2 = 80
+## --> 10 * 4 * 2 = 80 (calling graph: x_1:x_2:x_1[=10]*4:x_2[=40]*2[=80])
 x_2
-## --> 80 * 4 = 320
+## --> 80 * 4 = 320 (calling graph: x_2:x_1[=80]*4[=320])
 x_1
-## --> 320 * 2 = 640
+## --> 320 * 2 = 640 (calling graph: x_1:x_2[=320]*2[=620])
 x_2
-## --> 640 * 4 = 2560
+## --> 640 * 4 = 2560 (calling graph: x_2:x_1[=620]*4[=2560])
 x_1
-## --> 2560 * 2 = 5120
-## --> we never reach a steady state
+## --> 2560 * 2 = 5120 (calling graph: x_1:x_2[=2560]*2[=5120])
+## --> as each object value request results in the respective binding functions
+## to be executed, we never reach a steady state
 
-## Setting `x_2`:
+## Note that due to caching and checksum comparision we never enter an 
+## "infinite recursion" situation
+
+## Setting value of `x_2`:
 x_2 <- 1
 x_2
 x_1
@@ -448,13 +489,18 @@ x_1
 removeReactive("x_1")
 removeReactive("x_2")
 
+################################################################################
+## Additional features / misc //
+################################################################################
+
 ##------------------------------------------------------------------------------
 ## Pushing
 ##------------------------------------------------------------------------------
 
 ## The caching mechanism in combination with the registry mechanism used in
-## this package allows "push updates", i.e. actively propagating system state
-## changes to all objects that are referencing a certain system state.
+## this package allows "push updates", i.e. the **active** propagation of 
+## state changes throught the systems, i.e. to all objects that are 
+## referencing an object that stores a certain system state.
 
 setReactiveS3(id = "x_1", value = 10)
 setReactiveS3(
@@ -462,7 +508,7 @@ setReactiveS3(
   value = function() {
     ## object-ref: {id: x_1}
     tmp <- x_1 * 2
-    message(paste0("Reference `x_1` changed: ", tmp))
+    message(paste0("[", Sys.time(), "] I'm `x_2`and my reference `x_1` has changed: ", x_1))
     tmp
   },
   push = TRUE
@@ -475,19 +521,23 @@ x_2
 ## The difference lies in the way changes of `x_1` are propagated:
 ## Up until now, objects that reference other objects would only be notified 
 ## of changes in their references in a "pull manner": 
-## they would not be updated until explicitly requested.
-## However, when using `pull = TRUE`, whenever an object that is referenced in
-## other objects (i.e. `x_1`) changes, it actually calls all of its push 
-## references (i.e. `x_2`), i.e. it is "pushing" the change throughout the 
-## system. 
+## they would not be updated until they are explicitly requested and thus their
+## binding functions are executed, which in turn would "pull" the change of 
+## referenced objects into the object.
+## Now, when using `pull = TRUE`, whenever an object that is referenced in
+## other objects (i.e. `x_1`) changes, it actually calls **all** of its registered
+## push references (i.e. `x_2`) and thus "pushing" its change throughout the 
+## entire system. 
 
 x_1 <- 100
 ## --> note that we **did not** request `x_2` explicitly, yet its binding
 ## function was executed by `x_1` as we've registered `x_2` to be an object
 ## that changes can/should be actively pushed to.
+x_1 <- 200
+x_1 <- 300
 
 x_2
-## --> already the cached value
+## --> the cached value corresponding to the last push cycle
 
 ## Clean up //
 removeReactive("x_1")
@@ -497,8 +547,16 @@ removeReactive("x_2")
 ## Using reactive bindings in more complex data structure //
 ##------------------------------------------------------------------------------
 
-## This resembles what is already possibly via the use of Reference Classes
-## or R6 Classes (see argument `active` in `R6Class()`)
+## This resembles what is already possible and actually better implemented 
+## via the use of Reference Classes or R6 Classes 
+## (see argument `active` in `R6::R6Class()`).
+## However, it might be useful in situations where you don't want or cannot 
+## use either Reference Classes or R6 Classes.
+# 
+## Note, however, that the use of the informal S3 class `ReactiveObjectS3` is
+## subject to change in future releases as it was introduced primarily for 
+## rapid prototyping.
+
 x_1 <- new.env()  
 x_2 <- new.env()  
 
@@ -549,102 +607,350 @@ removeReactive("x_1")
 removeReactive("x_2")
 removeReactive("x_3")
 
+##------------------------------------------------------------------------------  
+## Disabled caching //
 ##------------------------------------------------------------------------------
+
+## Caching can be disabled by `cache = FALSE` and should theoretically result
+## in slightly faster runtimes for get and set operations as less code needs
+## to be executed (maintaining the registry, comparing checksums etc.).
+## However, current profiling paradoxically does not reinforce this hypothesis 
+## for all operations yet (see profiling section).
+## Addressed in issue #23 (https://github.com/Rappster/reactr/issues/23).
+
+## NOTE:
+## Features "bi-directional bindings" and "push updates" are not available 
+## when the caching mechanism is disabled.
+
+setReactiveS3(id = "x_1", value = 10, cache = FALSE)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", 
+              cache = FALSE)
+
+showRegistry()
+## --> empty as there is no need to maintain a registry if caching is disabled
+
+x_1 <- 20
+x_2
+x_1 <- 30
+x_2
+
+## Bi-directional bindings are not possible //
+removeReactive("x_1")
+removeReactive("x_2")
+setReactiveS3(id = "x_1", value = function() "object-ref: {id: x_2}", 
+              cache = FALSE)
+## NOTE:
+## Trying to specify a bi-directional binding already fails before actually
+## reaching an "infinite recursion" situation. This is due to the internal 
+## mechanics of the implemented reactivity framework.
+
+## Whe could illustrate what happens if the step actually had passed:
+x_2 <- NULL
+setReactiveS3(id = "x_1", value = function() "object-ref: {id: x_2}", 
+              cache = FALSE)
+setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", 
+              cache = FALSE)
+## --> the actual error message is a bit off still as I couldn't figure out
+## how to "exit early" from a `withRestarts(tryCatch(...))` construct. 
+## But for the moment, it should be informative enough.
+## Addressed in issue #24 (https://github.com/Rappster/reactr/issues/24).
+
+## Push updates are not possible //
+removeReactive("x_1")
+removeReactive("x_2")
+setReactiveS3(id = "x_1", value = 10, cache = FALSE)
+setReactiveS3(
+  id = "x_2", 
+  value = function() {
+    "object-ref: {id: x_1}"
+    message(paste0(Sys.time(), ": ", x_1))
+    x_1
+  }, 
+  cache = FALSE, 
+  push = TRUE
+)
+
+x_1 
+x_2
+(x_1 <- 20)
+## --> no push update for `x_2`
+x_2
+## --> `x_2` needs to pull its updates --> push disabled as caching is disabled
+
+## Clean up //
+removeReactive("x_1")
+removeReactive("x_2")
+
+##------------------------------------------------------------------------------  
+## Class used //
+##------------------------------------------------------------------------------
+
+## Instances of class `ReactiveObject.S3` provide the invisible object structure
+## that powers the reactivity mechanism. 
+## The visible part only consist in the value of field `.value`, 
+
+setReactiveS3(id = "x_1", value = 10)
+(inst <- getFromRegistry("x_1"))
+class(inst)
+inst$.value
+removeReactive("x_1")
+
+################################################################################
 ## Profiling //
+################################################################################
+
+##------------------------------------------------------------------------------
+## Microbenchmark (1) //
 ##------------------------------------------------------------------------------
 
 require("microbenchmark")
 
+## Session info //
+
+# > sessionInfo()
+# R version 3.1.1 (2014-07-10)
+# Platform: x86_64-w64-mingw32/x64 (64-bit)
+# 
+# locale:
+# [1] LC_COLLATE=German_Germany.1252  LC_CTYPE=German_Germany.1252   
+# [3] LC_MONETARY=German_Germany.1252 LC_NUMERIC=C                   
+# [5] LC_TIME=German_Germany.1252    
+# 
+# attached base packages:
+# [1] stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+# [1] microbenchmark_1.4-2 reactr_0.1.8         testthat_0.9        
+# 
+# loaded via a namespace (and not attached):
+#  [1] colorspace_1.2-4    conditionr_0.1.3    devtools_1.6.0.9000 digest_0.6.4       
+#  [5] ggplot2_1.0.0       grid_3.1.1          gtable_0.1.2        htmltools_0.2.6    
+#  [9] httpuv_1.3.0        MASS_7.3-33         mime_0.2            munsell_0.4.2      
+# [13] plyr_1.8.1          proto_0.3-10        R6_2.0              Rcpp_0.11.3        
+# [17] reshape2_1.4        RJSONIO_1.3-0       scales_0.2.4        shiny_0.10.2.1     
+# [21] stringr_0.6.2       tools_3.1.1         xtable_1.7-4        yaml_2.1.13        
+# [25] yamlr_0.4.10    
+
+## Making sure that all objects are removed from `.GlobalEnv`
+rm(list = ls(environment(), all.names = TRUE))
+
 resetRegistry()
 object.size(getRegistry())
-rm(list = ls(environment(), all.names = TRUE))
-memory.size(max = FALSE)
-where <- environment()
+## --> cost of having an empty registry is 56 bytes
+
+## NOTE:
+## Due to some strange behavior with respect to environments, you might need
+## to run this function a couple of times until no error is issued anymore!
+
 res <- microbenchmark(
-  "set/x_1/setReactiveS3" = setReactiveS3(id = "x_1", value = 10, where = where),
-  "set/x_2/assign" = assign("x_2", value = 10, envir = where),
-  "get x_1" = get("x_1"),
-  "get x_2" = get("x_2"),
-  "set/x_3/setReactiveS3" = setReactiveS3(
-    id = "x_3", 
-    value = function() {
-      ## object-ref: {id: x_1}
-      x_1 * 2
-    }
-  ),
-  "get x_3" = get("x_3"),
-  "change x_1" = assign("x_1", 100),
-  "change x_2" = assign("x_2", 100),
-  "get x_3 (2)" = get("x_3")
-)
-memory.size(max = FALSE)
-
-## Object sizes //
-object.size(getRegistry())
-object.size(x_1)
-object.size(x_2)
-object.size(x_3)
-
-res
-# Unit: microseconds
-#                   expr      min        lq       mean    median        uq      max neval
-#  set/x_1/setReactiveS3 1069.604 1220.6270 1347.94280 1281.6285 1411.9235 2926.306   100
-#         set/x_2/assign    1.184    2.3690    2.81935    2.9610    3.5540    6.515   100
-#                get x_1   55.672   66.3320   80.83052   71.9590   91.2070  179.452   100
-#                get x_2    1.184    2.3695   18.85741    2.9620    4.1460 1528.004   100
-#  set/x_3/setReactiveS3 5121.775 5922.7935 6320.13374 6164.4315 6563.6075 9162.103   100
-#                get x_3  175.898  201.0690  301.58565  228.3125  291.9795  784.138   100
-#             change x_1  194.258  213.2100  264.50488  235.4195  275.6930 1605.589   100
-#            get x_3 (2)  175.306  206.6950  333.85734  241.3425  366.6030  990.834   100
-
-rm(list = ls(environment(), all.names = TRUE))
-memory.size(max = FALSE)
-where <- environment()
-res <- microbenchmark(
-  "set/x_1/setReactiveS3" = setReactiveS3(id = "x_1", value = 10, where = where,
-                                          cache = FALSE),
-  "set/x_2/assign" = assign("x_2", value = 10, envir = where),
-  "get x_1" = get("x_1"),
-  "get x_2" = get("x_2"),
+  "set/x_1/setReactiveS3" = setReactiveS3(id = "x_1", value = 10, where = environment()),
+  "set/x_2/regular" = assign("x_2", value = 10, envir = environment()),
+  "get x_1" = get("x_1", envir = environment()),
+  "get x_2" = get("x_2", envir = environment()),
   "set/x_3/setReactiveS3" = setReactiveS3(
     id = "x_3", 
     value = function() {
       ## object-ref: {id: x_1}
       x_1 * 2
     },
-    cache = FALSE,
-    where = where
+    where = environment()
   ),
-  "get x_3" = get("x_3"),
+  "get x_3" = get("x_3", envir = environment()),
   "change x_1" = assign("x_1", 100),
   "change x_2" = assign("x_2", 100),
-  "get x_3 (2)" = get("x_3")
+  "get x_3 (2)" = get("x_3", envir = environment())
 )
-memory.size(max = FALSE)
+
+res
+# Unit: microseconds
+#                   expr      min       lq       mean    median        uq      max neval
+#  set/x_1/setReactiveS3 1188.646 1319.829 1453.20424 1403.6330 1499.2815 3024.621   100
+#        set/x_2/regular    1.185    2.370    3.86766    3.5540    4.1460   31.390   100
+#                get x_1   77.585   91.799  107.61211   97.1290  111.0470  286.650   100
+#                get x_2    1.185    2.369    3.94463    3.5530    3.5540   64.555   100
+#  set/x_3/setReactiveS3 5477.721 6251.792 6687.43914 6435.0930 6818.8710 8986.210   100
+#                get x_3  236.308  269.178  414.77674  295.2375  408.6530 1044.730   100
+#             change x_1  201.958  226.536  257.65281  242.2310  270.3625  468.470   100
+#             change x_2    1.184    2.961    3.71369    3.5540    4.1460   18.952   100
+#            get x_3 (2)  236.900  270.659  427.25543  294.0525  404.2110 2306.815   100
+
+## Costs //
+## 1) Setting: simple `setReactiveS3()` compared to regular assignment:
+1403.6330/3.5540
+## --> about 395 times slower, but nominal time is still quite small:
+1403.6330/10^9 ## in seconds
+##
+## 2) Setting: one-directional `setReactiveS3()` compared to regular assignment:
+6435.0930/3.5540
+## --> about 1800 times slower, but nominal time is still quite small:
+6435.0930/10^9 ## in seconds
+##
+## 3) Update: reactive object compared to regular object:
+242.2310/3.5540
+## --> about 70 times slower, but nominal time is still quite small:
+242.2310/10^9 ## in seconds
+##
+## 4) Getting: simple reactive object compared to regular object:
+97.1290/3.5530
+## --> about 27 times slower, but nominal time is still quite small:
+97.1290/10^9 ## in seconds
+##
+## 5) Getting: referencing reactive object compared to regular object:
+295.2375/3.5530
+## --> about 83 times slower, but nominal time is still quite small:
+295.2375/10^9 ## in seconds
+
+##------------------------------------------------------------------------------
+## Memory //
+##------------------------------------------------------------------------------
+
+## Reactive objects //
+rm(list = ls(environment(), all.names = TRUE))
+resetRegistry()
+
+(memsize_1 <- memory.size(max = FALSE))
+## --> total memory used before setting reactive objects
+
+setReactiveS3(id = "x_1", value = 10)
+setReactiveS3(
+  id = "x_2", 
+  value = function() {
+    ## object-ref: {id: x_1}
+    x_1 * 2
+  }
+)
+
+(memsize_2 <- memory.size(max = FALSE))
+## --> total memory used after setting reactive objects
+
+## Difference:
+memsize_2 / memsize_1
+## --> about 0,1 % increase 
+
+## Object sizes //
+object.size(getRegistry())
+## --> still 56 bytes (?)
+object.size(getFromRegistry("x_1"))
+## --> 352 bytes
+object.size(getFromRegistry("x_2"))
+## --> 352 bytes
+
+object.size(x_1)
+## --> 48 bytes
+object.size(x_2)
+## --> 48 bytes
+
+##----------
+
+## Regular objects //
+rm(list = ls(environment(), all.names = TRUE))
+resetRegistry()
+
+(memsize_1 <- memory.size(max = FALSE))
+## --> total memory used before setting reactive objects
+
+## Assign:
+x_1 <- 10
+x_2 <- x_1 * 2
+
+(memsize_2 <- memory.size(max = FALSE))
+## --> total memory used after setting reactive objects
+
+## Difference:
+memsize_2 / memsize_1
+## --> about 0,01 % increase
+
+object.size(x_1)
+## --> 48 bytes
+object.size(x_2)
+## --> 48 bytes
+
+##------------------------------------------------------------------------------
+## Microbenchmark (2) //
+##------------------------------------------------------------------------------
+
+require("microbenchmark")
+
+rm(list = ls(environment(), all.names = TRUE))
+resetRegistry()
+
+## NOTE:
+## Due to some strange behavior with respect to environments, you might need
+## to run this function a couple of times until no error is issued anymore!
+
+res <- microbenchmark(
+  "set/x_1/setReactiveS3" = setReactiveS3(id = "x_1", value = 10, cache = FALSE),
+  "set/x_2/regular" = assign("x_2", value = 10, envir = environment()),
+  "get x_1" = get("x_1", envir = environment()),
+  "get x_2" = get("x_2", envir = environment()),
+  "set/x_3/setReactiveS3" = setReactiveS3(
+    id = "x_3", 
+    value = function() {
+      ## object-ref: {id: x_1}
+      x_1 * 2
+    },
+    cache = FALSE
+  ),
+  "get x_3" = get("x_3", envir = environment()),
+  "change x_1" = assign("x_1", 100),
+  "change x_2" = assign("x_2", 100),
+  "get x_3 (2)" = get("x_3", envir = environment())
+)
+
 res
 
 # Unit: microseconds
 #                   expr      min        lq       mean    median        uq      max neval
-#  set/x_1/setReactiveS3 1097.439 1146.0040 1257.89191 1199.8990 1309.7610 2812.004   100
-#         set/x_2/assign    1.184    2.3690    2.97928    2.9610    3.5540   17.176   100
-#                get x_1   15.991   19.5445   22.79001   21.3215   24.5785   42.050   100
-#                get x_2    1.184    2.3690    3.06213    2.9610    2.9620   18.952   100
-#  set/x_3/setReactiveS3 4514.130 4701.8735 5092.67555 5012.2125 5332.9160 7096.932   100
-#                get x_3  309.747  334.3250  364.77293  349.7240  383.1855  512.296   100
-#             change x_1  194.850  212.9140  247.34757  220.9095  245.1915 1711.603   100
-#            get x_3 (2)  310.931  331.6610  373.98843  347.3550  370.1570 1894.608   100
+#  set/x_1/setReactiveS3 1204.637 1266.2310 1396.94640 1327.2320 1408.0750 3191.635   100
+#        set/x_2/regular    1.777    2.9610    3.68405    3.5540    4.1460    7.699   100
+#                get x_1   33.167   36.7190   43.04497   39.6810   45.6040   76.993   100
+#                get x_2    1.185    2.3690    3.42347    3.5535    4.1460   18.360   100
+#  set/x_3/setReactiveS3 4852.305 5195.5135 5411.78583 5334.3965 5446.6280 7057.252   100
+#                get x_3  368.972  391.4775  428.66495  416.0560  448.3335  804.868   100
+#             change x_1  207.880  220.6130  278.05576  235.4200  253.7795 2272.464   100
+#             change x_2    1.777    2.9620    3.67219    3.5540    4.1460   10.069   100
+#            get x_3 (2)  364.826  390.2930  443.53041  416.9445  451.5910 1982.854   100
 
-
-#   "set x_3" = setShinyReactive(id = "x_3", value = 10, where = where),
-#   "get x_3" = get("x_3"),
-#   "set x_4" = setShinyReactive(id = "x_4", value = reactive(x_3 * 2), where = where),
-#   "get x_4" = get("x_4"),
-#   "set x_5" = assign("x_3", 10),
-#   "get x_5" = get("x_3"),
-#   control = list(order = "inorder")
-# )
-
-
+## Costs //
+## 1) Setting: simple `setReactiveS3()` compared to regular assignment:
+1327.2320/3.5540
+## --> about 375 times slower, but nominal time is still quite small:
+1327.2320/10^9 ## in seconds
+## 1.a) Compared to enabled caching:
+1403.6330/1327.2320
+## --> about 5 % faster
+##
+## 2) Setting: one-directional `setReactiveS3()` compared to regular assignment:
+5334.3965/3.5540
+## --> about 1500 times slower, but nominal time is still quite small:
+5334.3965/10^9 ## in seconds
+## 2.a) Compared to enabled caching:
+6435.0930/5334.3965
+## --> about 20 % faster
+##
+## 3) Update: reactive object compared to regular object:
+235.4200/3.5540
+## --> about 65 times slower, but nominal time is still quite small:
+235.4200/10^9 ## in seconds
+## 3.a) Compared to enabled caching:
+242.2310/235.4200
+## --> about 3 % faster
+##
+## 4) Getting: simple reactive object compared to regular object:
+39.6810/3.5530
+## --> about 10 times slower, but nominal time is still quite small:
+39.6810/10^9 ## in seconds
+## 4.a) Compared to enabled caching:
+97.1290/39.6810
+## --> about 2,5 times faster
+##
+## 5) Getting: referencing reactive object compared to regular object:
+416.0560/3.5530
+## --> about 115 times slower, but nominal time is still quite small:
+416.0560/10^9 ## in seconds
+## 5.a) Compared to enabled caching:
+295.2375/416.0560
+## --> about 30 % slower (!?)
 
 ##------------------------------------------------------------------------------
 ## References to environments //
@@ -714,20 +1020,29 @@ identical(env_2$env_1, env_1)
 ##             any. These in turn contain the referenced object`s checksum that is
 ##             used to determine if an update is necessary or not.
 
-## Hash registry //
+## Registry object/environment //
+resetRegistry()
 registry <- getRegistry()
 ls(registry)
+showRegistry()
+## --> currently empty 
 
+## Illustrating the role of the registry //
 setReactiveS3(id = "x_1", value = 10)
-ls(registry)
-uid_x_1 <- computeObjectUid(id = "x_1", where = environment())
-registry_x_1 <- registry[[uid_x_1]]
-ls(registry_x_1)
-registry_x_1$.id
-registry_x_1$.uid
-registry_x_1$.where
-registry_x_1[[uid_x_1]]
-## --> contains own registry value
+showRegistry()
+## --> Object with UID 2fc2e352f72008b90a112f096cd2d029 has been registered
+
+## Retrieve from registry //
+(reg_x_1 <- getFromRegistry("x_1"))
+## --> same as manually selecting the respective object from the registry
+## environment:
+registry[[computeObjectUid("x_1")]]
+
+ls(reg_x_1, all.names = TRUE)
+reg_x_1$.id
+reg_x_1$.uid
+reg_x_1$.where
+reg_x_1$.checksum
 
 setReactiveS3(
   id = "x_2", 
@@ -736,22 +1051,26 @@ setReactiveS3(
     x_1 * 2
   }
 )
-ls(registry)
+showRegistry()
 
-uid_x_2 <- computeObjectUid(id = "x_2", where = environment())
-registry_x_2 <- registry[[uid_x_2]]
-ls(registry_x_2)
-registry_x_2$.id
-registry_x_2$.uid
-registry_x_2$.where
-registry_x_2[[uid_x_2]]
-## --> contains own registry value
-registry_x_2[[uid_x_1]]
-## --> contains registry value of `x_1` in `.GlobalEnv`
+reg_x_2 <- getFromRegistry("x_2")
+ls(reg_x_2, all.names = TRUE)
+reg_x_2$.id
+reg_x_2$.uid
+reg_x_2$.where
+reg_x_2$.checksum
+ls(reg_x_2$.refs_pull)
+## --> pull references --> reference to `x_1` or UID 2fc2e352f72008b90a112f096cd2d029
+reg_x_1_through_x_2 <- reg_x_2$.refs_pull[["2fc2e352f72008b90a112f096cd2d029"]]
+## --> same as invisible object behind `x_1` or object with 
+## UID 2fc2e352f72008b90a112f096cd2d029 in registry:
+identical(reg_x_1, reg_x_1_through_x_2)
+## --> that way all references are always accessible which is quite handy
+## for a lot of situations, including push updates and integrity checks.
 
 ## Clean up //
-removeReactive(x_1)
-removeReactive(x_2)
+removeReactive("x_1")
+removeReactive("x_2")
 resetRegistry()
 
 }

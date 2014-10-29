@@ -40,7 +40,7 @@ uid_2 <- computeObjectUid(id = id_2, where = where)
 
 ## Inspect current state of registry //
 registry <- getRegistry()
-ls(registry)
+showRegistry()
 exists(uid_1, registry)
 exists(uid_2, registry)
 

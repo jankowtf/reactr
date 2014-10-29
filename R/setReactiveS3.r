@@ -59,13 +59,8 @@
 #' @param cache \code{\link{logical}}.
 #'    \code{TRUE}: use caching mechanism;
 #'    \code{FALSE}: no caching mechanism used.
-#'    Theoretically, \code{cache = FALSE} should result in less overhead 
-#'    (no registry) and faster processing of \code{get} and \code{set}  
-#'    operations for objects. However, the benchmark with respect to the 
-#'    processing of \code{get} and \code{set} operations are still 
-#'    ambiguous at this point (see profiling in examples).
-#'    Note that \emph{bi-directional bindings} and \emph{push propagation} of 
-#'    changes are only supported if \code{cache = TRUE}.
+#'    Note that features \emph{bi-directional bindings} and 
+#'    \emph{pushing changes} are only supported if \code{cache = TRUE}.
 #' @param integrity \code{\link{logical}}.
 #'    \code{TRUE}: ensures structural integrity of underlying reactive object
 #'    (instance of class \code{\link[reactr]{ReactiveObject.S3}}).
@@ -81,11 +76,13 @@
 #'    then trigger the execution of their binding functions 
 #'    (corresponds to a \strong{pull paradigm}).
 #' @param typed \code{\link{logical}}.
-#'    \code{TRUE}: checks class validity of assignment values to \code{value}
-#'    and throws an error if classes do not match or if the class of the 
-#'    assignment value does not inherit from the class of \code{value} at
-#'    initialization;
+#'    \code{TRUE}: checks class validity of assignment value specified via
+#'    \code{value} and throws an error if classes do not match or if the class 
+#'    of the assignment value does not inherit from the class of field value 
+#'    \code{.value} at initialization;
 #'    \code{FALSE}: no class check is performed.
+#'    Note that initial values of \code{NULL} are disregarded, i.e. each value
+#'    will be a valid value for overwriting \code{NULL} values in \code{.value}.
 #' @param strict \code{\link{numeric}}.
 #'    Relevant when initially setting a reactive object
 #'    \itemize{
@@ -113,16 +110,9 @@
 #'    dependency on other objects.
 #'    reactive relationship.
 #'    \itemize{
-#'      \item{\code{0}: } {
-#'      
-#'      Value that is actually determined by reactive binding is 
-#'      overwritten and cached until on of the referenced objects is updated
-#'      again (which then also triggers an updated of the object and thus a
-#'      complete restoring of the reactive relationship)
-#'      }
-#'      \item{\code{1}: } {ignore without warning}
-#'      \item{\code{2}: } {ignore with Warning}
-#'      \item{\code{3}: } {stop with error}
+#'      \item{\code{0}: } {ignore without warning}
+#'      \item{\code{1}: } {ignore with Warning}
+#'      \item{\code{2}: } {stop with error}
 #'    }
 #' @param verbose \code{\link{logical}}.
 #'    \code{TRUE}: output certain status information;
@@ -149,7 +139,7 @@ setReactiveS3 <- function(
     typed = FALSE,
     strict = c(0, 1, 2),
     strict_get = c(0, 1, 2),
-    strict_set = c(0, 1, 2, 3),
+    strict_set = c(0, 1, 2),
     verbose = FALSE,
     .debug = FALSE,
     ...
@@ -161,7 +151,7 @@ setReactiveS3 <- function(
   strict_get <- as.numeric(match.arg(as.character(strict_get), 
                                  as.character(c(0, 1, 2))))
   strict_set <- as.numeric(match.arg(as.character(strict_set), 
-                                 as.character(c(0, 1, 2, 3))))
+                                 as.character(c(0, 1, 2))))
   
   ## Check if regular value assignment or reactive function //
   if (!is.function(value)) {    
@@ -261,28 +251,6 @@ setReactiveS3 <- function(
     exists_visible = TRUE,
     cache = cache
   )
-#   obj$.class <- class(obj$.value)
-
-#   if (cache) {
-# #     reg_res <- obj$.register()
-#     reg_res <- obj$.register(overwrite = TRUE)
-#   }
-
-#   ## No self-references //
-# #   if (any(pull_refs == obj$.uid) && !reg_res) {
-#   if (any(sapply(pull_refs, "[[", "uid") == obj$.uid)) {    
-#     conditionr::signalCondition(
-#       condition = "NoSelfReferenceAllowed",
-#       msg = c(
-#         Reason = "tried to set a self-reference",
-#         ID = obj$.id,
-#         UID = obj$.uid,
-#         Location = capture.output(where)
-#       ),
-#       ns = "reactr",
-#       type = "error"
-#     )
-#   }
 
   ## Push //
   if (cache && push) {
@@ -304,7 +272,7 @@ setReactiveS3 <- function(
           ##--------------------------------------------------------------------
           ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
           ##--------------------------------------------------------------------            
-           
+
             if (cache) {
               ## Process references //
               if (obj$.hasPullReferences()) {
@@ -322,18 +290,23 @@ setReactiveS3 <- function(
                     obj$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
                   }
                   ## Compare checksums //
-                  (do_update <- obj$.compareChecksums(
+                  do_update <- obj$.compareChecksums(
                     ref_uid = ref_uid, 
                     strict_get = strict_get,
                     verbose = verbose
-                  ))
+                  )
+                  return(do_update)
                 })
-                if (obj$.out_of_sync) {
+                ## Handle scope of update cycle //
+                if (do_update && obj$.blockUpdate(verbose = verbose)) {
+                  do_update <- FALSE
+                }
+                if (obj$.needs_update) {
                   do_update <- TRUE
                 }
               } else {
 #                 do_update <- FALSE
-                do_update <- obj$.out_of_sync
+                do_update <- obj$.needs_update
               }
             } else {
               do_update <- TRUE
@@ -342,13 +315,9 @@ setReactiveS3 <- function(
             ##----------------------------------------------------------------
             ## Actual update //
             ##----------------------------------------------------------------
-# message("calling:")
-# print(ls(obj$.calling))
+
             if (is_reactive && (any(do_update) || !obj$.has_cached)) {
               if (verbose) {
-#                 if (obj$.out_of_sync) {
-#                   message("Out of sync ...")  
-#                 }
                 if (!obj$.has_cached) {
                   message("Initializing ...")  
                 }
@@ -361,34 +330,13 @@ setReactiveS3 <- function(
               obj$.value <<- withRestarts(
                 tryCatch(
                   {
-
-                    ## Handle predence of cached values vs. calling binding
-                    ## functions in situations where bi-directional 
-                    ## relationships exist, the value of one object has 
-                    ## been **explicitly** set but then the **other** object
-                    ## was called before the object itself was called.
-                    ## Withough this `.force_cached` mechanism, the explicit
-                    ## setting would be overwritten as the request of the
-                    ## other object would trigger the binding function of 
-                    ## this object and thus the explicit change would be lost
-#                     if (obj$.has_cached && obj$.force_cached) {
-# print(ls(obj$.refs_pull))
-# if(obj$.out_of_sync) print("out of sync")
-                    if (any(ls(obj$.calling) %in% ls(obj$.refs_pull))) {
-message("from cache")
-                      out <- obj$.value
-                    } else {
-                      out <- value()
-                      obj$.out_of_sync <- FALSE
-                    }
+                    out <- value()
                     
-                    ## Reset //
-                    rm(list = ls(obj$.calling), envir = obj$.calling)
-                    
-# message("Current value:")                      
-# print(out)
+                    ## Object state updates //
                     obj$.condition <- NULL
                     obj$.has_cached <- TRUE
+                    obj$.needs_update <- FALSE
+                    
                     out 
                   
                   ## For debugging/testing purposes 
@@ -405,8 +353,19 @@ message("from cache")
                   message(cond)
                   invokeRestart("muffleWarning")
                 },
-                ReactiveUpdateFailed = function(cond) {
-                  ## Custom condition //
+                ReactiveUpdateFailed = function(cond) {     
+                  signal <- FALSE
+                  if (!cache) { 
+                    if (grepl("object.*not found", conditionMessage(cond))) {
+                      msg <- paste0("caching disabled -->", conditionMessage(cond))
+                    } else if (grepl("evaluation nested too deeply.*infinite recursion", conditionMessage(cond))) {                
+                      message(conditionMessage(cond))
+                      msg <- "caching disabled --> infinite recursion"
+                      signal <- TRUE
+                    }
+                  } else {
+                    msg <- conditionMessage(cond)
+                  }
                   cond <- conditionr::signalCondition(
                     call = substitute(
                       get(x= ID, envir = WHERE, inherits = FALSE),
@@ -415,15 +374,16 @@ message("from cache")
                     condition = "AbortedReactiveUpdateWithError",
                     msg = c(
                       "Update failed",
-                      Reason = conditionMessage(cond),
+                      Reason = msg,
                       ID = obj$.id,
                       UID = obj$.uid,
                       Location = capture.output(where)
                     ),
                     ns = "reactr",
                     type = "error",
-                    signal = FALSE
+                    signal = signal
                   )
+                  
                   ## Transfer condition //
                   obj$.condition <<- cond
                   NULL
@@ -433,6 +393,13 @@ message("from cache")
               ## Update fields //
               obj$.computeChecksum()
             }
+            
+            ## Object statue updates //
+            obj$.caller <- obj
+            ## --> after an calling cycle is complete, the caller field
+            ## can be reset so that for "self-requests" everything is handled 
+            ## appropriately.
+            obj$.is_modcycle_complete <- TRUE
           } else {
           
           ##--------------------------------------------------------------------
@@ -448,10 +415,11 @@ message("from cache")
             if (obj$.hasPullReferences()) {
               if (strict_set == 0) {
                 obj$.value <<- v    
-                obj$.out_of_sync <- TRUE
+                if (!obj$.has_bidir) {
+                  obj$.needs_update <- TRUE
+                }
+                obj$.is_modcycle_complete <- FALSE
               } else if (strict_set == 1) {
-                ## Do nothing //
-              } else if (strict_set == 2) {
                 conditionr::signalCondition(
                   call = substitute(
                     assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
@@ -468,7 +436,7 @@ message("from cache")
                   ns = "reactr",
                   type = "warning"
                 )
-              } else if (strict_set == 3) {
+              } else if (strict_set == 2) {
                 conditionr::signalCondition(
                   call = substitute(
                     assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),

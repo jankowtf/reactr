@@ -20,7 +20,7 @@ class(getFromRegistry("x_1_c"))
 
 
 ##------------------------------------------------------------------------------
-## setShinyReactive --> Observable3 //
+## setShinyReactive --> ReactiveShinyObject //
 ##------------------------------------------------------------------------------
 
 setShinyReactive(id = "x_1", value = 10)

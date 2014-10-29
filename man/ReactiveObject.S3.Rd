@@ -3,21 +3,25 @@
 \alias{ReactiveObject.S3}
 \title{Class: ReactiveObject.S3}
 \usage{
-ReactiveObject.S3(.x, .references = character(), id = character(),
+ReactiveObject.S3(.x, pull_refs_list = character(), id = character(),
   uid = character(), value = NULL, where = parent.frame(),
   checksum = character(), cl = class(value), exists_visible = FALSE,
-  has_cached = FALSE, is_invalid = FALSE, registry = getRegistry(),
-  refs_pull = new.env(parent = emptyenv()), refs_push = new.env(parent =
-  emptyenv()), refs_checksum = new.env(parent = emptyenv()),
-  has_pull_refs = FALSE, has_push_refs = FALSE, must_push = FALSE,
-  has_pushed = FALSE, is_running_push = FALSE, wait = FALSE,
+  cache = TRUE, has_cached = FALSE, is_invalid = FALSE,
+  registry = getRegistry(), refs_pull = new.env(parent = emptyenv()),
+  refs_push = new.env(parent = emptyenv()), refs_checksum = new.env(parent =
+  emptyenv()), has_pull_refs = FALSE, has_push_refs = FALSE,
+  must_push = FALSE, has_pushed = FALSE, is_running_push = FALSE,
   func = NULL, condition = NULL)
 }
 \arguments{
 \item{.x}{\code{\link{ANY}}. An object of an arbitrary class whose class
-   attribute should be updated so that it becomes an instance of class
-   \code{ReactiveObject.S3}. Mainly intended for rapid prototyping
-   purposes}
+attribute should be updated so that it becomes an instance of class
+\code{ReactiveObject.S3}. Mainly intended for rapid prototyping
+purposes}
+
+\item{pull_refs_list}{\code{\link{list}}.
+        List of pull references as returned by functions that identify
+        pull references (e.g. \code{\link[yamlr]{processYaml}}.}
 }
 \value{
 Instance of class \code{ReactiveObject.S3}.
@@ -29,117 +33,129 @@ Class representing the system state (S3) and its constructor function.
 Instances of this class are implicitly created when calling
 \code{\link[reactr]{setReactiveS3}} and stored in the registry. Objects of
 this class can be thought of as the "hidden parts" of the reactive objects
-of whom actually only field \code{value} is visible to the user or other
+of whom actually only field \code{.value} is visible to the user or other
 functions consuming the reactive object.
 }
 \section{Fields}{
 
 \describe{
-\item{\code{id}}{\code{\link{character}}.
+\item{\code{.id}}{\code{\link{character}}.
 Object ID.
 Initial: \code{character()}.}
 
-\item{\code{uid}}{\code{\link{character}}.
+\item{\code{.uid}}{\code{\link{character}}.
 Object ID.
 Initial: \code{character()}.
-Automatically computed once \code{id} is
+Automatically computed once \code{.id} is
 specified:
-\code{digest::digest(list(id = id, where = capture.output(eval(where))))}.}
+\code{digest::digest(list(id = .id, where = capture.output(eval(.where))))}.}
 
-\item{\code{value}}{\code{\link{ANY}}.
+\item{\code{.value}}{\code{\link{ANY}}.
 Actual object value / cached value.
 Initial: \code{NULL}.}
 
-\item{\code{where}}{\code{\link{environment}}.
+\item{\code{.where}}{\code{\link{environment}}.
 Environment of reactive object.
 Initial: \code{parent.frame()}.}
 
-\item{\code{checksum}}{\code{\link{character}}.
-Object value checksum.
+\item{\code{.checksum}}{\code{\link{character}}.
+Checksum of visible value.
 Initial: \code{character()}.}
 
-\item{\code{cl}}{\code{\link{character}}.
-Class of object value. If strongly typed (argument \code{typed = TRUE} in
+\item{\code{.class}}{\code{\link{character}}.
+Class of visible object (\code{.value}). If strongly typed (argument \code{typed = TRUE} in
 \code{\link[reactr]{setReactiveS3}}, then this field is used to determine
 if an assignment value is valid or not.
 Initial: \code{character()}.}
 
-\item{\code{exists_visible}}{\code{\link{logical}}.
-Field for tracking if the visible object actually exists already or if this
-is a mere "empty container" in the registry.
+\item{\code{.exists_visible}}{\code{\link{logical}}.
+Field for tracking if the visible object value actually exists already
+or if this is a mere "empty container" in the registry.
 It is set to \code{TRUE} when the visible object is actually set/created
 via \code{\link[reactr]{setReactiveS3}}.
 Initial: \code{FALSE}.}
 
-\item{\code{has_cached}}{\code{\link{logical}}.
-Field for tracking if the object already has a cached value or not.
+\item{\code{.has_cached}}{\code{\link{logical}}.
+Field for tracking if the instance already has a cached value or not.
 If \code{FALSE}, the binding function (if there is any) is executed and
 after that the field is set to \code{TRUE} to signal that a cached value
 exists.
 Initial: \code{FALSE}.}
 
-\item{\code{is_invalid}}{\code{\link{logical}}.
+\item{\code{.is_modcycle_complete}}{\code{\link{logical}}.
+\code{TRUE}: modification cycle complete;
+\code{FALSE}: modification cycle not complete yet.
+Only relevant for bi-directional bindings and in case of explicitly
+changing visible object values via \code{\link[base]{<-}} or
+\code{\link[base]{assign}}. Very important to determine the scope of
+object updates.
+Initial: \code{TRUE}.}
+
+\item{\code{.is_invalid}}{\code{\link{logical}}.
 Field for propagating the invalidity of referenced objects to its
 dependees. It is set to \code{TRUE} when an reactive object is unset or
 removed.
 Initial: \code{FALSE}.}
 
-\item{\code{registry}}{\code{\link{environment}}.
-Reference to the registry environment. Important for retrieving and
-     comparing checksum values.
+\item{\code{.cache}}{\code{\link{logical}}.
+\code{TRUE}: use caching mechanism and everything associated with it;
+\code{FALSE}: no caching.
+Initial: \code{TRUE}.}
+
+\item{\code{.registry}}{\code{\link{environment}}.
+Reference to the registry environment
+(see \code{\link[reactr]{getRegistry}}.
+Important for retrieving and comparing checksum values, enabling push
+and other useful things (integrity checks etc.)
 Initial: \code{getRegistry()}.}
 
-\item{\code{refs_pull}}{\code{\link{environment}}.
-Environment storing information of inbound/pull references.
+\item{\code{.refs_pull}}{\code{\link{environment}}.
+Environment for storing information of inbound/pull references.
 Initial: \code{new.env(parent = emptyenv())}.}
 
-\item{\code{refs_push}}{\code{\link{environment}}.
-Environment storing information of outbound/push references.
+\item{\code{.refs_push}}{\code{\link{environment}}.
+Environment for storing information of outbound/push references.
 Initial: \code{new.env(parent = emptyenv())}.}
 
-\item{\code{has_pull_refs}}{\code{\link{logical}}.
-\code{TRUE}: object has no inbound/pull references;
+\item{\code{.has_pull_refs}}{\code{\link{logical}}.
+\code{TRUE}: object has inbound/pull references;
 \code{FALSE}: object has no inbound/pull references
 Initial: \code{FALSE}.}
 
-\item{\code{has_push_refs}}{\code{\link{logical}}.
-\code{TRUE}: object has no outbound/push references;
+\item{\code{.has_push_refs}}{\code{\link{logical}}.
+\code{TRUE}: object has outbound/push references;
 \code{FALSE}: object has no outbound/push references
 Initial: \code{FALSE}.}
 
-\item{\code{must_push}}{\code{\link{logical}}.
+\item{\code{.must_push}}{\code{\link{logical}}.
 Field that controls if push is enabled.
 \code{TRUE}: push changes to outbound references;
 \code{FALSE}: changes need to be pulled by references, no push.
 Initial: \code{FALSE}.}
 
-\item{\code{has_pushed}}{\code{\link{logical}}.
-\code{TRUE}: pushed change to push references;
-\code{FALSE}: change not pushed to push references yet.
+\item{\code{.has_pushed}}{\code{\link{logical}}.
+\code{TRUE}: change has been pushed to all push references;
+\code{FALSE}: change has not been pushed to push references yet.
 Initial: \code{FALSE}.}
 
-\item{\code{is_running_push}}{\code{\link{logical}}.
+\item{\code{.is_running_push}}{\code{\link{logical}}.
 \code{TRUE}: push process is currently running;
 \code{FALSE}: no push process is currently running.
 Initial: \code{FALSE}.}
 
-\item{\code{wait}}{\code{\link{logical}}.
-\code{TRUE}: wait with running the binding function;
-\code{FALSE}: run binding function when necessary.
-Initial: \code{FALSE}.}
-
-\item{\code{func}}{\code{\link{function}}.
+\item{\code{.func}}{\code{\link{function}}.
 Binding function.
 Initial: \code{NULL}.}
 
-\item{\code{refs_checksum}}{\code{\link{environment}}.
+\item{\code{.refs_checksum}}{\code{\link{environment}}.
 Environment for caching checksums of referenced objects.
 Initial: \code{new.env(parent = emptyenv())}.}
 
 \item{\code{condition}}{\code{\link{condition}} (at least by inheritance).
-If a condition has been signaled, this field is assigned a respectiv
-condition object that is triggered when \code{.self$value} is requested.
-See \code{\link[base]{signalCondition}} and
+If a condition has been signaled, this field is assigned a respective
+custom condition object that is triggered when the visible object value
+(or \code{self$.value}) is requested.
+Also see \code{\link[base]{signalCondition}} and
 \code{\link[conditionr]{signalCondition}}
 Initial: \code{NULL}.}
 }}
@@ -173,13 +189,13 @@ ReactiveObject.S3(TRUE)
 
 ## Formal use (explicitly using 'fields') //
 res <- ReactiveObject.S3()
-ls(res)
+ls(res, all.names = TRUE)
 res <- ReactiveObject.S3(
   id = "x_1",
   value = 10
 )
-res$id
-res$uid
+res$.id
+res$.uid
 ## --> automatically computed; important for handling checksum values
 
 ## Recommended: include namespace //
@@ -193,7 +209,6 @@ reactr::ReactiveObject.S3(
 ## Methods //
 ##------------------------------------------------------------------------------
 
-setReactiveS3(id = "x_1", value = 10)
 obj <- reactr::ReactiveObject.S3(
   id = "x_1",
   value = 10
@@ -201,16 +216,17 @@ obj <- reactr::ReactiveObject.S3(
 
 ## Compute checksum //
 digest::digest(x_1)
-obj$checksum
-obj$value <- x_1 <- 100
+obj$.checksum
+obj$.value <- x_1 <- 100
 digest::digest(x_1)
 obj$.computeChecksum()
 
 ## Compute UID //
 x_1_uid <- computeObjectUid(id = "x_1")
-obj$uid
+x_1_uid
+obj$.uid
 obj$.computeUid()
-## --> automatically executed in constructor based on 'obj$id' and 'obj$where'
+## --> automatically executed in constructor based on 'obj$.id' and 'obj$.where'
 
 ## Copy //
 obj$.copy(id = "x_1_copied")
@@ -223,20 +239,26 @@ getFromRegistry("x_1")
 getFromRegistry("x_1_copied")
 ## --> independent
 
-## Has references //
-obj$hasReferences()
+## References //
+obj$.hasPullReferences()
+obj$.hasPushReferences()
+## --> difficult to illustrate "stand-alone"; these methods are executed 
+## when calling `setReactiveS3()`
 
 ## Register and unregister //
-obj$.register()
-exists(obj$uid, getRegistry())
-## --> already registered through call to 'setReactiveS3()'
+exists(obj$.uid, getRegistry())
+## --> actually, the object is already registered through call to 'setReactiveS3()' 
+## but we overwrite the existing value here for illustration:
+obj$.register(overwrite = TRUE)
+
 obj$.unregister()
-exists(obj$uid, getRegistry())
+exists(obj$.uid, getRegistry())
 obj$.register()
-exists(obj$uid, getRegistry())
+exists(obj$.uid, getRegistry())
 
 ## Remove //
-## Remove visible object from registry and itself
+## Remove visible object from its associated environment and invisible object 
+## from the registry
 obj$.remove()
 try(x_1)
 ## --> removed 

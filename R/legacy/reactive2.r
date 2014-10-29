@@ -434,7 +434,7 @@ reactive2 <- function(
   srcref <- attr(substitute(x), "srcref")
   if (length(srcref) >= 2) attr(label, "srcref") <- srcref[[2]]
   attr(label, "srcfile") <- shiny:::srcFileOfRef(srcref[[1]])
-  o <- Observable3$new(
+  o <- ReactiveShinyObject$new(
     id = id, 
     where = env,
     refs_pull = yaml$parsed,

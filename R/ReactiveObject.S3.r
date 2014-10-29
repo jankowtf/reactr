@@ -37,7 +37,7 @@
 #'    Environment of reactive object.
 #'    Initial: \code{parent.frame()}.
 #' @field .checksum \code{\link{character}}.
-#'    Object value checksum.
+#'    Checksum of visible value.
 #'    Initial: \code{character()}.
 #' @field .class \code{\link{character}}.
 #'    Class of visible object (\code{.value}). If strongly typed (argument \code{typed = TRUE} in
@@ -45,24 +45,25 @@
 #'    if an assignment value is valid or not.
 #'    Initial: \code{character()}.
 #' @field .exists_visible \code{\link{logical}}.
-#'    Field for tracking if the visible object actually exists already or if this
-#'    is a mere "empty container" in the registry. 
+#'    Field for tracking if the visible object value actually exists already 
+#'    or if this is a mere "empty container" in the registry. 
 #'    It is set to \code{TRUE} when the visible object is actually set/created
 #'    via \code{\link[reactr]{setReactiveS3}}.
 #'    Initial: \code{FALSE}.
 #' @field .has_cached \code{\link{logical}}.
-#'    Field for tracking if the object already has a cached value or not.
+#'    Field for tracking if the instance already has a cached value or not.
 #'    If \code{FALSE}, the binding function (if there is any) is executed and 
 #'    after that the field is set to \code{TRUE} to signal that a cached value
 #'    exists.
 #'    Initial: \code{FALSE}.
-#' @field .force_cached \code{\link{logical}}.
-#'    Field that controls if cached value takes predence over binding function
-#'    in bi-directional settings.
-#'    \code{TRUE}: use cached value even though a binding function exists and
-#'    would be called otherwise;
-#'    \code{FALSE}: call binding function.
-#'    Initial: \code{FALSE}.
+#' @field .is_modcycle_complete \code{\link{logical}}.
+#'    \code{TRUE}: modification cycle complete;
+#'    \code{FALSE}: modification cycle not complete yet.
+#'    Only relevant for bi-directional bindings and in case of explicitly
+#'    changing visible object values via \code{\link[base]{<-}} or 
+#'    \code{\link[base]{assign}}. Very important to determine the scope of 
+#'    object updates.
+#'    Initial: \code{TRUE}.
 #' @field .is_invalid \code{\link{logical}}.
 #'    Field for propagating the invalidity of referenced objects to its 
 #'    dependees. It is set to \code{TRUE} when an reactive object is unset or
@@ -73,21 +74,23 @@
 #'    \code{FALSE}: no caching.
 #'    Initial: \code{TRUE}.
 #' @field .registry \code{\link{environment}}.
-#'    Reference to the registry environment. Important for retrieving and 
-#' 		comparing checksum values.
+#'    Reference to the registry environment 
+#'    (see \code{\link[reactr]{getRegistry}}. 
+#'    Important for retrieving and comparing checksum values, enabling push
+#'    and other useful things (integrity checks etc.)
 #'    Initial: \code{getRegistry()}.
 #' @field .refs_pull \code{\link{environment}}.
-#'    Environment storing information of inbound/pull references.
+#'    Environment for storing information of inbound/pull references.
 #'    Initial: \code{new.env(parent = emptyenv())}.
 #' @field .refs_push \code{\link{environment}}.
-#'    Environment storing information of outbound/push references.
+#'    Environment for storing information of outbound/push references.
 #'    Initial: \code{new.env(parent = emptyenv())}.
 #' @field .has_pull_refs \code{\link{logical}}.
-#'    \code{TRUE}: object has no inbound/pull references;
+#'    \code{TRUE}: object has inbound/pull references;
 #'    \code{FALSE}: object has no inbound/pull references
 #'    Initial: \code{FALSE}.
 #' @field .has_push_refs \code{\link{logical}}.
-#'    \code{TRUE}: object has no outbound/push references;
+#'    \code{TRUE}: object has outbound/push references;
 #'    \code{FALSE}: object has no outbound/push references
 #'    Initial: \code{FALSE}.
 #' @field .must_push \code{\link{logical}}.
@@ -96,8 +99,8 @@
 #'    \code{FALSE}: changes need to be pulled by references, no push.
 #'    Initial: \code{FALSE}.
 #' @field .has_pushed \code{\link{logical}}.
-#'    \code{TRUE}: pushed change to push references;
-#'    \code{FALSE}: change not pushed to push references yet.
+#'    \code{TRUE}: change has been pushed to all push references;
+#'    \code{FALSE}: change has not been pushed to push references yet.
 #'    Initial: \code{FALSE}.
 #' @field .is_running_push \code{\link{logical}}.
 #'    \code{TRUE}: push process is currently running;
@@ -110,9 +113,10 @@
 #'    Environment for caching checksums of referenced objects.
 #'    Initial: \code{new.env(parent = emptyenv())}.
 #' @field condition \code{\link{condition}} (at least by inheritance).
-#'    If a condition has been signaled, this field is assigned a respectiv 
-#'    condition object that is triggered when \code{self$.value} is requested.
-#'    See \code{\link[base]{signalCondition}} and 
+#'    If a condition has been signaled, this field is assigned a respective 
+#'    custom condition object that is triggered when the visible object value
+#'    (or \code{self$.value}) is requested.
+#'    Also see \code{\link[base]{signalCondition}} and 
 #'    \code{\link[conditionr]{signalCondition}}
 #'    Initial: \code{NULL}.
 #' @return Instance of class \code{ReactiveObject.S3}.
@@ -138,7 +142,6 @@ ReactiveObject.S3 <- function(
   exists_visible = FALSE,
   cache = TRUE,
   has_cached = FALSE,
-  force_cached = FALSE,
   is_invalid = FALSE,
   
   ## Registry //
@@ -170,7 +173,7 @@ ReactiveObject.S3 <- function(
     ##--------------------------------------------------------------------------
 
     this$.cache <- cache
-    this$.calling <- new.env(parent = emptyenv())
+    this$.caller <- character()
     this$.checksum <- checksum
     this$.refs_checksum <- refs_checksum
     this$.class <- cl
@@ -178,7 +181,6 @@ ReactiveObject.S3 <- function(
     
     this$.exists_visible <- exists_visible
     
-    this$.force_cached <- force_cached
     this$.func <- func
     this$.registry <- registry
     this$.has_cached <- has_cached
@@ -188,12 +190,14 @@ ReactiveObject.S3 <- function(
     
     this$.refs_pull <- refs_pull
     this$.refs_push <- refs_push
+    this$.has_bidir <- FALSE
     this$.has_pull_refs <- has_pull_refs
     this$.has_push_refs <- has_push_refs
     this$.has_pushed <- has_pushed
+    this$.is_modcycle_complete <- TRUE
     this$.is_running_push <- is_running_push 
     this$.must_push <- must_push
-    this$.out_of_sync <- FALSE
+    this$.needs_update <- FALSE
     this$.value <- value
     this$.where <- where
     
@@ -201,8 +205,50 @@ ReactiveObject.S3 <- function(
     ## Methods //
     ##--------------------------------------------------------------------------
     
+    ## Should further updates be blocked as they would lead to inconsitencies
+    ## with respect to the **expected** values of bi-directional references
+    ## when at least one of them has been explicitly modified via `<-`
+    this$.blockUpdate <- function(self = this, verbose = FALSE) {
+      out <- FALSE
+      if (  self$.has_bidir && 
+            self$.caller$.uid != self$.uid && 
+            self$.caller$.is_modcycle_complete
+      ) {
+      ## Only relevant for bi-directional relationships:
+      ## --> for cetain systems constellations, it is necessary that 
+      ## certain updates are blocked as they would lead to 
+      ## inconsistencies with respect to **expected** object values
+      ## after bi-directionally referenced objects have been 
+      ## explicitly modified (i.e. `<-` has been used).
+      ## Distinction:
+      ## 1) When **only** A has changed and B is requested 
+      ##    **before** A:
+      ##    --> block update cycle at the point where A is called 
+      ##        by B in order to avoid the re-setting of A to 
+      ##        the **old** (but at this point still current) value 
+      ##        of B (which would happen if the full update cycle 
+      ##        was carried out).
+      ## 2) When **both** A and B have changed **before** 
+      ##    any object has been requested and one of them is 
+      ##    requested **afterwards**:
+      ##    --> carry out full update cycle so the system recognizes
+      ##        the last value that was explicitly set 
+        if (verbose) {
+          message("Intentional update block to ensure consistency")
+        }
+        self$.is_modcycle_complete <- TRUE
+        out <- TRUE
+      }
+      out
+    }
     this$.checkClass <- function(self = this, v) {
-      if (!inherits(v, self$.class)) {
+      if (self$.class != "NULL" && !inherits(v, self$.class)) {
+      ## --> seems like enforcing class consistency for `NULL` situations
+      ## does not make sense as `NULL` will probably only be used for initial
+      ## values. Possible think about what should happen when `NULL` is the 
+      ## **assignment** value instead of the initial value --> issue #22
+## TODO: issue #22
+        
         num_clss <- c("integer", "numeric")
         if (all(c(class(v), self$.class) %in% num_clss)) {
           
@@ -231,29 +277,35 @@ ReactiveObject.S3 <- function(
                                       verbose = FALSE) {
       do_update <- FALSE
       ## Get last-known reference checksum //
-      ref_chk_own <- self$.refs_checksum[[ref_uid]]
+      ref_chk_last <- self$.refs_checksum[[ref_uid]]    
       if (!is.null(self$.refs_pull[[ref_uid]]$.checksum)) {
       ## --> due to invalidation
-        ref_chk <- self$.refs_pull[[ref_uid]]$.checksum                 
-        if (is.null(ref_chk_own) || ref_chk != ref_chk_own) {
+        ref_chk_current <- self$.refs_pull[[ref_uid]]$.checksum                 
+        if (is.null(ref_chk_last) || ref_chk_current != ref_chk_last) {
         ## --> checksum missing or reference has changed 
-        ## --> update                    
-          if (verbose) {
-            message(paste0("Object: ", self$.uid))
-            message(paste0("Modified reference: ", ref_uid))
-          }
+        ## --> update      
           self$.updateReferenceChecksum(
             ref = ref_uid, 
-            checksum = ref_chk
+            checksum = ref_chk_current
           )
-          
+## TODO: issue #21
+
           ## Who is calling //
-          assign(self$.uid, NULL, envir = self$.refs_pull[[ref_uid]]$.calling)
+          self$.refs_pull[[ref_uid]]$.caller <- self
+          
+          if (verbose) {
+            message(paste0("Object: ", self$.uid))
+            message(paste0("Called by: ", self$.caller$.uid))
+            message(paste0("Modified reference: ", ref_uid))
+            message(paste0("\t- Checksum last: ", ref_chk_last))
+            message(paste0("\t- Checksum current: ", ref_chk_current))
+          }
+          
           do_update <- TRUE
         }
       } else {
       ## Check if 'broken-binding' condition exists //
-        if (!is.null(ref_chk_own)) {
+        if (!is.null(ref_chk_last)) {
         ## --> this can only be the case if there has been a reactive 
         ## binding that was valid/working at one point in time
           if (strict_get == 0) {
@@ -353,11 +405,37 @@ ReactiveObject.S3 <- function(
     this$.getVisible <- function(self = this) {
       get(self$.id, self$.where, inherits = FALSE)
     }
+    this$.hasBidirectional = function(self = this, system_wide = FALSE) {
+      uid <- self$.uid
+      refs_pull <- self$.refs_pull
+      (self$.has_bidir <- any(sapply(ls(refs_pull), function(ref_uid) {
+        true <-  uid %in% ls(refs_pull[[ref_uid]]$.refs_pull)
+# message("bidirectional //")        
+# message("uid:")
+# print(uid)
+# message("pull refs in ref:")
+# print(ls(refs_pull[[ref_uid]]$.refs_pull))
+# message("true:")
+# print(true)
+        if (system_wide && true && !refs_pull[[ref_uid]]$.has_bidir) {
+        ## --> system wide and not carried out yet in reference          
+          self$.has_bidir <- true
+          ## --> necessary to immediately make that information available 
+          ## system-wide
+          refs_pull[[ref_uid]]$.ensurePullReferencesIntegrity(ref_uid = uid)
+          refs_pull[[ref_uid]]$.hasBidirectional(system_wide = system_wide)
+        }
+        true
+      })))
+    }
     this$.hasPullReferences = function(self = this) {
       (self$.has_pull_refs <- length(ls(self$.refs_pull, all.names = TRUE)) > 0)
     }
     this$.hasPushReferences = function(self = this) {
       (self$.has_push_refs <- length(ls(self$.refs_push, all.names = TRUE)) > 0)
+    }
+    this$.isCallerModcycleComplete = function(self = this, caller_uid = self$.caller$.uid) {
+      self$.registry[[caller_uid]]$.is_modcycle_complete
     }
     this$.pushToReferences <- function(self = this, verbose = FALSE) {
       self$.has_pushed <- FALSE
@@ -418,7 +496,7 @@ ReactiveObject.S3 <- function(
       out <- if (self$.hasPullReferences()) {
         sapply(ls(self$.refs_pull), function(ref_uid) {
           ## Pointer //
-          assign(ref_uid, .registry[[ref_uid]], envir = self$.refs_push)
+          assign(ref_uid, self$.registry[[ref_uid]], envir = self$.refs_push)
           if (!exists(self$.uid, envir = self$.refs_pull[[ref_uid]]$.refs_push)) {
           ## Ensure a push reference is created //
             assign(self$.uid, self, self$.refs_pull[[ref_uid]]$.refs_push)
@@ -470,7 +548,8 @@ ReactiveObject.S3 <- function(
           has_binding <- FALSE
         } 
         if (has_binding) {
-          tmp <- get(id, envir = where, inherits = FALSE)
+#           tmp <- get(id, envir = where, inherits = FALSE)
+          tmp <- self$.value
           rm(list = id, envir = where, inherits = FALSE)
           assign(id, tmp, where)
           ## Propagate invalidity to dependees //
@@ -490,9 +569,11 @@ ReactiveObject.S3 <- function(
     ## Initialize rest //
     ##--------------------------------------------------------------------------
 
+    this$.caller <- this
+    this$.class <- class(this$.value)
     this$.computeChecksum()
     this$.computeUid()
-    this$.class <- class(this$.value)
+    
     if (this$.cache && length(pull_refs_list)) {
       this$.registerPullReferences(refs = pull_refs_list)
     }
@@ -514,6 +595,8 @@ ReactiveObject.S3 <- function(
         type = "error"
       )
     }
+    ## Check for bi-directional references //
+    this$.hasBidirectional(system_wide = TRUE)
     
     class(this) <- c("ReactiveObject.S3", class(this))
   }

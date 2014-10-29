@@ -42,13 +42,13 @@ setGeneric(
 )
 
 #' @title
-#' Check Prerequisits for Setting Reactive Objects (Observable3) 
+#' Check Prerequisits for Setting Reactive Objects (ReactiveShinyObject) 
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{checkReactivityPrerequisites}}
 #'      
 #' @inheritParams checkReactivityPrerequisites
-#' @param input \code{\link{Observable3}}.
+#' @param input \code{\link{ReactiveShinyObject}}.
 #' @return See method 
 #'    \code{\link[reactr]{checkReactivityPrerequisites-ReactiveObject.S3-method}}. 
 #' @example inst/examples/checkReactivityPrerequisites.r
@@ -59,11 +59,11 @@ setGeneric(
 #' @template author
 #' @template references
 #' @export
-#' @aliases checkReactivityPrerequisity-Observable3-method
+#' @aliases checkReactivityPrerequisity-ReactiveShinyObject-method
 setMethod(
   f = "checkReactivityPrerequisites", 
   signature = signature(
-    input = "Observable3"
+    input = "ReactiveShinyObject"
   ), 
   definition = function(
     input,

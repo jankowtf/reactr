@@ -1,17 +1,17 @@
 ##------------------------------------------------------------------------------
-context("Observable3")
+context("ReactiveShinyObject")
 ##------------------------------------------------------------------------------
 
-test_that("Observable3", {
+test_that("ReactiveShinyObject", {
 
   expect_is(
-    res <- Observable3$new(
+    res <- ReactiveShinyObject$new(
       id = "x_1", 
       value = 10,
       where = environment(),
       func = NULL
     ), 
-    "Observable3"
+    "ReactiveShinyObject"
   )
   
   expect_equal(res$.value, 10)
@@ -38,30 +38,39 @@ test_that("Observable3", {
   resetRegistry()
   expect_true(res$.register())
 #   showRegistry()
-  expect_equal(res$.copy(id = "x_copied"), 10)
+  expect_equal(res$.copy(id = "x_copied", where = environment()), 10)
 #   showRegistry()
-  expect_equal(x_copied, 10)
+  expect_equal(environment()$x_copied, 10)
 
 })
 
 
-test_that("Observable3/setReactiveS3", {
+test_that("ReactiveShinyObject/setReactiveS3", {
 
   resetRegistry()
   registry <- getRegistry()
   setShinyReactive(id = "x_1", value = 10)
   obj <- getFromRegistry("x_1")
-  expect_is(obj, "Observable3")
+  expect_is(obj, "ReactiveShinyObject")
 
   ## Copy //
-  obj$.copy(id = "x_1_copied")
-  expect_true(exists("x_1_copied"))
-  expect_equal(x_1_copied, 10)
-  expect_equal(x_1_copied, x_1)
+#   obj$.copy(id = "x_1_copied")
+  ## --> problems when run via test_all()
+# print(ls(environment()))
+  obj$.copy(id = "x_1_copied", where = environment())
+# print(ls(environment()))
+  expect_true(exists("x_1_copied", envir = environment()))
+# print("DEBUG 1")
+  expect_equal(environment()$x_1_copied, 10)
+# print("DEBUG 2")
+  expect_equal(environment()$x_1_copied, x_1)
+# print("DEBUG 3")
   x_1 <- 100
-  expect_equal(x_1_copied, 10)
+  expect_equal(environment()$x_1_copied, 10)
+# print("DEBUG 4")
   ## --> independent
-  expect_false(identical(getFromRegistry("x_1"), getFromRegistry("x_1_copied")))
+  expect_false(identical(getFromRegistry("x_1"), 
+                         getFromRegistry("x_1_copied", where = environment())))
   
   ## Unset //
   env <- environment()
@@ -72,5 +81,6 @@ test_that("Observable3/setReactiveS3", {
   
   ## Clean up //
   removeReactive("x_1")
+  removeReactive("x_1_copied")
 
 })

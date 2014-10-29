@@ -77,7 +77,7 @@ setReactiveS3(id = "x_5", value = function() {
 })
 ```
 
-Note that the does not order matter!
+Note that the order **does not** matter!
 
 ```{r, eval=TRUE}
 setReactiveS3(id = "x_6", value = function() {
@@ -89,7 +89,7 @@ setReactiveS3(id = "x_6", value = function() {
 
 Clean up 
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, message=FALSE}
 rmReactive("x_1")
 rmReactive("x_2")
 rmReactive("x_3")
@@ -134,7 +134,7 @@ setReactiveS3(id = "x_4", value = function(
 
 Clean up
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, message=FALSE}
 rmReactive("x_1")
 rmReactive("x_2")
 rmReactive("x_3")
@@ -210,7 +210,7 @@ x_2
 
 Clean up 
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, message=FALSE}
 rmReactive("x_1")
 rmReactive("x_2")
 rmReactive("x_3")

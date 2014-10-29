@@ -3,7 +3,7 @@
 \name{ReactiveShinyObject}
 \alias{ReactiveShinyObject}
 \title{Class: ReactiveShinyObject}
-\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x000000000942ddd8> 
+\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x000000000940f1c0> 
  - attr(*, "name")= chr "ReactiveShinyObject_generator"
 }}
 \usage{

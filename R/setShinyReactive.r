@@ -152,8 +152,9 @@
 #' }
 #' @template author
 #' @template references
-#' @export 
+#' @import conditionr
 #' @import shiny
+#' @export 
 setShinyReactive <- function(
     id,
     value = NULL,

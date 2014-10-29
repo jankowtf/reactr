@@ -27,10 +27,10 @@ Copies essential information of a reactive object to a new object.
 }
 \details{
 Takes the essential information of a reactive object (fields \code{value},
-\code{refs_pull}, \code{refs_push} and \code{funct} of the hidden instance
+\code{refs_pull}, \code{refs_push} and \code{funct} of the invisible instance
 of class \code{\link[reactr]{ReactiveObject.S3}} and creates a new reactive
 object of name \code{id} in \code{where} with that information.
-The important thing to note is that the two objects (and their hidden objects)
+The important thing to note is that the two objects (and their invisible objects)
 are not connected via any environments (pass-by-reference) as would be the
 case if the copy was carried out by a mere call to \code{\link[base]{<-}}.
 }
@@ -48,7 +48,7 @@ x_1_c == x_1
 x_1 <- 20
 x_1_c
 ## --> x_1_c is not affected by the change in `x_1` as the two underlying 
-## hidden objects are independent from each other:
+## invisible objects are independent from each other:
 identical(getFromRegistry("x_1"), getFromRegistry("x_1_c"))
 
 ## Classes //
@@ -67,7 +67,7 @@ x_1_c == x_1
 x_1 <- 20
 x_1_c
 ## --> x_1_c is not affected by the change in `x_1` as the two underlying 
-## hidden objects are independent from each other:
+## invisible objects are independent from each other:
 identical(getFromRegistry("x_1"), getFromRegistry("x_1_c"))
 
 ## Classes //

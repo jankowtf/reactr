@@ -1,12 +1,25 @@
+# CHANGES IN reactr VERSION 0.1.9
+
 ## NEW FEATURES
 
-- `getBinding()`
-- renamed: `removeReactive()` --> `rmReactive()`
-- renamed: `removeFromRegistry()` --> `rmFromRegistry()`
+- Some new convenience functions:
+  - `getBinding()`
+  - `getChecksum()`
+  - `showPullRefs()`
+  - `showPushRefs()`
 
 ## BUG FIXES
 
 - fixed: #25
+
+## MAJOR CHANGES
+
+- renamed: `removeReactive()` --> `rmReactive()`
+- renamed: `removeFromRegistry()` --> `rmFromRegistry()`
+
+## MINOR CHANGES
+
+## MISC
 
 ----------
 

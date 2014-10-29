@@ -16,7 +16,7 @@
 \item{...}{Further arguments to be passed to subsequent functions/methods.}
 }
 \value{
-\code{\link{ReactiveObject.S3}}. Stored hidden instance of reactive
+\code{\link{ReactiveObject.S3}}. Stored invisible instance of reactive
    object.
 }
 \description{

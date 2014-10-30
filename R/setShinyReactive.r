@@ -70,12 +70,6 @@
 #'    Value or reactive binding.
 #' @param where \code{\link{environment}}.
 #'    Environment in which to create the object.
-#' @param quoted See \code{\link[shiny]{reactive}}.
-#'    Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.
-#' @param label See \code{\link[shiny]{reactive}}.
-#'    Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.
-#' @param domain See \code{\link[shiny]{reactive}}.
-#'    Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.
 #' @param cache \code{\link{logical}}.
 #'    \code{TRUE}: use caching mechanism;
 #'    \code{FALSE}: no caching mechanism used.
@@ -86,12 +80,12 @@
 #'    ambiguous at this point (see profiling in examples).
 #'    Note that \emph{bi-directional bindings} and \emph{push propagation} of 
 #'    changes are only available if \code{cache = TRUE}.
-#' @param integrity \code{\link{logical}}.
-#'    \code{TRUE}: ensures structural integrity of underlying reactive object
-#'    (instance of class \code{\link[reactr]{ReactiveShinyObject}}).
-#'    \code{FALSE}: no integrity measures are carried out.
-#'    Note that \code{TRUE} adds a minimal overhead of 2.3e-08 seconds 
-#'    to the runtime. See details.
+## @param integrity \code{\link{logical}}.
+##    \code{TRUE}: ensures structural integrity of underlying reactive object
+##    (instance of class \code{\link[reactr]{ReactiveShinyObject}}).
+##    \code{FALSE}: no integrity measures are carried out.
+##    Note that \code{TRUE} adds a minimal overhead of 2.3e-08 seconds 
+##    to the runtime. See details.
 #' @param push \code{\link{logical}}.
 #'    \code{TRUE}: immediately propagate changes to objects referencing this 
 #'    object by implicitly calling/requesting them and thus executing their 
@@ -106,30 +100,31 @@
 #'    of the assignment value does not inherit from the class of field value 
 #'    \code{.value} at initialization;
 #'    \code{FALSE}: no class check is performed.
-#'    Note that initial values of \code{NULL} are disregarded, i.e. each value
-#'    will be a valid value for overwriting \code{NULL} values in \code{.value}.
-#' @param strict \code{\link{numeric}}.
-#'    Relevant when initially setting a reactive object
-#'    \itemize{
-#'      \item{\code{0}: } {no checks are performed}
-#'      \item{\code{1}: } {warning if object is already a non-reactive or 
-#'      reactive object or if any references does not exist yet}
-#'      \item{\code{2}: } {error if object is already a non-reactive or 
-#'      reactive object or if any references do not exist yet}
-#'    }
-#' @param strict_get \code{\link{numeric}}.
-#'    Relevant if retrieving object when reactive reference has been broken
-#'    (i.e. one of the referenced objects does not exist anymore).
-#'    reactive relationship.
-#'    \itemize{
-#'      \item{\code{0}: } {return last cached value}
-#'      \item{\code{1}: } {object value is set to \code{NULL} and is returned}
-#'      \item{\code{2}: } {object value is set to an instance of condition class 
-#'          \code{BrokenReactiveReference} and this condition is triggered whenever
-#'          the object's value is requested by \code{\link[base]{get}} or 
-#'          its syntactical surgars \code{{obj-name} or \code{}}
-#'      }
-#'    }
+#'    Note that initial values of \code{NULL} are disregarded for the class 
+#'    check, i.e. any value overwriting an initial \code{NULL} value 
+#'    is valid.
+## @param strict \code{\link{numeric}}.
+##    Relevant when initially setting a reactive object
+##    \itemize{
+##      \item{\code{0}: } {no checks are performed}
+##      \item{\code{1}: } {warning if object is already a non-reactive or 
+##      reactive object or if any references does not exist yet}
+##      \item{\code{2}: } {error if object is already a non-reactive or 
+##      reactive object or if any references do not exist yet}
+##    }
+## @param strict_get \code{\link{numeric}}.
+##    Relevant if retrieving object when reactive reference has been broken
+##    (i.e. one of the referenced objects does not exist anymore).
+##    reactive relationship.
+##    \itemize{
+##      \item{\code{0}: } {return last cached value}
+##      \item{\code{1}: } {object value is set to \code{NULL} and is returned}
+##      \item{\code{2}: } {object value is set to an instance of condition class 
+##          \code{BrokenReactiveReference} and this condition is triggered whenever
+##          the object's value is requested by \code{\link[base]{get}} or 
+##          its syntactical surgars \code{{obj-name} or \code{}}
+##      }
+##    }
 #' @param strict_set \code{\link{numeric}}.
 #'    Relevant if assigning an explicit value to an object with reactive 
 #'    dependency on other objects.
@@ -139,9 +134,9 @@
 #'      \item{\code{1}: } {ignore with Warning}
 #'      \item{\code{2}: } {stop with error}
 #'    }
-#' @param verbose \code{\link{logical}}.
-#'    \code{TRUE}: output certain status information;
-#'    \code{FALSE}: no status information.
+## @param verbose \code{\link{logical}}.
+##    \code{TRUE}: output certain status information;
+##    \code{FALSE}: no status information.
 #' @param ... Further arguments to be passed to subsequent functions/methods.
 #'    In particular, all environments of references that you are referring to
 #'    in the body of the binding function. 
@@ -159,368 +154,108 @@ setShinyReactive <- function(
     id,
     value = NULL,
     where = parent.frame(),
-    ## From `reactive()` //
-    quoted = FALSE, 
-    label = NULL,
-    domain = shiny:::getDefaultReactiveDomain(), 
-    ## Additional //
     cache = TRUE,
-    integrity = TRUE,
+    lazy = FALSE,
+#     integrity = TRUE,
     push = FALSE,
     typed = FALSE,
-    strict = c(0, 1, 2),
-    strict_get = c(0, 1, 2),
+#     strict = c(0, 1, 2),
+#     strict_get = c(0, 1, 2),
     strict_set = c(0, 1, 2),
-    verbose = FALSE,
+#     verbose = FALSE,
     ...
   ) {
 
   ## Argument checks //
-  strict <- as.numeric(match.arg(as.character(strict), 
-                                 as.character(c(0, 1, 2))))
-  strict_get <- as.numeric(match.arg(as.character(strict_get), 
-                                 as.character(c(0, 1, 2))))
+#   strict <- as.numeric(match.arg(as.character(strict), 
+#                                  as.character(c(0, 1, 2))))
+#   strict_get <- as.numeric(match.arg(as.character(strict_get), 
+#                                  as.character(c(0, 1, 2))))
   strict_set <- as.numeric(match.arg(as.character(strict_set), 
                                  as.character(c(0, 1, 2))))
-  
-  ## Ensure that shiny let's us do this //
+
+  ## Ensure that shiny let's us do our thing //
   shiny_opt <- getOption("shiny.suppressMissingContextError")
   if (is.null(shiny_opt) || !shiny_opt) {
     options(shiny.suppressMissingContextError = TRUE)  
+#     shiny:::setAutoflush(TRUE)
   }
-
-  ## Check if regular value assignment or reactive function //
-  if (!is.function(value)) {    
-    is_reactive <- FALSE
-    refs_pull <- character()
-    
-#     value_initial <- value
-#     value_expr <- quote(obj$value <<- value)
-    value_expr <- NULL
-    func <- NULL
-  } else {
-    is_reactive <- TRUE
-
-    yaml <- exprToFunction2(expr = value, env = where, quoted = quoted)
-    func <- yaml$src
-    
-    # Attach a label and a reference to the original user source for debugging
-    if (is.null(label))
-      label <- sprintf('reactive(%s)', paste(deparse(body(func)), collapse='\n'))
-    srcref <- attr(substitute(x), "srcref")
-    if (length(srcref) >= 2) attr(label, "srcref") <- srcref[[2]]
-    attr(label, "srcfile") <- shiny:::srcFileOfRef(srcref[[1]])
-    
-    refs_pull <- yaml$parsed
-# print(refs_pull)    
-  }
-
-  o <- ReactiveShinyObject$new(
-    id = id, 
-    value = if (!is_reactive) value,
-    where = where,
-    refs_pull = refs_pull,
-    func = func, 
-    label = label, 
-    domain = domain,
-    cache = cache
-  )
-# print(ls(o$.refs_pull))
-  if (is_reactive) {
-    shiny:::registerDebugHook(".func", o, "Reactive")
-  }
-
-#   ## Class //
-#   o$.class <- class(o$.value)
-#   ## Register //
-#   o$.register(overwrite = TRUE)
-  ## Check prerequisites //
-  checkReactivityPrerequisites(input = o, strict = strict)
-#   ## Check for bi-directional references //
-#   o$.hasBidirectional(system_wide = TRUE)
-  ## Push //
-  if (push) {
-    o$.registerPushReferences()
-  }
-
-  ## Call to 'makeActiveBinding' //
-#   expr <- substitute(
-#     makeActiveBinding(
-#       id,
-#       env = WHERE,
-#       local({
-# #         func <- VALUE
-# #         value <- VALUE
-# #         VALUE
-#         value
-# #         this
-#         function(v) {
-#           if (!missing(v)) {
-#               value <<- v
-# #               this <<- v
-#           } else {
-#               VALUE_EXPR
-#           }
-#           value
-# #           this
-#         }
-#       })
-#     ),
-#     list(
-# #       VALUE = if (!is_reactive) quote(value <- value) else quote(value),
-# #       VALUE = if (!is_reactive) quote(value) else x_2(),
-#       VALUE_EXPR = value_expr,
-#       WHERE = where
-#      )
-#   )
-#   eval(expr)
-
-################################################################################
-
-  makeActiveBinding(
-    id,
-    env = where,
-    fun = local({
-      o
-#       O
-      function(v) {
-        if (missing(v)) {
-          
-          ##--------------------------------------------------------------------
-          ## Handler for 'get' (i.e. 'get()' or '{obj-name}' or '${obj-name}) //
-          ##--------------------------------------------------------------------   
-          
-          if (cache) {
-            if (o$.hasPullReferences()) {
-              needs_update <- sapply(ls(o$.refs_pull), function(ref_uid) {
-                ## Ensure integrity //
-                if (integrity) {
-                  o$.ensurePullReferencesIntegrity(ref_uid = ref_uid)
-                }
-                ## Compare checksums //
-                (needs_update <- o$.compareChecksums(
-                  ref_uid = ref_uid, 
-                  strict_get = strict_get,
-                  verbose = verbose
-                ))
-              })
-              ## Handle scope of update cycle //
-              if (needs_update && o$.blockUpdate(verbose = verbose)) {
-                needs_update <- FALSE
-              }
-              if (o$.needs_update) {
-                needs_update <- TRUE
-              }
-            } else {
-  #             needs_update <- FALSE
-              needs_update <- o$.needs_update
-            }
-          } else {
-            needs_update <- TRUE
-          }
-        
-          ##----------------------------------------------------------------
-          ## Actual update or initial caching //
-          ##----------------------------------------------------------------
-
-          if (is_reactive && (any(needs_update) || !o$.has_cached)) {
-            if (verbose) {
-              if (!o$.has_cached) {
-                message("Initializing ...")  
-              }
-              if (any(needs_update)) {
-                message("Updating ...")  
-              }
-            }
-            
-            ## Cache new value //        
-            o$.value <<- withRestarts(
-              tryCatch(
-                {     
-                  if (o$.invalidated) {                      
-                    out <- o$getValue()
-                  } else {
-                    out <- o$.updateValue()
-                  }
-## TODO: issue #20        
-
-                  ## Object status updates //
-                  o$.condition <- NULL                                    
-                  o$.has_cached <- TRUE
-                  o$.needs_update <- FALSE
-
-                  out 
-                ## For debugging/testing purposes 
-  #                     stop("Intentional update fail"),
-                },
-                warning = function(cond) {
-                  invokeRestart("muffleWarning")
-                },
-                error = function(cond) {
-                  invokeRestart("ReactiveUpdateFailed", cond = cond)
-                }
-              ),
-              muffleWarning = function(cond) {
-                message(cond)
-                invokeRestart("muffleWarning")
-              },
-              ReactiveUpdateFailed = function(cond) {
-                signal <- FALSE
-                if (!cache) { 
-                  if (grepl("object.*not found", conditionMessage(cond))) {
-                    msg <- paste0("caching disabled -->", conditionMessage(cond))
-                  } else if (grepl("evaluation nested too deeply.*infinite recursion", conditionMessage(cond))) {                
-                    message(conditionMessage(cond))
-                    msg <- "caching disabled --> infinite recursion"
-                    signal <- TRUE
-                  }
-                } else {
-                  msg <- conditionMessage(cond)
-                }
-                cond <- conditionr::signalCondition(
-                  call = substitute(
-                      get(x= ID, envir = WHERE, inherits = FALSE),
-                      list(ID = o$.id, WHERE = o$.where)
-                    ),
-                  condition = "AbortedReactiveUpdateWithError",
-                  msg = c(
-                    "Update failed",
-                    Reason = conditionMessage(cond),
-                    ID = o$.id,
-                    UID = o$.uid,
-                    Location = capture.output(o$.where)
-                  ),
-                  ns = "reactr",
-                  type = "error",
-                  signal = signal
-                )
-                ## Transfer condition //
-                o$.condition <<- cond
-                NULL
-              }
-            )
-            ## Update fields //
-            o$.computeChecksum()
-          }
   
-          ## Object statue updates //
-          o$.caller <- o
-          ## --> after an calling cycle is complete, the caller field
-          ## can be reset so that for "self-requests" everything is handled 
-          ## appropriately.
-          o$.is_modcycle_complete <- TRUE
-        } else {
-        
-          ##--------------------------------------------------------------------
-          ## Handler for 'set' (i.e. 'assign()' or '<-') //
-          ##--------------------------------------------------------------------   
-          
-          if (typed) {
-            o$.checkClass(v = v)
-          }
-          
-          ## Set //
-          if (o$.hasPullReferences()) {
+  ## Check if regular value assignment or reactive function //
+  if (!inherits(value, "ReactiveBinding")) {    
+#       makeReactiveBinding(symbol = id, env = where)
+#       visible <- assign(id, value, envir = where, inherits = FALSE)
+    visible <- setReactiveSource(id = id, value = value, 
+      where = where, typed = typed)
+  } else {
+    o <- shiny:::Observable$new(value$fun, value$label, value$domain)
+    shiny:::registerDebugHook(".func", o, "Reactive")
+    visible <- structure(o$getValue, observable = o, class = "reactive") 
+    
+    ## Call to 'makeActiveBinding' //
+    makeActiveBinding(
+      id,
+      env = where,
+      fun = local({
+        visible
+        o
+        function(v) {
+          if (missing(v)) {
+#             o$.value <- v
+            ## --> this should only be allowed for bi-directional relationships
+          } else {
             if (strict_set == 0) {
-              o$.value <<- v    
-              if (!o$.has_bidir) {
-                o$.needs_update <- TRUE
-              }
-              o$.is_modcycle_complete <- FALSE
+#                 o$.value <<- v    
             } else if (strict_set == 1) {
               conditionr::signalCondition(
                 call = substitute(
                   assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-                  list(ID = o$.id, VALUE = v, WHERE = o$.where)
+                  list(ID = id, VALUE = v, WHERE = where)
                 ),
                 condition = "AbortedWithReactiveDependencyWarning",
                 msg = c(
                   Reason = "trying to set value of object with reactive dependency",
-                  ID = o$.id,
-                  UID = o$.uid,
-                  Location = capture.output(o$.where),
-                  References = paste(ls(o$.refs_pull, all.names = TRUE), collapse = ", ")
+                  ID = id,
+#                     UID = o$.uid,
+                  Location = capture.output(where)
                 ),
                 ns = "reactr",
                 type = "warning"
               )
-            } else if (strict_set == 1) {
+            } else if (strict_set == 2) {
               conditionr::signalCondition(
                 call = substitute(
                   assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-                  list(ID = o$.id, VALUE = v, WHERE = o$.where)
+                  list(ID = id, VALUE = v, WHERE = where)
                 ),
                 condition = "AbortedWithReactiveDependencyError",
                 msg = c(
                   Reason = "trying to set value of object with reactive dependency",
-                  ID = o$.id,
-                  UID = o$.uid,
-                  Location = capture.output(o$.where),
-                  References = paste(ls(o$.refs_pull, all.names = TRUE), collapse = ", ")
+                  ID = id,
+#                     UID = o$.uid,
+                  Location = capture.output(where)
                 ),
                 ns = "reactr",
                 type = "error"
               )
             }
+          }
+  
+          ## Return //
+          if (!lazy) {
+            visible()
           } else {
-            o$.value <<- v 
-          }
-          
-          ## Update checksum //
-          o$.computeChecksum()
-          
-          ## Push //
-          if (  cache && 
-                o$.must_push &&
-                o$.hasPushReferences() && 
-                !o$.has_pushed && 
-                !o$.is_running_push
-          ) {
-            o$.pushToReferences(verbose = verbose)
-            ## Reset value of push control field //
-            o$.has_pushed <- FALSE
+            visible
           }
         }
-
-        ##----------------------------------------------------------------------
-        ## Return //
-        ##----------------------------------------------------------------------
-  
-        ## Condition handling //
-        if (!is.null(o$.condition)) {           
-          if (inherits(o$.condition, "BrokenReactiveReference")) {
-            o$.value <- stop(o$.condition)
-          } else {            
-            o$.value <- stop(o$.condition)
-          }
-        }
-# message("o$.value:")
-# print(o$.value)
-        o$.value
-      }
-    })
-  )
-#   eval(expr)
-
-#   structure(o$getValue, observable = o, class = "reactive2")
-#   structure(o$.cache, observable = o, class = "reactive2")
-#   return(o$.value)
-
-  ## Initialize //
-#   (out <- get(id, envir = env, inherits = FALSE))
-  
-
-
-################################################################################
-
-  ## Return value //
-  if (is_reactive) {
-    out <- get(id, envir = where, inherits = FALSE)
-  } else {
-    out <- value
+      })
+    )
+    if (push) {
+      shiny:::setAutoflush(TRUE)
+      observe(visible())
+    }
   }
- 
-  invisible(out)
-  
+
+  invisible(visible)  
 }
 

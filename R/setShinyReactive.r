@@ -70,22 +70,11 @@
 #'    Value or reactive binding.
 #' @param where \code{\link{environment}}.
 #'    Environment in which to create the object.
-#' @param cache \code{\link{logical}}.
-#'    \code{TRUE}: use caching mechanism;
-#'    \code{FALSE}: no caching mechanism used.
-#'    Theoretically, \code{cache = FALSE} should result in less overhead 
-#'    (no registry) and faster processing of \code{get} and \code{set}  
-#'    operations for objects. However, the benchmark with respect to the 
-#'    processing of \code{get} and \code{set} operations are still 
-#'    ambiguous at this point (see profiling in examples).
-#'    Note that \emph{bi-directional bindings} and \emph{push propagation} of 
-#'    changes are only available if \code{cache = TRUE}.
-## @param integrity \code{\link{logical}}.
-##    \code{TRUE}: ensures structural integrity of underlying reactive object
-##    (instance of class \code{\link[reactr]{ReactiveShinyObject}}).
-##    \code{FALSE}: no integrity measures are carried out.
-##    Note that \code{TRUE} adds a minimal overhead of 2.3e-08 seconds 
-##    to the runtime. See details.
+#' @param lazy \code{\link{logical}}.
+#'    \code{TRUE}: lazy execution of reactive expressions/conductors set via 
+#'    \code{\link[reactr]{reactiveBinding}} (i.e. `()` is necessary);
+#'    \code{FALSE} eagerly execution (i.e. simply calling the object triggers 
+#'    the binding function).
 #' @param push \code{\link{logical}}.
 #'    \code{TRUE}: immediately propagate changes to objects referencing this 
 #'    object by implicitly calling/requesting them and thus executing their 
@@ -154,7 +143,6 @@ setShinyReactive <- function(
     id,
     value = NULL,
     where = parent.frame(),
-    cache = TRUE,
     lazy = FALSE,
 #     integrity = TRUE,
     push = FALSE,

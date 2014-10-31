@@ -3,10 +3,8 @@
 \alias{setShinyReactive}
 \title{Set Reactive Object with Shiny Functionality (S3)}
 \usage{
-setShinyReactive(id, value = NULL, where = parent.frame(), quoted = FALSE,
-  label = NULL, domain = shiny:::getDefaultReactiveDomain(), cache = TRUE,
-  integrity = TRUE, push = FALSE, typed = FALSE, strict = c(0, 1, 2),
-  strict_get = c(0, 1, 2), strict_set = c(0, 1, 2), verbose = FALSE, ...)
+setShinyReactive(id, value = NULL, where = parent.frame(), lazy = FALSE,
+  push = FALSE, typed = FALSE, strict_set = c(0, 1, 2), ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.
@@ -18,32 +16,11 @@ Value or reactive binding.}
 \item{where}{\code{\link{environment}}.
 Environment in which to create the object.}
 
-\item{quoted}{See \code{\link[shiny]{reactive}}.
-Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.}
-
-\item{label}{See \code{\link[shiny]{reactive}}.
-Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.}
-
-\item{domain}{See \code{\link[shiny]{reactive}}.
-Currently simply passed along to \code{\link[reactr]{ReactiveShinyObject}}.}
-
-\item{cache}{\code{\link{logical}}.
-\code{TRUE}: use caching mechanism;
-\code{FALSE}: no caching mechanism used.
-Theoretically, \code{cache = FALSE} should result in less overhead
-(no registry) and faster processing of \code{get} and \code{set}
-operations for objects. However, the benchmark with respect to the
-processing of \code{get} and \code{set} operations are still
-ambiguous at this point (see profiling in examples).
-Note that \emph{bi-directional bindings} and \emph{push propagation} of
-changes are only available if \code{cache = TRUE}.}
-
-\item{integrity}{\code{\link{logical}}.
-\code{TRUE}: ensures structural integrity of underlying reactive object
-(instance of class \code{\link[reactr]{ReactiveShinyObject}}).
-\code{FALSE}: no integrity measures are carried out.
-Note that \code{TRUE} adds a minimal overhead of 2.3e-08 seconds
-to the runtime. See details.}
+\item{lazy}{\code{\link{logical}}.
+\code{TRUE}: lazy execution of reactive expressions/conductors set via
+\code{\link[reactr]{reactiveBinding}} (i.e. `()` is necessary);
+\code{FALSE} eagerly execution (i.e. simply calling the object triggers
+the binding function).}
 
 \item{push}{\code{\link{logical}}.
 \code{TRUE}: immediately propagate changes to objects referencing this
@@ -60,32 +37,9 @@ then trigger the execution of their binding functions
 of the assignment value does not inherit from the class of field value
 \code{.value} at initialization;
 \code{FALSE}: no class check is performed.
-Note that initial values of \code{NULL} are disregarded, i.e. each value
-will be a valid value for overwriting \code{NULL} values in \code{.value}.}
-
-\item{strict}{\code{\link{numeric}}.
-Relevant when initially setting a reactive object
-\itemize{
-  \item{\code{0}: } {no checks are performed}
-  \item{\code{1}: } {warning if object is already a non-reactive or
-  reactive object or if any references does not exist yet}
-  \item{\code{2}: } {error if object is already a non-reactive or
-  reactive object or if any references do not exist yet}
-}}
-
-\item{strict_get}{\code{\link{numeric}}.
-Relevant if retrieving object when reactive reference has been broken
-(i.e. one of the referenced objects does not exist anymore).
-reactive relationship.
-\itemize{
-  \item{\code{0}: } {return last cached value}
-  \item{\code{1}: } {object value is set to \code{NULL} and is returned}
-  \item{\code{2}: } {object value is set to an instance of condition class
-      \code{BrokenReactiveReference} and this condition is triggered whenever
-      the object's value is requested by \code{\link[base]{get}} or
-      its syntactical surgars \code{{obj-name} or \code{}}
-  }
-}}
+Note that initial values of \code{NULL} are disregarded for the class
+check, i.e. any value overwriting an initial \code{NULL} value
+is valid.}
 
 \item{strict_set}{\code{\link{numeric}}.
 Relevant if assigning an explicit value to an object with reactive
@@ -96,10 +50,6 @@ reactive relationship.
   \item{\code{1}: } {ignore with Warning}
   \item{\code{2}: } {stop with error}
 }}
-
-\item{verbose}{\code{\link{logical}}.
-\code{TRUE}: output certain status information;
-\code{FALSE}: no status information.}
 
 \item{...}{Further arguments to be passed to subsequent functions/methods.
 In particular, all environments of references that you are referring to

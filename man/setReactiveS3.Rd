@@ -46,8 +46,9 @@ then trigger the execution of their binding functions
 of the assignment value does not inherit from the class of field value
 \code{.value} at initialization;
 \code{FALSE}: no class check is performed.
-Note that initial values of \code{NULL} are disregarded, i.e. each value
-will be a valid value for overwriting \code{NULL} values in \code{.value}.}
+Note that initial values of \code{NULL} are disregarded for the class
+check, i.e. any value overwriting an initial \code{NULL} value
+is valid.}
 
 \item{strict}{\code{\link{numeric}}.
 Relevant when initially setting a reactive object

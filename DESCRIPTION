@@ -1,22 +1,16 @@
 Package: reactr
 Type: Package
 Title: Reactive object bindings with built-in caching and push functionality
-Version: 0.1.9
-Date: 2014-10-29 16:07:10
+Version: 0.1.10
+Date: 2014-11-12 17:56:28
 Author: Janko Thyson [aut, cre]
 Maintainer: Janko Thyson <janko.thyson@gmail.com>
-Description: Facilitates the specification of reactive object bindings based on
-    binding contracts. That way, a variable 'x' can be dynamically monitored by
-    'n' other variables. Whenever 'x' changes, the 'n' variables monitoring 'x'
-    change according to their binding contracts.
+Description: Facilitates the specification of reactive object bindings based
+        on binding contracts. That way, a variable 'x' can be dynamically
+        monitored by 'n' other variables. Whenever 'x' changes, the 'n'
+        variables monitoring 'x' change according to their binding contracts.
 License: GPL (>= 2)
 Roxygen: list(wrap = FALSE)
 NeedsCompilation: no
 Repository: CRAN
-Imports:
-    conditionr,
-    digest,
-    R6,
-    shiny,
-    yaml,
-    yamlr
+Imports: conditionr, digest, R6, shiny, yaml, yamlr

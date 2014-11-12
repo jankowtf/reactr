@@ -1,3 +1,33 @@
+# Version 0.1.10
+ - Merge branch 'master' into develop
+ - cleanup
+ - Merge branch 'pre-release-0.2'
+ - Merge branch 'develop' into pre-release-0.2
+ - minor roxygen changes
+ - Merge branch 'pre-release-0.2'
+ - Merge branch 'develop' into pre-release-0.2
+ - shiny refactoring
+ - Merge branch 'develop'
+ - Merge branch 'develop' into pre-release-0.2
+ - updated vignettes
+ - Merge branch 'master' into develop
+ - Merge branch 'pre-release-0.2'
+ - Merge branch 'develop' into pre-release-0.2
+ - updated vignettes
+ - Merge branch 'master' into develop
+ - Merge branch 'master' into pre-release-0.2
+ - vignette pdf
+ - Merge branch 'pre-release-0.2'
+ - Merge branch 'develop' into pre-release-0.2
+ - vignettes convenience functions and reactive references
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.9'
+ - Merge branch 'release-0.1.9' into pre-release-0.2
+ - build commit v0.1.9
+ - Merge branch 'master' into pre-release-0.2
+
+----------
+
 # Version 0.1.9
  - fixes #25 getBinding() removeReactive() --> rmReactive() removeFromRegistry() --> rmFromRegistry() conenvience functions
  - Merge branch 'master' into develop

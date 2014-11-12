@@ -597,3 +597,18 @@ test_that("setShinyReactive/bi-directional", {
 # b
 # b <- 2
 # a
+
+##------------------------------------------------------------------------------
+context("setShinyReactive/already regular binding")
+##------------------------------------------------------------------------------
+
+test_that("setShinyReactive/already regular binding", {
+  
+  x_1 <- 1
+  expect_equal(setShinyReactive(id = "x_1", value = 10), 10)
+  x_2 <- 1
+  expect_is(
+    setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2)),
+    "reactive"
+  )
+})

@@ -18,8 +18,8 @@ Resets the registry located in \code{getOption("reactr")$.registry}.
 \dontrun{
 
 ## Set reactives so registry has entries //  
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() {
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() {
   .ref_1 <- get("x_1")
 })
 

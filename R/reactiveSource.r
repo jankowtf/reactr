@@ -28,8 +28,16 @@
 #'    Note that initial values of \code{NULL} are disregarded for the class 
 #'    check, i.e. any value overwriting an initial \code{NULL} value 
 #'    is valid.
+#' @param strict_set \code{\link{numeric}}.
+#'    Relevant if \code{typed = TRUE} and class mismatch.
+#'    \itemize{
+#'      \item{\code{0}: } {ignore without warning}
+#'      \item{\code{1}: } {ignore with Warning}
+#'      \item{\code{2}: } {stop with error}
+#'    }
 #' @template threedots
-#' @example inst/examples/setReactiveSource.r
+#' @return \code{ANY}. The value of \code{value}.
+#' @example inst/examples/reactiveSource.r
 #' @seealso \code{
 #'    \link[reactr]{setShinyReactive},
 #'    \link[shiny]{reactive}
@@ -39,18 +47,23 @@
 #' @import conditionr
 #' @import shiny
 #' @export 
-setReactiveSource <- function(
+reactiveSource <- function(
   id, 
   value = NULL,
   where = parent.frame(),
   overwrite = TRUE,
-  typed = FALSE
+  typed = FALSE,
+  strict_set = c(0,1,2)
 ) {
-#   ## Ensure that shiny let's us do our thing //
-#   shiny_opt <- getOption("shiny.suppressMissingContextError")
-#   if (is.null(shiny_opt) || !shiny_opt) {
-#     options(shiny.suppressMissingContextError = TRUE)  
-#   }
+  
+  strict_set <- as.numeric(match.arg(as.character(strict_set), 
+    as.character(c(0, 1, 2))))
+  
+  ## Ensure that shiny let's us do our thing //
+  shiny_opt <- getOption("shiny.suppressMissingContextError")
+  if (is.null(shiny_opt) || !shiny_opt) {
+    options(shiny.suppressMissingContextError = TRUE)  
+  }
   
   if (exists(id, where = where, inherits = FALSE) && !is.null(value)) {
     if (!overwrite) {
@@ -64,7 +77,8 @@ setReactiveSource <- function(
   ## 1) `.class` field and value:
   values$.class <- class(value)
   ## 2) `.class` field and value:
-  values$.checkClass <- function(self = values, v) {
+  values$.checkClass <- function(self = values, v, strict_set = 0) {
+    out <- TRUE
     if (self$.class != "NULL" && !inherits(v, self$.class)) {
     ## --> seems like enforcing class consistency for `NULL` situations
     ## does not make sense as `NULL` will probably only be used for initial
@@ -76,25 +90,50 @@ setReactiveSource <- function(
       if (all(c(class(v), self$.class) %in% num_clss)) {
         
       } else {
-        conditionr::signalCondition(
-          call = substitute(
-            assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-            list(ID = id, VALUE = v, WHERE = where)
-          ),
-          condition = "AbortedWithClassCheckError",
-          msg = c(
-            Reason = "class of assignment value does not inherit from initial class",
-            ID = id,
-            UID = computeObjectUid(id, where),
-            Location = capture.output(where),
-            "Class expected" = values$.class,
-            "Class provided" = class(v)
-          ),
-          ns = "reactr",
-          type = "error"
-        )
+        if (strict_set == 0) {
+          return(FALSE)
+        } else if (strict_set == 1) {
+          conditionr::signalCondition(
+            call = substitute(
+              assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
+              list(ID = id, VALUE = v, WHERE = where)
+            ),
+            condition = "AbortedWithClassCheckWarning",
+            msg = c(
+              Reason = "class of assignment value does not inherit from initial class",
+              ID = id,
+              UID = computeObjectUid(id, where),
+              Location = capture.output(where),
+              "Class expected" = values$.class,
+              "Class provided" = class(v)
+            ),
+            ns = "reactr",
+            type = "warning"
+          )    
+          return(FALSE)
+        } else if (strict_set == 2) {
+          conditionr::signalCondition(
+            call = substitute(
+              assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
+              list(ID = id, VALUE = v, WHERE = where)
+            ),
+            condition = "AbortedWithClassCheckError",
+            msg = c(
+              Reason = "class of assignment value does not inherit from initial class",
+              ID = id,
+              UID = computeObjectUid(id, where),
+              Location = capture.output(where),
+              "Class expected" = values$.class,
+              "Class provided" = class(v)
+            ),
+            ns = "reactr",
+            type = "error"
+          )
+        }
       }
+      out <- FALSE
     }
+    out
   }
   
   makeActiveBinding(id, env = where, 
@@ -103,10 +142,14 @@ setReactiveSource <- function(
         if (missing(v)) {
           values$value
         } else {
-          if (typed) {
-            values$.checkClass(v = v)
-          }    
-          values$value <- v
+          is_valid <- if (typed) {
+            values$.checkClass(v = v, strict_set = strict_set)
+          } else {
+            TRUE
+          }         
+          if (is_valid) {
+            values$value <- v
+          }
         }
       }
 #     })

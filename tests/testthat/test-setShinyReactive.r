@@ -141,11 +141,11 @@ test_that("setShinyReactive/bi-directional (2)", {
   ##----------
   
   if (FALSE) {
-    setReactiveS3(id = "x_3", value = function() {
+    setReactive(id = "x_3", value = function() {
       "object-ref: {id: x_4}"
       x_4
     }, verbose = verbose)
-    setReactiveS3(id = "x_4", value = function() {
+    setReactive(id = "x_4", value = function() {
       "object-ref: {id: x_3}"
       x_3
     }, verbose = verbose)
@@ -161,11 +161,11 @@ test_that("setShinyReactive/bi-directional (2)", {
     rmReactive("x_3")
     rmReactive("x_4")
     
-    setReactiveS3(id = "x_3", value = function() {
+    setReactive(id = "x_3", value = function() {
       "object-ref: {id: x_4}"
       x_4
     }, verbose = verbose)
-    setReactiveS3(id = "x_4", value = function() {
+    setReactive(id = "x_4", value = function() {
       "object-ref: {id: x_3}"
       x_3
     }, verbose = verbose)
@@ -236,7 +236,7 @@ test_that("setShinyReactive/reactive-only", {
   makeReactiveBinding("x_1")
   x_1 <- 10
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2)),
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2)),
     "reactive"
   )
   expect_equal(res(), x_1 * 2)
@@ -252,7 +252,7 @@ test_that("setShinyReactive/reactive-only", {
   makeReactiveBinding("x_1")
   x_1 <- 10
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2), 
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2), 
       lazy = TRUE),
     "reactive"
   )
@@ -270,7 +270,7 @@ test_that("setShinyReactive/strict_get=1", {
   makeReactiveBinding("x_1")
   x_1 <- 10
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2), 
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2), 
                             strict_set = 1),
     "reactive"
   )
@@ -286,7 +286,7 @@ test_that("setShinyReactive/strict_get=2", {
   class(x_1)
   x_1 <- 10
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2), 
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2), 
                             strict_set = 2),
     "reactive"
   )
@@ -313,7 +313,7 @@ test_that("setShinyReactive/source-and-reactive", {
   expect_equal(res, 10)
   expect_equal(x_1, 20)
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2)),
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2)),
     "reactive"
   )
   expect_equal(res(), x_1 * 2)
@@ -332,7 +332,7 @@ test_that("setShinyReactive/source-and-reactive", {
     10
   )
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2), 
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2), 
       lazy = TRUE),
     "reactive"
   )
@@ -353,7 +353,7 @@ test_that("setShinyReactive/strict_get=1", {
     10
   )
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2), 
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2), 
                             strict_set = 1),
     "reactive"
   )
@@ -371,7 +371,7 @@ test_that("setShinyReactive/strict_get=2", {
   )
   x_1 <- 10
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2), 
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2), 
                             strict_set = 2),
     "reactive"
   )
@@ -396,7 +396,7 @@ test_that("setShinyReactive/push", {
   expect_is(
     res <- setShinyReactive(
       id = "x_2", 
-      value = reactiveBinding({
+      value = reactiveExpression({
         message(paste0(Sys.time(), ": push from x_1"))
         x_1 * 2
       }),
@@ -425,7 +425,7 @@ test_that("setShinyReactive/push", {
   expect_is(
     res <- setShinyReactive(
       id = "x_2", 
-      value = reactiveBinding({
+      value = reactiveExpression({
         message(paste0(Sys.time(), ": push from x_1"))
         x_1 * 2
       }),
@@ -461,7 +461,7 @@ test_that("setShinyReactive/debugging observer", {
   
   ## Eager //
   makeReactiveBinding("x_1")
-  setShinyReactive("x_2", value = reactiveBinding({
+  setShinyReactive("x_2", value = reactiveExpression({
     message(paste0(Sys.time(), ": push from x_1"))
     x_1 + 60*60*24
   }))
@@ -478,7 +478,7 @@ test_that("setShinyReactive/debugging observer", {
   
   ## Lazy //
   makeReactiveBinding("x_1")
-  setShinyReactive("x_2", value = reactiveBinding({
+  setShinyReactive("x_2", value = reactiveExpression({
     message(paste0(Sys.time(), ": push from x_1"))
     x_1 + 60*60*24
   }), lazy = TRUE)
@@ -498,7 +498,7 @@ test_that("setShinyReactive/debugging observer", {
 
   ## When error occurs //
   makeReactiveBinding("x_1")
-  setShinyReactive("x_2", value = reactiveBinding({
+  setShinyReactive("x_2", value = reactiveExpression({
     message(paste0(Sys.time(), ": push from x_1"))
     x_1 + 60*60*24
   }))
@@ -520,7 +520,7 @@ test_that("setShinyReactive/debugging observer", {
 
   ## Correcting the error:
   makeReactiveBinding("x_1")
-  setShinyReactive("x_2", value = reactiveBinding({
+  setShinyReactive("x_2", value = reactiveExpression({
     message(paste0(Sys.time(), ": push from x_1"))
     x_1 + 60*60*24
   }))
@@ -549,7 +549,7 @@ test_that("setShinyReactive/bi-directional", {
     10
   )
   expect_is(
-    res <- setShinyReactive(id = "x_2", value = reactiveBinding(x_1 * 2)),
+    res <- setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2)),
     "reactive"
   )
   expect_equal(x_2, 20)

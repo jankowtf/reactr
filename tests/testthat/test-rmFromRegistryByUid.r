@@ -5,8 +5,8 @@ test_that("rmFromRegistryByUid", {
   id <- "x_1"
   id_2 <- "x_2"
   
-  setReactiveS3(id = id, value = 10)
-  setReactiveS3(id = id_2, value = function() {
+  setReactive(id = id, value = 10)
+  setReactive(id = id_2, value = function() {
     .ref_1 = get("x_1")
   })
 

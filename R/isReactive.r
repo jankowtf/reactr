@@ -113,9 +113,10 @@ setMethod(
     if (inherits(has_binding, "try-error")){
       has_binding <- FALSE
     } 
-    in_registry <- exists(computeObjectUid(id = id, where = where), 
-      getRegistry(), inherits = FALSE)
-    has_binding && in_registry
+#     in_registry <- exists(computeObjectUid(id = id, where = where), 
+#       getRegistry(), inherits = FALSE)
+#     has_binding && in_registry
+    has_binding
   } else {
     FALSE
   }

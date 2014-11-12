@@ -26,7 +26,7 @@ invisible instance of class \code{\link[reactr]{ReactiveObject.S3}}.
 \examples{
 \dontrun{ 
 
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 getReactive(id = "x_1")
 res <- getReactive(id = "x_1", hidden = TRUE)
 res

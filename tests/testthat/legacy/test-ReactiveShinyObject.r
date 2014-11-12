@@ -45,7 +45,7 @@ test_that("ReactiveShinyObject", {
 })
 
 
-test_that("ReactiveShinyObject/setReactiveS3", {
+test_that("ReactiveShinyObject/setReactive", {
 
   resetRegistry()
   registry <- getRegistry()

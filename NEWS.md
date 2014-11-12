@@ -1,3 +1,21 @@
+# CHANGES IN reactr VERSION 0.1.10
+
+## NEW FEATURES
+
+## BUG FIXES
+
+- some bugfixes
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+- some minor changes to better align it with the use of other packages
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.9
 
 ## NEW FEATURES

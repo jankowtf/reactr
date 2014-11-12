@@ -29,8 +29,8 @@ id_1 <- "x_1"
 id_2 <- "x_2"
 where <- environment()
 
-setReactiveS3(id = id_1, value = 10)
-setReactiveS3(id = id_2, value = function() {
+setReactive(id = id_1, value = 10)
+setReactive(id = id_2, value = function() {
   .ref_1 <- get("x_1", envir = where)
 })
 

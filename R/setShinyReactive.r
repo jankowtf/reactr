@@ -48,7 +48,7 @@
 #' infinite recursion. 
 #' 
 #' If you would like to define mutual reactive bindings, you currently need to 
-#' use \code{\link[reactr]{setReactiveS3}} as it implements a value caching 
+#' use \code{\link[reactr]{setReactive}} as it implements a value caching 
 #' mechanism that allows reactive functions only to be triggered when actually
 #' needed, i.e. when the referenced object has actually changed.
 #' 
@@ -62,7 +62,7 @@
 #' these two approaches can and will be merged in future releases.
 #' 
 #' Also, adding a similar caching mechansims as the one implemented by 
-#' \code{\link[reactr]{setReactiveS3}} seems possible.
+#' \code{\link[reactr]{setReactive}} seems possible.
 #' 
 #' @param id \code{\link{character}}.
 #'    Name/ID of the reactive object to set.
@@ -72,7 +72,7 @@
 #'    Environment in which to create the object.
 #' @param lazy \code{\link{logical}}.
 #'    \code{TRUE}: lazy execution of reactive expressions/conductors set via 
-#'    \code{\link[reactr]{reactiveBinding}} (i.e. `()` is necessary);
+#'    \code{\link[reactr]{reactiveExpression}} (i.e. `()` is necessary);
 #'    \code{FALSE} eagerly execution (i.e. simply calling the object triggers 
 #'    the binding function).
 #' @param push \code{\link{logical}}.
@@ -132,7 +132,7 @@
 #'    See section \emph{Referenced environments}.
 #' @example inst/examples/setShinyReactive.r
 #' @seealso \code{
-#'     \link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references
@@ -170,11 +170,11 @@ setShinyReactive <- function(
   }
   
   ## Check if regular value assignment or reactive function //
-  if (!inherits(value, "ReactiveBinding")) {    
+  if (!inherits(value, "ReactiveExpression")) {    
 #       makeReactiveBinding(symbol = id, env = where)
 #       visible <- assign(id, value, envir = where, inherits = FALSE)
-    visible <- setReactiveSource(id = id, value = value, 
-      where = where, typed = typed)
+    visible <- reactiveSource(id = id, value = value, 
+      where = where, typed = typed, strict_set = strict_set)
   } else {
     o <- shiny:::Observable$new(value$fun, value$label, value$domain)
     shiny:::registerDebugHook(".func", o, "Reactive")
@@ -189,11 +189,11 @@ setShinyReactive <- function(
         o
         function(v) {
           if (missing(v)) {
-#             o$.value <- v
-            ## --> this should only be allowed for bi-directional relationships
+
           } else {
             if (strict_set == 0) {
 #                 o$.value <<- v    
+              ## --> this should only be allowed for bi-directional relationships
             } else if (strict_set == 1) {
               conditionr::signalCondition(
                 call = substitute(

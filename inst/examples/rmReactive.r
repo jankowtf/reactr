@@ -4,8 +4,8 @@
 resetRegistry()
 
 ## Non-strict //
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", 
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", 
   value = function() {
     "object-ref: {id: x_1}"
     x_1 * 2
@@ -18,8 +18,8 @@ x_2
 ## --> `x_2` not affected but only because `strict_get = 0`
 
 ## Strict: level 1 //
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", 
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", 
   value = function() {
     "object-ref: {id: x_1}"
     x_1 * 2
@@ -31,8 +31,8 @@ try(x_2)
 ## --> warning as referenced object `x_1` does not exist anymore
 
 ## Strict: level 2 //
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", 
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", 
   value = function() {
     "object-ref: {id: x_1}"
     x_1 * 2

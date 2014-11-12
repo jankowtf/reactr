@@ -31,7 +31,7 @@ Class representing the system state (S3) and its constructor function.
 }
 \details{
 Instances of this class are implicitly created when calling
-\code{\link[reactr]{setReactiveS3}} and stored in the registry. Objects of
+\code{\link[reactr]{setReactive}} and stored in the registry. Objects of
 this class can be thought of as the "invisible parts" of the reactive objects
 of whom actually only field \code{.value} is visible to the user or other
 functions consuming the reactive object.
@@ -64,7 +64,7 @@ Initial: \code{character()}.}
 
 \item{\code{.class}}{\code{\link{character}}.
 Class of visible object (\code{.value}). If strongly typed (argument \code{typed = TRUE} in
-\code{\link[reactr]{setReactiveS3}}, then this field is used to determine
+\code{\link[reactr]{setReactive}}, then this field is used to determine
 if an assignment value is valid or not.
 Initial: \code{character()}.}
 
@@ -72,7 +72,7 @@ Initial: \code{character()}.}
 Field for tracking if the visible object value actually exists already
 or if this is a mere "empty container" in the registry.
 It is set to \code{TRUE} when the visible object is actually set/created
-via \code{\link[reactr]{setReactiveS3}}.
+via \code{\link[reactr]{setReactive}}.
 Initial: \code{FALSE}.}
 
 \item{\code{.has_cached}}{\code{\link{logical}}.
@@ -243,11 +243,11 @@ getFromRegistry("x_1_copied")
 obj$.hasPullReferences()
 obj$.hasPushReferences()
 ## --> difficult to illustrate "stand-alone"; these methods are executed 
-## when calling `setReactiveS3()`
+## when calling `setReactive()`
 
 ## Register and unregister //
 exists(obj$.uid, getRegistry())
-## --> actually, the object is already registered through call to 'setReactiveS3()' 
+## --> actually, the object is already registered through call to 'setReactive()' 
 ## but we overwrite the existing value here for illustration:
 obj$.register(overwrite = TRUE)
 
@@ -273,7 +273,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-  	\link[reactr]{setReactiveS3}
+  	\link[reactr]{setReactive}
 }
 }
 

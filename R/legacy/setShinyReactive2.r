@@ -48,7 +48,7 @@
 #' infinite recursion. 
 #' 
 #' If you would like to define mutual reactive bindings, you currently need to 
-#' use \code{\link[reactr]{setReactiveS3}} as it implements a value caching 
+#' use \code{\link[reactr]{setReactive}} as it implements a value caching 
 #' mechanism that allows reactive functions only to be triggered when actually
 #' needed, i.e. when the referenced object has actually changed.
 #' 
@@ -62,7 +62,7 @@
 #' these two approaches can and will be merged in future releases.
 #' 
 #' Also, adding a similar caching mechansims as the one implemented by 
-#' \code{\link[reactr]{setReactiveS3}} seems possible.
+#' \code{\link[reactr]{setReactive}} seems possible.
 #' 
 #' @param id \code{\link{character}}.
 #'    Name/ID of the reactive object to set.
@@ -148,7 +148,7 @@
 #'    See section \emph{Referenced environments}.
 #' @example inst/examples/setShinyReactive.r
 #' @seealso \code{
-#'     \link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references

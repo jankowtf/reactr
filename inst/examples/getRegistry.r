@@ -2,7 +2,7 @@
 
 ## Set reactive so that there are elements in registry //  
 resetRegistry()
-setReactiveS3(id = "x_1", value = Sys.time())  
+setReactive(id = "x_1", value = Sys.time())  
   
 registry <- getRegistry()
 registry

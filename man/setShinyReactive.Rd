@@ -18,7 +18,7 @@ Environment in which to create the object.}
 
 \item{lazy}{\code{\link{logical}}.
 \code{TRUE}: lazy execution of reactive expressions/conductors set via
-\code{\link[reactr]{reactiveBinding}} (i.e. `()` is necessary);
+\code{\link[reactr]{reactiveExpression}} (i.e. `()` is necessary);
 \code{FALSE} eagerly execution (i.e. simply calling the object triggers
 the binding function).}
 
@@ -104,7 +104,7 @@ at all. Thus, mutual reactive bindings of the above form result in an
 infinite recursion.
 
 If you would like to define mutual reactive bindings, you currently need to
-use \code{\link[reactr]{setReactiveS3}} as it implements a value caching
+use \code{\link[reactr]{setReactive}} as it implements a value caching
 mechanism that allows reactive functions only to be triggered when actually
 needed, i.e. when the referenced object has actually changed.
 }
@@ -120,7 +120,7 @@ reactive version of \code{\link[base]{makeActiveBinding}},
 these two approaches can and will be merged in future releases.
 
 Also, adding a similar caching mechansims as the one implemented by
-\code{\link[reactr]{setReactiveS3}} seems possible.
+\code{\link[reactr]{setReactive}} seems possible.
 }
 \examples{
 \dontrun{
@@ -645,7 +645,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
 }
 \seealso{
 \code{
-    \link[reactr]{setReactiveS3}
+    \link[reactr]{setReactive}
 }
 }
 

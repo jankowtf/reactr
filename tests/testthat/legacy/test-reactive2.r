@@ -72,11 +72,11 @@ o$getValue
   rmReactive("x_1")
   rmReactive("x_2")
   
-  setReactiveS3(id = "x_1", value = function() {
+  setReactive(id = "x_1", value = function() {
     "object-ref: {id: x_2}"
     x_2
   }, verbose = TRUE)
-  setReactiveS3(id = "x_2", value = function() {
+  setReactive(id = "x_2", value = function() {
     "object-ref: {id: x_1}"
     x_1
   }, verbose = TRUE)

@@ -16,7 +16,7 @@ Removes the reactive \strong{character} from an object, i.e. its
 binding(s) to other objects and the ability for other objects to have
 bindings to it. It is equivalent to transforming the object to one that
 has been assigned via \code{\link[base]{assign}} or \code{\link[base]{<-}}
-instead of \code{\link[reactr]{setReactiveS3}} and thus in turn
+instead of \code{\link[reactr]{setReactive}} and thus in turn
 by \code{\link[base]{makeActiveBinding}}.
 
 Note that it is \strong{not} equivalent to removing/deleting the object!
@@ -36,7 +36,7 @@ that has been cached. \strong{So there is no actual reactive binding anymore}.
 \examples{
 \dontrun{
 
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 unsetReactiveByUid(uid = computeObjectUid("x_1"))
 isReactive("x_1")
 

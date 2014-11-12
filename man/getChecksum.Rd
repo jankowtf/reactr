@@ -29,13 +29,13 @@ Retrieves the checksum of a reactive object's visible value.
 resetRegistry()
 
 ## Reactive object w/o references //
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 getChecksum(id = "x_1")
 ## --> equivalent to:
 digest::digest(10)
 
 ## Reactive object with references //
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 getChecksum(id = "x_2")
 ## --> equivalent to:
 digest::digest(x_1)

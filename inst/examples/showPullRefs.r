@@ -1,7 +1,7 @@
 \dontrun{
 
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 showPullRefs(id = "x_1")
 showPullRefs(id = "x_2")

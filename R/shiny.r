@@ -23,7 +23,7 @@
 #'     \link[reactr]{setShinyReactive},
 #'     \link[shiny]{reactive},
 #'     \link[shiny]{makeReactiveBinding},
-#'     \link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references
@@ -232,7 +232,7 @@ ReactrObservable <- R6Class(
 #'     \link[reactr]{setShinyReactive},
 #'     \link[shiny]{reactive},
 #'     \link[shiny]{makeReactiveBinding},
-#'     \link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references

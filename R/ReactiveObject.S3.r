@@ -6,7 +6,7 @@
 #' 
 #' @details
 #' Instances of this class are implicitly created when calling 
-#' \code{\link[reactr]{setReactiveS3}} and stored in the registry. Objects of 
+#' \code{\link[reactr]{setReactive}} and stored in the registry. Objects of 
 #' this class can be thought of as the "invisible parts" of the reactive objects 
 #' of whom actually only field \code{.value} is visible to the user or other 
 #' functions consuming the reactive object.
@@ -41,14 +41,14 @@
 #'    Initial: \code{character()}.
 #' @field .class \code{\link{character}}.
 #'    Class of visible object (\code{.value}). If strongly typed (argument \code{typed = TRUE} in
-#'    \code{\link[reactr]{setReactiveS3}}, then this field is used to determine
+#'    \code{\link[reactr]{setReactive}}, then this field is used to determine
 #'    if an assignment value is valid or not.
 #'    Initial: \code{character()}.
 #' @field .exists_visible \code{\link{logical}}.
 #'    Field for tracking if the visible object value actually exists already 
 #'    or if this is a mere "empty container" in the registry. 
 #'    It is set to \code{TRUE} when the visible object is actually set/created
-#'    via \code{\link[reactr]{setReactiveS3}}.
+#'    via \code{\link[reactr]{setReactive}}.
 #'    Initial: \code{FALSE}.
 #' @field .has_cached \code{\link{logical}}.
 #'    Field for tracking if the instance already has a cached value or not.
@@ -122,7 +122,7 @@
 #' @return Instance of class \code{ReactiveObject.S3}.
 #' @example inst/examples/ReactiveObject.S3.r
 #' @seealso \code{
-#'   	\link[reactr]{setReactiveS3}
+#'   	\link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references
@@ -368,9 +368,9 @@ ReactiveObject.S3 <- function(
     }
     this$.copy <- function(self = this, id, where = parent.frame()) {
       if (!is.null(self$.func)) {
-        setReactiveS3(id = id, value = self$.func, where = where)
+        setReactive(id = id, value = self$.func, where = where)
       } else {
-        setReactiveS3(id = id, value = self$.value, where = where)
+        setReactive(id = id, value = self$.value, where = where)
       }
     }
     this$.ensurePullReferencesIntegrity = function(self = this, ref_uid) {

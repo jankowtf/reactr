@@ -33,8 +33,8 @@ These are stored in the environment `getOption(".reactr")$.registry` which is ac
 
 Besides the actual checksum values, each registry entry - corresponding to the **invisible** reactive object - also contains some other information that is often required/useful:
 
-- `.id`: object ID as specified in call to `setReactiveS3()`
-- `.uid`: object UID computed as follows: `digest::digest(list(id = id, where = {where}))` where `{where}` stands for the location provided via argument `where` in the call to `setReactiveS3()`
+- `.id`: object ID as specified in call to `setReactive()`
+- `.uid`: object UID computed as follows: `digest::digest(list(id = id, where = {where}))` where `{where}` stands for the location provided via argument `where` in the call to `setReactive()`
 - `{uid}`: subenvironment corresponding to the object`s UID. This contains the object`s own checksum 
 - `{ref-uid}`: subenvironments for each referenced object should there exist any. These in turn contain the referenced object`s checksum that is used to determine if an update is necessary or not.
 
@@ -55,7 +55,7 @@ showRegistry()
 resetRegistry()
 
 ## Set reactive object //
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 showRegistry()
 ## --> Object with UID 2fc2e352f72008b90a112f096cd2d029 has been registered
 ## The object UID was computed by:
@@ -75,7 +75,7 @@ reg_x_1$.where
 reg_x_1$.checksum
 
 ## Set additional reactive object //
-setReactiveS3(
+setReactive(
   id = "x_2", 
   value = function() {
     ## object-ref: {id: x_1}

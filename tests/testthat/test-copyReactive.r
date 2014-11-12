@@ -4,7 +4,7 @@ context("copyReactive/ReactiveObject.S3")
 
 test_that("copyReactive/ReactiveObject.S3", {
 
-  setReactiveS3(id = "x_1", value = 10)
+  setReactive(id = "x_1", value = 10)
   expect_equal(copyReactive(id_from = "x_1", id_to = "x_1_c"), 10)
   expect_equal(x_1_c, 10)
   x_1 <- 20
@@ -22,6 +22,7 @@ context("copyReactive/ReactiveShinyObject")
 
 test_that("copyReactive/ReactiveShinyObject", {
 
+  skip("legacy")
   setShinyReactive(id = "x_1", value = 10)
   expect_equal(copyReactive(id_from = "x_1", id_to = "x_1_c"), 10)
   expect_equal(x_1_c, 10)

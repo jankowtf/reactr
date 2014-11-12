@@ -1,8 +1,8 @@
 context("unsetReactive/basics")
 test_that("unsetReactive", {
   
-  setReactiveS3(id = "x_1", value = 10)
-  setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+  setReactive(id = "x_1", value = 10)
+  setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
   expect_true(unsetReactive(id = "x_1"))
   expect_equal(x_1, 10)

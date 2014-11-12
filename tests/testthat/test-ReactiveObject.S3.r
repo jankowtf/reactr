@@ -42,11 +42,11 @@ test_that("ReactiveObject.S3", {
   
 })
 
-test_that("ReactiveObject.S3/setReactiveS3", {
+test_that("ReactiveObject.S3/setReactive", {
 
   resetRegistry()
   registry <- getRegistry()
-  setReactiveS3(id = "x_1", value = 10)
+  setReactive(id = "x_1", value = 10)
   obj <- getFromRegistry("x_1")
   expect_is(obj, "ReactiveObject.S3")
 

@@ -23,7 +23,7 @@
 #' @example inst/examples/checkReactivityPrerequisites.r
 #' @seealso \code{
 #'   	\link[reactr]{checkReactivityPrerequisites-ReactiveObject.S3-method},
-#'     \link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references
@@ -54,7 +54,7 @@ setGeneric(
 #' @example inst/examples/checkReactivityPrerequisites.r
 #' @seealso \code{
 #'    \link[reactr]{checkReactivityPrerequisites},
-#'     \link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references
@@ -96,7 +96,7 @@ setMethod(
 #' @example inst/examples/checkReactivityPrerequisites.r
 #' @seealso \code{
 #'    \link[reactr]{checkReactivityPrerequisites},
-#'     \link[reactr]{setReactiveS3}
+#'     \link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references

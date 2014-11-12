@@ -15,7 +15,7 @@
 #' has been removed, from this point on they will simply return the last value
 #' that has been cached if \code{strict = FALSE} or \code{NULL} if 
 #' \code{strict = TRUE} when the observing object was set via 
-#' \code{\link[reactr]{setReactiveS3}}
+#' \code{\link[reactr]{setReactive}}
 #' 
 #' @note
 #' The main S4 method is 

@@ -23,7 +23,7 @@ Retrieves reactive object from registry
 
 ## Example object //
 resetRegistry()
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 x_1
 
 ## Get from registry //

@@ -46,7 +46,7 @@
 #' is assigned to argument \code{where}, it is recommended to provide those
 #' environments explicitly as additional arguments. E.g., when using 
 #' object \code{x_1} from environment \code{where_1}, then include \code{where_1}
-#' as additional argument in the call to \code{\link[reactr]{setReactiveS3}}. 
+#' as additional argument in the call to \code{\link[reactr]{setReactive}}. 
 #' This might not always be necessary due to the way lexical scoping works, but
 #' it is probably generally a good idea.
 #' 
@@ -121,9 +121,9 @@
 #' @param ... Further arguments to be passed to subsequent functions/methods.
 #'    In particular, all environments of references that you are referring to
 #'    in the body of the binding function. See section \emph{Referenced environments}.
-#' @example inst/examples/setReactiveS3.r
+#' @example inst/examples/setReactive.r
 #' @seealso \code{
-#'   	\link[reactr]{setReactiveS3}
+#'   	\link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references
@@ -131,7 +131,7 @@
 #' @import shiny
 #' @import yamlr
 #' @export 
-setReactiveS3 <- function(
+setReactive <- function(
     id,
     value = NULL,
     where = parent.frame(),

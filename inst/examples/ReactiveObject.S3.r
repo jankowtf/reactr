@@ -66,11 +66,11 @@ getFromRegistry("x_1_copied")
 obj$.hasPullReferences()
 obj$.hasPushReferences()
 ## --> difficult to illustrate "stand-alone"; these methods are executed 
-## when calling `setReactiveS3()`
+## when calling `setReactive()`
 
 ## Register and unregister //
 exists(obj$.uid, getRegistry())
-## --> actually, the object is already registered through call to 'setReactiveS3()' 
+## --> actually, the object is already registered through call to 'setReactive()' 
 ## but we overwrite the existing value here for illustration:
 obj$.register(overwrite = TRUE)
 

@@ -1,10 +1,10 @@
 \dontrun{
 
 ##------------------------------------------------------------------------------
-## setReactiveS3 --> ReactiveObject.S3 //
+## setReactive --> ReactiveObject.S3 //
 ##------------------------------------------------------------------------------
 
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 copyReactive(id_from = "x_1", id_to = "x_1_c")
 x_1_c == x_1
 

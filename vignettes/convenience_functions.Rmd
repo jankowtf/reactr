@@ -15,8 +15,8 @@ suppressMessages(require("reactr"))
 Example objects
 
 ```{r}
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 ```
 
 ### Compute object UID
@@ -73,8 +73,8 @@ exists("x_2")
 Example objects 
 
 ```{r}
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() {
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() {
   "object-ref: {id: x_1}"
   x_1 * 2
 })
@@ -115,7 +115,7 @@ showPullRefs(id = "x_2")
 showPushRefs(id = "x_1")
 showPushRefs(id = "x_2")
 
-setReactiveS3(id = "x_2", value = function() {
+setReactive(id = "x_2", value = function() {
   "object-ref: {id: x_1}"
   x_1 * 2
 }, push = TRUE)
@@ -134,8 +134,8 @@ rmReactive("x_2")
 Example objects 
 
 ```{r}
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 ```
 
 ### Get registry 
@@ -177,8 +177,8 @@ computeObjectUid("x_2") %in% showRegistry()
 
 ```{r}
 ## Ensure content that might previously have been removed //
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 ## Reset //
 showRegistry()

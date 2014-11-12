@@ -18,14 +18,14 @@ test_that("computeObjectUid/no where", {
   id_1 <- "x_1"
   id_2 <- "x_2"
   
-  setReactiveS3(id = id_1, value = 10)
+  setReactive(id = id_1, value = 10)
   if (!is_testthat) {
-    setReactiveS3(id = id_2, value = function() {
+    setReactive(id = id_2, value = function() {
       .ref_1 <- get(x = id_1)
     })
   } else {
     this <- this
-    setReactiveS3(id = id_2, value = function() {
+    setReactive(id = id_2, value = function() {
       .ref_1 <- get(x = get("id_1", envir = eval(this)))
     })
   }
@@ -52,14 +52,14 @@ test_that("computeObjectUid/where", {
   id_2 <- "x_2"
   
   where <- new.env()
-  setReactiveS3(id = id_1, value = 10, where = where)
+  setReactive(id = id_1, value = 10, where = where)
   if (!is_testthat) {
-    setReactiveS3(id = id_2, value = function() {
+    setReactive(id = id_2, value = function() {
       .ref_1 <- get(x = id_1)
     }, where = where)
   } else {
     this <- this
-    setReactiveS3(id = id_2, value = function() {
+    setReactive(id = id_2, value = function() {
       .ref_1 <- get(x = get("id_1", envir = eval(this)))
     }, where = where)
   }

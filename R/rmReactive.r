@@ -18,7 +18,7 @@
 #' If other reactive variables have been observing the reactive variable that
 #' has been removed, from this point on they will simply return the last value
 #' that has been cached if when setting the object via 
-#' \code{\link[reactr]{setReactiveS3}} argument \code{strict} was \code{FALSE}.
+#' \code{\link[reactr]{setReactive}} argument \code{strict} was \code{FALSE}.
 #' In case it was \code{TRUE}, the function returns error condition 
 #' \code{BrokenReactiveBinding}.
 #' 

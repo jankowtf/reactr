@@ -26,11 +26,11 @@ suppressMessages(require("reactr"))
 A cool feature of this binding type is that you are free to alter the values of *both* objects and still keep everything "in sync"
 
 ```{r}
-setReactiveS3(id = "x_1", function() "object-ref: {id: x_2}")
-setReactiveS3(id = "x_2", function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", function() "object-ref: {id: x_2}")
+setReactive(id = "x_2", function() "object-ref: {id: x_1}")
 ```
 
-Note that the call to `setReactiveS3()` merely initializes objects with bidirectional bindings to the value `numeric(0)`:
+Note that the call to `setReactive()` merely initializes objects with bidirectional bindings to the value `numeric(0)`:
 
 ```{r}
 x_1
@@ -77,12 +77,12 @@ rmReactive("x_2")
 As the binding functions are "inversions"" of each other, we still get to a steady state.
 
 ```{r}
-setReactiveS3(id = "x_1", function() {
+setReactive(id = "x_1", function() {
   "object-ref: {id: x_2}"
   x_2 * 2
 })
 
-setReactiveS3(id = "x_2", function() {
+setReactive(id = "x_2", function() {
   "object-ref: {id: x_1}"
   x_1 / 2
 })
@@ -135,12 +135,12 @@ rmReactive("x_2")
 As the binding functions are **not** "inversions"" of each other, we never reach/stay at a steady state. Cached values are/can never be used as by the definition of the binding functions the two objects are constantly updating each other.
 
 ```{r}
-setReactiveS3(id = "x_1", function() {
+setReactive(id = "x_1", function() {
   "object-ref: {id: x_2}"
   x_2 * 2
 })
 
-setReactiveS3(id = "x_2", function() {
+setReactive(id = "x_2", function() {
   "object-ref: {id: x_1}"
   x_1 * 10
 })

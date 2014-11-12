@@ -3,7 +3,7 @@
 \name{ReactrObservable}
 \alias{ReactrObservable}
 \title{Class: ReactrObservable}
-\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x0000000008af4e50> 
+\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x0000000009415fa0> 
  - attr(*, "name")= chr "ReactrObservable_generator"
 }}
 \usage{
@@ -41,7 +41,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
     \link[reactr]{setShinyReactive},
     \link[shiny]{reactive},
     \link[shiny]{makeReactiveBinding},
-    \link[reactr]{setReactiveS3}
+    \link[reactr]{setReactive}
 }
 }
 \keyword{datasets}

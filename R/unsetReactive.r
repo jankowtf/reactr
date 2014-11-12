@@ -6,7 +6,7 @@
 #' binding(s) to other objects and the ability for other objects to have 
 #' bindings to it. It is equivalent to transforming the object to one that 
 #' has been assigned via \code{\link[base]{assign}} or \code{\link[base]{<-}} 
-#' instead of \code{\link[reactr]{setReactiveS3}} and thus in turn 
+#' instead of \code{\link[reactr]{setReactive}} and thus in turn 
 #' by \code{\link[base]{makeActiveBinding}}. 
 #' 
 #' Note that it is \strong{not} equivalent to removing/deleting the object! 
@@ -132,10 +132,26 @@ setMethod(
   if (!length(id)) {
     stop(paste0("Provide an ID"))
   } else {
-    out <- try(unsetReactiveByUid(uid = computeObjectUid(id = id, where = where)), 
-               silent = TRUE)
+    out <- try(
+      unsetReactiveByUid(uid = computeObjectUid(id = id, where = where)), 
+      silent = TRUE
+    )
+    
     if (inherits(out, "try-error")) {
       out <- TRUE
+    }
+    
+    ## For reactives set via `setShinyReactive()` //
+    if (exists(id, envir = where, inherits = FALSE)) {
+      has_binding <- try(bindingIsActive(id, where))
+      if (inherits(has_binding, "try-error")) {
+        has_binding <- FALSE
+      } 
+      if (has_binding) {
+        tmp <- get(id, envir = where, inherits = FALSE)
+        rm(list = id, envir = where, inherits = FALSE)
+        assign(id, tmp, where)
+      }
     }
   }
     

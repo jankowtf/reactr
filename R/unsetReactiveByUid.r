@@ -6,7 +6,7 @@
 #' binding(s) to other objects and the ability for other objects to have 
 #' bindings to it. It is equivalent to transforming the object to one that 
 #' has been assigned via \code{\link[base]{assign}} or \code{\link[base]{<-}} 
-#' instead of \code{\link[reactr]{setReactiveS3}} and thus in turn 
+#' instead of \code{\link[reactr]{setReactive}} and thus in turn 
 #' by \code{\link[base]{makeActiveBinding}}. 
 #' 
 #' Note that it is \strong{not} equivalent to removing/deleting the object! 

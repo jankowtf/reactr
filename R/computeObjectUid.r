@@ -13,7 +13,7 @@
 #' @return \code{\link{character}}. Object UID (checksum).
 #' @example inst/examples/computeObjectUid.r
 #' @seealso \code{
-#'   	\link[reactr]{setReactiveS3}
+#'   	\link[reactr]{setReactive}
 #' }
 #' @template author
 #' @template references

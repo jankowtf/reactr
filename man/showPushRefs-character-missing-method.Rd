@@ -24,13 +24,13 @@ See generic: \code{\link[reactr]{showPushRefs}}
 \examples{
 \dontrun{
 
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 showPushRefs(id = "x_1")
 showPushRefs(id = "x_2")
 
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}", push = TRUE)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}", push = TRUE)
 showPushRefs(id = "x_2")
 
 ## Clean up //

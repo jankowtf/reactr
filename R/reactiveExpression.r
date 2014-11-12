@@ -19,7 +19,7 @@
 #' @param label	\code{\link{character}}.
 #'    A label for the reactive expression, useful for debugging.
 #' @template threedots
-#' @example inst/examples/reactiveBinding.r
+#' @example inst/examples/reactiveExpression.r
 #' @seealso \code{
 #'     \link[shiny]{reactive}
 #' }
@@ -27,12 +27,13 @@
 #' @template references
 #' @import shiny
 #' @export 
-reactiveBinding <- function(
+reactiveExpression <- function(
   x, 
   env = parent.frame(), 
   quoted = FALSE, 
   label = NULL,
-  domain = getDefaultReactiveDomain()
+  domain = getDefaultReactiveDomain(),
+  caller_offset = 1
 ) {
   ## Ensure that shiny let's us do this //
   shiny_opt <- getOption("shiny.suppressMissingContextError")
@@ -40,10 +41,11 @@ reactiveBinding <- function(
     options(shiny.suppressMissingContextError = TRUE)  
   }
   
-  fun <- exprToFunction(x, env, quoted)
+  fun <- exprToFunction(expr = x, env = env, quoted = quoted, 
+    caller_offset = caller_offset)
   # Attach a label and a reference to the original user source for debugging
   if (is.null(label))
-    label <- sprintf('reactiveBinding(%s)', paste(deparse(body(fun)), collapse='\n'))
+    label <- sprintf('reactiveExpression(%s)', paste(deparse(body(fun)), collapse='\n'))
   srcref <- attr(substitute(x), "srcref")
   if (length(srcref) >= 2) attr(label, "srcref") <- srcref[[2]]
   attr(label, "srcfile") <- shiny:::srcFileOfRef(srcref[[1]])
@@ -54,10 +56,10 @@ reactiveBinding <- function(
   out$domain <- domain
 #   o <- Observable$new(fun, label, domain)
 #   registerDebugHook(".func", o, "Reactive")
-  structure(out, class = c("ReactiveBinding", "environment"))
+  structure(out, class = c("ReactiveExpression", "environment"))
 }
 
-# reactiveBinding <- function(
+# reactiveExpression <- function(
 #   x, 
 #   env = parent.frame(), 
 #   quoted = FALSE, 

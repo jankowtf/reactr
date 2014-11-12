@@ -29,8 +29,8 @@ Removes entry of associated reactive object that has been unset via
 resetRegistry()
 
 where <- new.env()
-setReactiveS3(id = "x_1", value = 10, where = where)
-setReactiveS3(id = "x_2", 
+setReactive(id = "x_1", value = 10, where = where)
+setReactive(id = "x_2", 
   value = function() .ref_1 <- get("x_1"),
   where = where
 )

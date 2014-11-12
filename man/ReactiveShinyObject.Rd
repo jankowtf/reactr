@@ -3,7 +3,7 @@
 \name{ReactiveShinyObject}
 \alias{ReactiveShinyObject}
 \title{Class: ReactiveShinyObject}
-\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x0000000008add5b8> 
+\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x0000000009401c88> 
  - attr(*, "name")= chr "ReactiveShinyObject_generator"
 }}
 \usage{
@@ -177,7 +177,7 @@ Janko Thyson \email{janko.thyson@rappster.de}
     \link[reactr]{setShinyReactive},
     \link[shiny]{reactive},
     \link[shiny]{makeReactiveBinding},
-    \link[reactr]{setReactiveS3}
+    \link[reactr]{setReactive}
 }
 }
 \keyword{datasets}

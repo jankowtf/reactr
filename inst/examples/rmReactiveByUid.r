@@ -1,8 +1,8 @@
 \dontrun{
 
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 isReactive("x_1")
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 unsetReactiveByUid(uid = computeObjectUid("x_1"))
 isReactive("x_1")
@@ -18,7 +18,7 @@ x_1
 x_2
 ## --> no reactive binding to `x_1` anymore
 
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}",
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}",
               strict_get = 1)
 x_1 <- 10
 x_2

@@ -37,20 +37,20 @@ It is a declared goal of this package to re-use as much of the existing function
 
 ----------
 
-### Quick example 1: setReactiveS3()
+### Quick example 1: setReactive()
 
 Note that we set `verbose = TRUE` to enable the display of status messages that help understand what's going on.
 
 Set reactive object `x_1` that others can reference:
 
 ```
-setReactiveS3(id = "x_1", value = 10, verbose = TRUE)
+setReactive(id = "x_1", value = 10, verbose = TRUE)
 ```
 
 Set reactive object that references `x_1` and has a reactive binding of form `x_1 * 2` to it:
 
 ```
-setReactiveS3(id = "x_2", value = function() {
+setReactive(id = "x_2", value = function() {
   "object-ref: {id: x_1}"
   x_1 * 2
 }, verbose = TRUE)
@@ -80,7 +80,7 @@ x_2
 # [1] 200
 ```
 
-See the examples of `setReactiveS3()` for a short description of the information contained in the status messages
+See the examples of `setReactive()` for a short description of the information contained in the status messages
 
 Note that for subsequent requests and as long as `x_1` does not change, the value that has been cached during the last update cycle is used instead of re-running the binding function each time:
 
@@ -133,7 +133,7 @@ rmReactive("x_2")
 
 3. Strictness levels can be defined for 
 
-  - the *creation process* itself in `setReactiveS3()` and`setShinyReactive()`: see argument `strict`
+  - the *creation process* itself in `setReactive()` and`setShinyReactive()`: see argument `strict`
   - *getting* the visible value of a reactive object: see argument `strict_get`
   - *setting* the visible value of a reactive object: see argument `strict_set`
   
@@ -189,7 +189,7 @@ setShinyReactive(id = "x_2", value = function() {
 })
 ```
 
-The main difference to using `setReactiveS3()` consists in the classes that are used: instead of class `ReactiveObject.S3` class `ReactiveShinyObject` (and the classes that this class inherits from) is used:
+The main difference to using `setReactive()` consists in the classes that are used: instead of class `ReactiveObject.S3` class `ReactiveShinyObject` (and the classes that this class inherits from) is used:
 
 ```
 reg_x_1 <- getFromRegistry("x_1")
@@ -201,7 +201,7 @@ reg_x_2
 class(reg_x_2)
 ```
 
-Do the same for reactive objects set via `setReactiveS3()` and compare the objects/classes.
+Do the same for reactive objects set via `setReactive()` and compare the objects/classes.
 
 Clean up 
 
@@ -259,19 +259,19 @@ rmReactive("x_2")
 Specify reactive objects:
 
 ```
-setReactiveS3(id = "x_1", value = 1:5, typed = TRUE)
-setReactiveS3(id = "x_2", value = function() { 
+setReactive(id = "x_1", value = 1:5, typed = TRUE)
+setReactive(id = "x_2", value = function() { 
   "object-ref: {id: x_1}"
   x_1 * 2
 }, typed = TRUE)
 
-setReactiveS3(id = "x_3", value = function() { 
+setReactive(id = "x_3", value = function() { 
   "object-ref: {id: x_1}"
   "object-ref: {id: x_2}"
   data.frame(x_1 = x_1, x_2 = x_2)
 }, typed = TRUE)
 
-setReactiveS3(id = "x_4", value = function() { 
+setReactive(id = "x_4", value = function() { 
   "object-ref: {id: x_1}"
   "object-ref: {id: x_2}"
   "object-ref: {id: x_3}"
@@ -414,13 +414,13 @@ rmReactive("x_4")
 Set object `x_1` that others can reference:
 
 ```
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 ```
 
 Set object that references `x_1` and has a reactive binding to it:
 
 ```
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 x_1 
 x_2
@@ -463,9 +463,9 @@ rmReactive("x_2")
 ### Example
 
 ```
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
-setReactiveS3(id = "x_3", value = function() {
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_3", value = function() {
   "object-ref: {id: x_1, as: ref_1}"
   ref_1 * 2
 })
@@ -514,9 +514,9 @@ rmReactive("x_3")
 ### Example
 
 ```
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
-setReactiveS3(id = "x_3", value = function() {
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_3", value = function() {
   "object-ref: {id: x_1, as: ref_1}"
   "object-ref: {id: x_2, as: ref_2}"
   ref_1 + ref_2 * 2
@@ -572,11 +572,11 @@ rmReactive("x_3")
 A cool feature of this binding type is that you are free to alter the values of *both* objects and still keep everything "in sync"
 
 ```
-setReactiveS3(id = "x_1", function() "object-ref: {id: x_2}")
-setReactiveS3(id = "x_2", function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", function() "object-ref: {id: x_2}")
+setReactive(id = "x_2", function() "object-ref: {id: x_1}")
 ```
 
-Note that the call to `setReactiveS3()` merely initializes objects with bidirectional bindings to the value `numeric(0)`:
+Note that the call to `setReactive()` merely initializes objects with bidirectional bindings to the value `numeric(0)`:
 
 ```
 x_1
@@ -630,12 +630,12 @@ rmReactive("x_2")
 As the binding functions are "inversions"" of each other, we still get to a steady state.
 
 ```
-setReactiveS3(id = "x_1", function() {
+setReactive(id = "x_1", function() {
   "object-ref: {id: x_2}"
   x_2 * 2
 })
 
-setReactiveS3(id = "x_2", function() {
+setReactive(id = "x_2", function() {
   "object-ref: {id: x_1}"
   x_1 / 2
 })
@@ -698,12 +698,12 @@ rmReactive("x_2")
 As the binding functions are **not** "inversions"" of each other, we never reach/stay at a steady state. Cached values are/can never be used as by the definition of the binding functions the two objects are constantly updating each other.
 
 ```
-setReactiveS3(id = "x_1", function() {
+setReactive(id = "x_1", function() {
   "object-ref: {id: x_2}"
   x_2 * 2
 })
 
-setReactiveS3(id = "x_2", function() {
+setReactive(id = "x_2", function() {
   "object-ref: {id: x_1}"
   x_1 * 10
 })
@@ -763,8 +763,8 @@ This turns reactive objects (that are, even though hidden from the user, instanc
 **Note that it does not mean the a reactive object is removed alltogether! See `rmReactive()` for that purpose**
 
 ```
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 ## Illustrate reactiveness //
 x_1
@@ -787,7 +787,7 @@ x_2
 ```
 
 ### NOTE
-What happens when a reactive relationship is broken or removed depends on how you set argument `strictness_get` in the call to `setReactiveS3()` or `setShinyReactive()`. 
+What happens when a reactive relationship is broken or removed depends on how you set argument `strictness_get` in the call to `setReactive()` or `setShinyReactive()`. 
 
 Also refer to vignette [Strictness](https://github.com/Rappster/reactr/blob/master/vignettes/strictness.Rmd) for more details.
 
@@ -796,8 +796,8 @@ Also refer to vignette [Strictness](https://github.com/Rappster/reactr/blob/mast
 This deletes the object alltogether. 
 
 ```
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 
 ## Remove reactive --> remove it from `where` //
 rmReactive(id = "x_1")
@@ -825,8 +825,8 @@ Ensuring example content in registry:
 
 ```
 resetRegistry()
-setReactiveS3(id = "x_1", value = 10)
-setReactiveS3(id = "x_2", value = function() "object-ref: {id: x_1}")
+setReactive(id = "x_1", value = 10)
+setReactive(id = "x_2", value = function() "object-ref: {id: x_1}")
 ```
 
 #### Get the registry object
@@ -841,7 +841,7 @@ registry <- getRegistry()
 showRegistry()
 ```
 
-The registry contains the UIDs of the reactive objects that have been set via `setReactiveS3`. See `computeObjectUid()` for the details of the computation of object UIDs.
+The registry contains the UIDs of the reactive objects that have been set via `setReactive`. See `computeObjectUid()` for the details of the computation of object UIDs.
 
 #### Retrieve from registry
 
@@ -855,7 +855,7 @@ getFromRegistry(computeObjectUid("x_2"))
 
 ```
 
-This object corresponds to the otherwise "hidden part"" of `x_1` that was implicitly created by the call to `setReactiveS3()`.
+This object corresponds to the otherwise "hidden part"" of `x_1` that was implicitly created by the call to `setReactive()`.
 
 ```
 class(x_1_hidden)

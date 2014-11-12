@@ -27,7 +27,7 @@ try(x_1 <- setShinyReactive("x_1", reactive(x_2 * 2)))
 try(x_2 <- setShinyReactive("x_2", reactive(x_1 / 2)))
 
 ## If you would like to define mutual reactive bindings, you currently need to 
-## use \code{\link[reactr]{setReactiveS3}} as it implements a value caching 
+## use \code{\link[reactr]{setReactive}} as it implements a value caching 
 ## mechanism that allows reactive functions only to be triggered when actually
 ## needed, i.e. when the referenced object has actually changed.  
   

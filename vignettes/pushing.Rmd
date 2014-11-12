@@ -47,7 +47,7 @@ pkgs <- c("dplyr", "sendmailR", "RSQLite", "sqldf")
 Create reactive object that others can reference:
 
 ```{r}
-setReactiveS3(id = "x_1", value = 1)
+setReactive(id = "x_1", value = 1)
 ```
  
 Define the actual core functions for 
@@ -96,7 +96,7 @@ try(dbReadTable(my_db$con, "x_1"), silent = TRUE)
 Push in action 
 
 ```{r}
-setReactiveS3(
+setReactive(
   id = "pushToDatabase", 
   value = function() {
     "object-ref: {id: x_1}"

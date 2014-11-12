@@ -1,7 +1,7 @@
 \dontrun{
 
 ## Reactive objects //
-setReactiveS3(id = "x_1", value = 10)
+setReactive(id = "x_1", value = 10)
 isReactive(id = "x_1")
 unsetReactive("x_1")
 isReactive(id = "x_1")

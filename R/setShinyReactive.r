@@ -179,6 +179,13 @@ setShinyReactive <- function(
     o <- shiny:::Observable$new(value$fun, value$label, value$domain)
     shiny:::registerDebugHook(".func", o, "Reactive")
     visible <- structure(o$getValue, observable = o, class = "reactive") 
+
+    ## Handle already-in-place regular bindings //
+    if (  exists(id, envir = where, inherits = FALSE) &&
+          !isReactive(id = id, where = where)
+    ) {
+      rm(list = id, envir = where, inherits = FALSE)
+    }
     
     ## Call to 'makeActiveBinding' //
     makeActiveBinding(

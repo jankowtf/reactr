@@ -1,3 +1,20 @@
+# CHANGES IN reactr VERSION 0.1.11
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+- behavior for already-in-place regular bindings in `setShinyReactive()`:
+  these are now silently overwritten
+
+## MINOR CHANGES
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.10
 
 ## NEW FEATURES

@@ -21,7 +21,11 @@ test_that("reactiveSource/overwrite", {
   
 })
 
-test_that("reactiveSource/typed", {
+##------------------------------------------------------------------------------
+context("reactiveSource/typed")
+##------------------------------------------------------------------------------
+
+test_that("reactiveSource/typed/basics", {
 
   ## Strict = 0 //
   expect_equal(res <- reactiveSource(id = "x_1", value = 10, typed = TRUE), 10)
@@ -40,5 +44,27 @@ test_that("reactiveSource/typed", {
     typed = TRUE, strict = 2), 10)
   expect_error(x_1 <- "hello world!")
   rm("x_1")
+  
+})
+
+test_that("reactiveSource/typed/advanced", {
+
+  expect_equal(reactiveSource(id = "x_1", typed = TRUE, from_null = FALSE,
+                              strict = 2), NULL)
+  expect_equal(x_1, NULL)
+  expect_error(x_1 <- "hello world!")
+  expect_equal(x_1, NULL)
+  
+  expect_equal(reactiveSource(id = "x_1", value = 10, typed = TRUE, 
+    to_null = FALSE, strict = 2), 10)
+  expect_equal(x_1, 10)
+  expect_error(x_1 <- NULL)
+  expect_equal(x_1, 10)
+  
+  expect_equal(reactiveSource(id = "x_1", value = 10, typed = TRUE, 
+    numint = FALSE, strict = 2), 10)
+  expect_equal(x_1, 10)
+  expect_error(x_1 <- as.integer(10))
+  expect_equal(x_1, 10)
   
 })

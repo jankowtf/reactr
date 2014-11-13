@@ -4,7 +4,7 @@
 \title{Create Reactive Source Object}
 \usage{
 reactiveSource(id, value = NULL, where = parent.frame(), overwrite = TRUE,
-  typed = FALSE, strict_set = c(0, 1, 2))
+  typed = FALSE, strict_set = c(0, 1, 2), ...)
 }
 \arguments{
 \item{id}{\code{\link{character}}.
@@ -39,7 +39,9 @@ Relevant if \code{typed = TRUE} and class mismatch.
   \item{\code{2}: } {stop with error}
 }}
 
-\item{...}{Further arguments to be passed to subsequent functions/methods.}
+\item{Further}{arguments to be passed to subsequent functions.
+In particular:
+\code{\link[typr]{setTyped}} and \code{\link[typr]{validateType}}.}
 }
 \value{
 \code{ANY}. The value of \code{value}.
@@ -69,10 +71,38 @@ x_1
 ## --> as `x_1` already existed with a non-NULL value and `overwrite = FALSE`,
 ## no overwrite has been performed
 
+##------------------------------------------------------------------------------
 ## Typed //
-reactiveSource(id = "x_1", value = 10, typed = TRUE)
-x_1 <- 20
+##------------------------------------------------------------------------------
+
+## Basics //
+## Strict = 0:
+(reactiveSource(id = "x_1", value = 10, typed = TRUE))
+x_1 <- "hello world!"
+x_1
+## --> simply ignored 
+
+## Strict = 1:
+(reactiveSource(id = "x_1", value = 10, typed = TRUE, strict = 1))
 try(x_1 <- "hello world!")
+x_1
+## --> ignored with warning
+
+## Strict = 2:
+(reactiveSource(id = "x_1", value = 10, typed = TRUE, strict = 2))
+try(x_1 <- "hello world!")
+x_1
+## --> ignored with error
+
+## Advanced //
+(reactiveSource(id = "x_1", typed = TRUE, from_null = FALSE, strict = 2))
+try(x_1 <- "hello world!")
+
+(reactiveSource(id = "x_1", value = 10, typed = TRUE, to_null = FALSE, strict = 2))
+try(x_1 <- NULL)
+
+(reactiveSource(id = "x_1", value = 10, typed = TRUE, numint = FALSE, strict = 2))
+try(x_1 <- as.integer(10))
 
 }
 }

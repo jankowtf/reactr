@@ -54,7 +54,8 @@ reactive relationship.
 \item{...}{Further arguments to be passed to subsequent functions/methods.
 In particular, all environments of references that you are referring to
 in the body of the binding function.
-See section \emph{Referenced environments}.}
+See section \emph{Referenced environments}.
+Also \code{\link[reactr]{reactiveSource}}.}
 }
 \description{
 Creates an reactive object as the ones created by the
@@ -192,6 +193,39 @@ where_1$x_2
 rmReactive("x_1", where_1)
 rmReactive("x_2", where_1)
 suppressWarnings(rm(where_1))
+
+##------------------------------------------------------------------------------
+## Typed sources //
+##------------------------------------------------------------------------------
+
+## Basics //
+## Strict = 0:
+setShinyReactive(id = "x_1", value = 10, typed = TRUE)
+x_1 <- "hello world!"
+x_1
+## --> simply ignored 
+
+## Strict = 1:
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, strict = 1)
+try(x_1 <- "hello world!")
+x_1
+## --> ignored with warning
+
+## Strict = 2:
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, strict = 2)
+try(x_1 <- "hello world!")
+x_1
+## --> ignored with error
+
+## Advanced //
+setShinyReactive(id = "x_1", typed = TRUE, from_null = FALSE, strict = 2)
+try(x_1 <- "hello world!")
+
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, to_null = FALSE, strict = 2)
+try(x_1 <- NULL)
+
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, numint = FALSE, strict = 2)
+try(x_1 <- as.integer(10))
 
 ##------------------------------------------------------------------------------  
 ## Mutltiple reactive bindings //

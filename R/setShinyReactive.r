@@ -130,6 +130,7 @@
 #'    In particular, all environments of references that you are referring to
 #'    in the body of the binding function. 
 #'    See section \emph{Referenced environments}.
+#'    Also \code{\link[reactr]{reactiveSource}}.
 #' @example inst/examples/setShinyReactive.r
 #' @seealso \code{
 #'     \link[reactr]{setReactive}
@@ -174,7 +175,7 @@ setShinyReactive <- function(
 #       makeReactiveBinding(symbol = id, env = where)
 #       visible <- assign(id, value, envir = where, inherits = FALSE)
     visible <- reactiveSource(id = id, value = value, 
-      where = where, typed = typed, strict_set = strict_set)
+      where = where, typed = typed, strict_set = strict_set, ...)
   } else {
     o <- shiny:::Observable$new(value$fun, value$label, value$domain)
     shiny:::registerDebugHook(".func", o, "Reactive")

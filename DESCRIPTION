@@ -5,16 +5,23 @@ Version: 0.1.13
 Date: 2014-11-13 21:29:36
 Author: Janko Thyson [aut, cre]
 Maintainer: Janko Thyson <janko.thyson@gmail.com>
-Description: The package facilitates the specification of reactive objects based on reactive
-          expressions that dynamically bind them to other objects. That way, an object 'x'
-          can be dynamically observed by 'n' other objects. Whenever 'x' changes, the 'n'
-          variables observing 'x' change according to their reactive expressions that
-          defines the actual binding relationship. Two different reactivity are provided:
-          one builds on top of functionality from the shiny package, the other is an
-          alternative implementation that reveals a lot of the details that shiny solves in
-          a similar, yet much more elegantly way.
+Description: The package facilitates the specification of reactive objects
+    based on reactive expressions that dynamically bind them to other objects.
+    That way, an object 'x' can be dynamically observed by 'n' other objects.
+    Whenever 'x' changes, the 'n' variables observing 'x' change according to
+    their reactive expressions that defines the actual binding relationship.
+    Two different reactivity are provided: one builds on top of functionality
+    from the shiny package, the other is an alternative implementation that
+    reveals a lot of the details that shiny solves in a similar, yet much more
+    elegantly way.
 License: GPL (>= 2)
 Roxygen: list(wrap = FALSE)
 NeedsCompilation: no
 Repository: CRAN
-Imports: conditionr, digest, R6, shiny, yaml, yamlr
+Imports:
+    conditionr,
+    digest,
+    R6,
+    shiny,
+    yaml,
+    yamlr

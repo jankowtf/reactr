@@ -201,12 +201,6 @@ rmReactive("x_2")
 ```
 ### Feature showcase 2: getting closer to an actual use case
 
-#### NOTE
-There still exists a bug for `(x_1 <- 1)` that has not been catched yet.
-The example has been refactored from using `setReactive()` to `setShinyReactive()`. 
-
-When using `setReactive()` in an appropriate way, you should see the results that I included as comments in the example below after running `(x_1 <- 1)´. When using `setShinyReactive()`, there still seems to be something that I missed.
-
 Specify reactive objects:
 
 ```

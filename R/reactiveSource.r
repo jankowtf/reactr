@@ -131,7 +131,6 @@ reactiveSource <- function(
           )
         }
       }
-      out <- FALSE
     }
     out
   }
@@ -146,7 +145,7 @@ reactiveSource <- function(
             values$.checkClass(v = v, strict_set = strict_set)
           } else {
             TRUE
-          }         
+          }            
           if (is_valid) {
             values$value <- v
           }

@@ -140,17 +140,14 @@ x_1 <- Sys.time()
 x_1
 
 ## Set reactive object that has a reactive binding to 'x_1' //
-setShinyReactive(id = "x_2", value = function() {
-  "object-ref: {id: x_1, as: ref_1}"
-  ref_1 + 60*60*24
-})
+setShinyReactive(id = "x_2", value = reactiveExpression(x_1 + 60*60*24))
 x_2
 ## --> 'x_1' + one day
 
 ## Modification of referenced object //
 (x_1 <- Sys.time())
 x_2
-## --> updated according to binding function
+## --> updated according to reactive expression/binding
 x_2
 ## --> cached value, no update 
 ## For subsequent requests of `x_2` and as long as `x_1` has not changed
@@ -178,10 +175,7 @@ where_1$x_1
 ## Set reactive object that has a reactive binding to 'x_1' //
 setShinyReactive(
   id = "x_2", 
-  value = function() {
-    "object-ref: {id: x_1, where: where_1, as: ref_1}"
-      ref_1 + 60*60*24
-  }, 
+  value = reactiveExpression(where_1$x_1 + 60*60*24), 
   where = where_1
 )
 where_1$x_2
@@ -205,11 +199,7 @@ suppressWarnings(rm(where_1))
 
 x_1 <- setShinyReactive("x_1", 10)
 x_2 <- setShinyReactive("x_2", 20)
-x_3 <- setShinyReactive("x_3", value = function() {
-  "object-ref: {id: x_1, as: ref_1}"
-  "object-ref: {id: x_2, as: ref_2}"
-  (ref_1 + ref_2) * 2
-})
+x_3 <- setShinyReactive("x_3", value = reactiveExpression((x_1 + x_2) * 2))
 
 x_1
 x_2
@@ -231,14 +221,12 @@ rmReactive("x_3")
 ## Bi-directional bindings //
 ##------------------------------------------------------------------------------
 
-setShinyReactive(id = "x_1", value = function() {
-  "object-ref: {id: x_2}"
-  x_2
-})
-setShinyReactive(id = "x_2", value = function() {
-  "object-ref: {id: x_1}"
-  x_1
-})
+## NOTE
+## Currently not possible yet, or to be more precise, only when using the 
+## version at GitHub branch `legacy-shinyOld`: 
+
+setShinyReactive(id = "x_1", value = reactiveExpression(x_2))
+setShinyReactive(id = "x_2", value = reactiveExpression(x_1))
 
 ## Bi-directionally referenced objects are initialized to `NULL` //
 x_1
@@ -255,47 +243,6 @@ x_1
 ## --> updated according to binding function 
 x_1
 ## --> cached value
-
-##------------------------------------------------------------------------------  
-## Classes used and relations to the shiny framework //
-##------------------------------------------------------------------------------
-
-## In order to use as much of existing shiny functionality as possible for
-## implementing the desired reactivity features (hiding of actual binding 
-## functions, caching and bi-directinal bindings), a class `ReactiveShinyObject`. 
-## Theoretically, this class **could** inherit directly from 
-## `shiny::Observable` if all class components/functions were exported by shiny. 
-## As this is currently not the case, an cloned version of 
-## `shiny::Observable` named `ReactrObservable` is introduced which class 
-## `ReactiveShinyObject` inherits from. That way, all additional functionality
-## with respect to shiny's reacitivity features are encapsulated in an own 
-## class.
-
-## Instances of class `ReactiveShinyObject` provide the invisible object structure
-## that powers the reactivity mechanism and is, for the most part (*),  
-## in accordance with the way that reactivity is implemented by shiny. 
-## The visible part only consist in the value of field `.value`, 
-
-setShinyReactive(id = "x_1", value = 10)
-(inst <- getFromRegistry("x_1"))
-class(inst)
-inst$.value
-rmReactive("x_1")
-
-## (*)
-## The shiny framework distinguishes between instances of class `ReactiveValues`
-## that are created by calling `makeReactiveBinding()` and instances of 
-## class `Observable` that are created by calling `reactive()`.
-## The shiny functionality used by `setShinyReactive()` does not follow this
-## distinction and only uses instances of `ReactiveShinyObject()` for
-## objects that **are referenced** by other objects as well as for objects 
-## **referencing** other objects.
-## While this is all the shiny functionality needed for the scope and 
-## purpose of this package, it might mean that current instances of class 
-## `ReactiveShinyObject` are not completely compatible with classic shiny 
-## applications yet (not tested yet).
-
-## See vignette `Relations to shiny` for more details.
 
 ################################################################################
 ## Profiling //
@@ -336,11 +283,7 @@ require("microbenchmark")
 ## Making sure that all objects are removed from `.GlobalEnv`
 rm(list = ls(environment(), all.names = TRUE))
 
-resetRegistry()
-object.size(getRegistry())
-## --> cost of having an empty registry is 56 bytes
-
-## NOTE:
+## NOTE
 ## Due to some strange behavior with respect to environments, you might need
 ## to run this function a couple of times until no error is issued anymore!
 
@@ -351,10 +294,7 @@ res <- microbenchmark(
   "get x_2" = get("x_2", envir = environment()),
   "set/x_3/setShinyReactive" = setShinyReactive(
     id = "x_3", 
-    value = function() {
-      ## object-ref: {id: x_1}
-      x_1 * 2
-    }
+    value = reactiveExpression(x_1 * 2)
   ),
   "get x_3" = get("x_3", envir = environment()),
   "change x_1" = assign("x_1", 100),
@@ -364,42 +304,42 @@ res <- microbenchmark(
 
 res
 # Unit: microseconds
-#                      expr      min        lq       mean   median        uq       max neval
-#  set/x_1/setShinyReactive 1869.734 2010.6895 2122.40532 2122.625 2207.3165  2654.465   100
-#           set/x_2/regular    1.185    2.9610    3.57160    3.554    4.1460     9.477   100
-#                   get x_1   71.663   82.9150  105.00027   87.653   96.2410  1542.812   100
-#                   get x_2    1.184    2.3695    3.40575    3.553    3.5540    19.544   100
-#  set/x_3/setShinyReactive 6684.135 7096.6370 7685.51670 7660.163 7880.7760 10295.083   100
-#                   get x_3  219.725  243.7110  407.26102  260.294  299.6790  1327.233   100
-#                change x_1  183.005  202.8460  238.07289  217.060  236.0115  1779.712   100
-#                change x_2    1.184    2.9610    3.70764    3.554    4.1460    19.544   100
-#               get x_3 (2)  219.133  247.5610 1081.34824  263.848  310.9320 71234.060   100
+#                      expr      min        lq       mean    median        uq      max neval
+#  set/x_1/setShinyReactive 1834.791 1957.0910 1227.7340 2197.2475 2336.1305 3817.052   100
+#           set/x_2/regular    1.184    2.9610    3.88546    3.5530    4.1460   30.797   100
+#                   get x_1  122.004  143.6205  165.85389  164.3490  175.8980  278.950   100
+#                   get x_2    1.185    2.3700    3.54782    2.9620    3.55300   18.953   100
+#  set/x_3/setShinyReactive  973.067 1069.0115 1216.52330 1227.7340 1268.3040 2065.769   100
+#                   get x_3  127.334  162.8690  314.86403  183.3015  511.4085  929.241   100
+#                change x_1   61.595   83.8035  169.43716  162.5730  216.4675  467.285   100
+#                change x_2    1.184    2.9615    3.74326    3.5540    4.1460   15.991   100
+#               get x_3 (2)  122.004  147.4710  333.05206  181.5250  571.8175  935.163   100
 
 ## Costs //
 ## 1) Setting: simple `setShinyReactive()` compared to regular assignment:
-2122.625/3.554
+1227.7340/3.5530
 ## --> about 595 times slower, but nominal time is still quite small:
-2122.625/10^9 ## in seconds
+1227.7340/10^9 ## in seconds
 ##
 ## 2) Setting: one-directional `setShinyReactive()` compared to regular assignment:
-7660.163/3.554
+7660.163/3.5530
 ## --> about 2150 times slower, but nominal time is still quite small:
 7660.163/10^9 ## in seconds
 ##
 ## 3) Update: reactive object compared to regular object:
-217.060/3.554
-## --> about 60 times slower, but nominal time is still quite small:
-217.060/10^9 ## in seconds
+3.5540/3.5530
+## --> about the same
+3.5540/10^9 ## in seconds
 ##
 ## 4) Getting: simple reactive object compared to regular object:
-87.653/3.553
-## --> about 25 times slower, but nominal time is still quite small:
-87.653/10^9 ## in seconds
+164.3490/3.553
+## --> about 46 times slower, but nominal time is still quite small:
+164.3490/10^9 ## in seconds
 ##
 ## 5) Getting: referencing reactive object compared to regular object:
-260.294/3.553
-## --> about 73 times slower, but nominal time is still quite small:
-260.294/10^9 ## in seconds
+183.3015/3.553
+## --> about 51 times slower, but nominal time is still quite small:
+183.3015/10^9 ## in seconds
 
 ##------------------------------------------------------------------------------
 ## Memory //
@@ -407,35 +347,21 @@ res
 
 ## Reactive objects //
 rm(list = ls(environment(), all.names = TRUE))
-resetRegistry()
 
 (memsize_1 <- memory.size(max = FALSE))
 ## --> total memory used before setting reactive objects
 
 setShinyReactive(id = "x_1", value = 10)
-setShinyReactive(
-  id = "x_2", 
-  value = function() {
-    ## object-ref: {id: x_1}
-    x_1 * 2
-  }
-)
+setShinyReactive(id = "x_2", value = reactiveExpression(x_1 * 2))
 
 (memsize_2 <- memory.size(max = FALSE))
 ## --> total memory used after setting reactive objects
 
 ## Difference:
 memsize_2 / memsize_1
-## --> about 0,1 \% increase 
+## --> about 4 \% decrease (!?)
 
 ## Object sizes //
-object.size(getRegistry())
-## --> still 56 bytes (?)
-object.size(getFromRegistry("x_1"))
-## --> 432 bytes
-object.size(getFromRegistry("x_2"))
-## --> 432 bytes
-
 object.size(x_1)
 ## --> 48 bytes
 object.size(x_2)
@@ -445,7 +371,6 @@ object.size(x_2)
 
 ## Regular objects //
 rm(list = ls(environment(), all.names = TRUE))
-resetRegistry()
 
 (memsize_1 <- memory.size(max = FALSE))
 ## --> total memory used before setting reactive objects
@@ -459,99 +384,12 @@ x_2 <- x_1 * 2
 
 ## Difference:
 memsize_2 / memsize_1
-## --> about 0,01 \% increase
+## --> about 5 \% decrease (!?)
 
 object.size(x_1)
 ## --> 48 bytes
 object.size(x_2)
 ## --> 48 bytes
-
-##------------------------------------------------------------------------------
-## Microbenchmark 2: setShinyReactive vs. regular, no cache //
-##------------------------------------------------------------------------------
-
-require("microbenchmark")
-
-rm(list = ls(environment(), all.names = TRUE))
-resetRegistry()
-
-## NOTE:
-## Due to some strange behavior with respect to environments, you might need
-## to run this function a couple of times until no error is issued anymore!
-
-res <- microbenchmark(
-  "set/x_1/setShinyReactive" = setShinyReactive(id = "x_1", value = 10, cache = FALSE),
-  "set/x_2/regular" = assign("x_2", value = 10, envir = environment()),
-  "get x_1" = get("x_1", envir = environment()),
-  "get x_2" = get("x_2", envir = environment()),
-  "set/x_3/setShinyReactive" = setShinyReactive(
-    id = "x_3", 
-    value = function() {
-      ## object-ref: {id: x_1}
-      x_1 * 2
-    },
-    cache = FALSE
-  ),
-  "get x_3" = get("x_3", envir = environment()),
-  "change x_1" = assign("x_1", 100),
-  "change x_2" = assign("x_2", 100),
-  "get x_3 (2)" = get("x_3", envir = environment())
-)
-
-res
-
-# Unit: microseconds
-#                      expr      min        lq       mean    median        uq      max neval
-#  set/x_1/setShinyReactive 1880.394 2023.1265 2127.71193 2143.3530 2182.7380 2662.164   100
-#           set/x_2/regular    1.185    2.3690    3.48267    3.2575    4.1460   15.398   100
-#                   get x_1   34.351   39.6810   45.46727   42.3460   50.9335   74.624   100
-#                   get x_2    1.185    2.3700    3.70181    3.5540    4.1460   24.875   100
-#  set/x_3/setShinyReactive 6112.021 6737.4365 6982.78817 6873.0620 7058.7320 8630.268   100
-#                   get x_3  617.125  710.1085  793.87002  731.1325  775.8480 2493.965   100
-#                change x_1  177.676  191.8895  232.73078  207.2880  234.5310 2004.767   100
-#                change x_2    1.184    2.9620    3.85584    3.5540    4.1460   18.360   100
-#               get x_3 (2)  633.116  689.9710  728.38488  722.2490  745.9390  896.074   100
-
-## Costs //
-## 1) Setting: simple `setShinyReactive()` compared to regular assignment:
-2143.3530/3.2575
-## --> about 655 times slower, but nominal time is still quite small:
-2143.3530/10^9 ## in seconds
-## 1.a) Compared to enabled caching:
-2122.625/2143.3530
-## --> about the same
-##
-## 2) Setting: one-directional `setShinyReactive()` compared to regular assignment:
-6873.0620/3.2575
-## --> about 2100 times slower, but nominal time is still quite small:
-6873.0620/10^9 ## in seconds
-## 2.a) Compared to enabled caching:
-7660.163/6873.0620
-## --> about 11.5 \% faster
-##
-## 3) Update: reactive object compared to regular object:
-207.2880/3.5540
-## --> about 60 times slower, but nominal time is still quite small:
-207.2880/10^9 ## in seconds
-## 3.a) Compared to enabled caching:
-217.060/207.2880
-## --> about 5 \% faster
-##
-## 4) Getting: simple reactive object compared to regular object:
-42.3460/3.5540
-## --> about 12 times slower, but nominal time is still quite small:
-42.3460/10^9 ## in seconds
-## 4.a) Compared to enabled caching:
-87.653/42.3460
-## --> about 2 times faster
-##
-## 5) Getting: referencing reactive object compared to regular object:
-731.1325/3.5540
-## --> about 200 times slower, but nominal time is still quite small:
-731.1325/10^9 ## in seconds
-## 5.a) Compared to enabled caching:
-260.294/731.1325
-## --> about 65 \% slower (!?)
 
 ##------------------------------------------------------------------------------
 ## Microbenchmark 2: setShinyReactive vs. shiny::reactive //
@@ -560,7 +398,6 @@ res
 require("microbenchmark")
 
 rm(list = ls(environment(), all.names = TRUE))
-resetRegistry()
 
 ## NOTE:
 ## Due to some strange behavior with respect to environments, you might need
@@ -574,10 +411,7 @@ res <- microbenchmark(
   "get x_2" = get("x_2", envir = environment()),
   "set/x_3/setShinyReactive" = setShinyReactive(
     id = "x_3", 
-    value = function() {
-      ## object-ref: {id: x_1}
-      x_1 * 2
-    },
+    value = reactiveExpression(x_1 * 2),
     where = environment()
   ),
   "set/x_4/reactive" = assign("x_4", shiny::reactive(x_2 * 2), envir = environment()),
@@ -592,46 +426,46 @@ res <- microbenchmark(
 res
 
 # Unit: microseconds
-#                      expr      min        lq       mean    median        uq       max neval
-#  set/x_1/setShinyReactive 1900.531 2111.9635 2273.89114 2185.1070 2302.6685  3993.542   100
-#           set/x_2/regular   55.672   68.4050  128.84423  106.6055  180.9325   268.290   100
-#   makeReactiveBinding/x_2 1289.921 1446.8665 1510.57540 1506.0920 1571.5355  1796.294   100
-#                   get x_1   72.255   88.2450   99.82401   94.1680  105.4210   158.131   100
-#                   get x_2  122.003  132.6645  146.61764  141.2520  153.3930   226.832   100
-#  set/x_3/setShinyReactive 6956.569 7792.8265 8109.08802 7984.7155 8228.7225 10914.576   100
-#          set/x_4/reactive  716.623  799.5380  872.23658  852.2480  905.8470  2438.294   100
-#                   get/x_3  235.715  268.5860  415.75391  285.4650  326.6265  1217.666   100
-#                   get/x_4    1.777    2.9610    3.28730    2.9620    3.5540    18.360   100
-#                change/x_1  181.229  206.1035  226.09762  223.2785  239.2690   319.223   100
-#                change/x_2   55.080   68.7010  144.05921  123.1885  180.3400  1722.856   100
-#               get/x_3 (2)  222.686  261.4790  437.66713  275.9890  328.1070  1315.387   100
-#               get/x_4 (2)    1.185    2.6655    3.20434    3.5530    3.5540     5.923   100
+#                      expr      min        lq       mean    median        uq      max neval
+#  set/x_1/setShinyReactive 1788.595 2009.5045 2257.01787 2197.8400 2375.8115 4083.564   100
+#           set/x_2/regular   54.487   72.8470  144.48562  129.4070  205.2150  395.031   100
+#   makeReactiveBinding/x_2 1389.418 1555.5450 1720.35629 1705.3845 1841.3050 3382.341   100
+#                   get x_1  123.780  141.8440  167.54777  162.2765  183.3015  291.387   100
+#                   get x_2  120.819  142.7325  160.70136  156.0580  173.2335  268.882   100
+#  set/x_3/setShinyReactive  941.086 1046.2095 1176.58785 1180.3550 1272.7455 2578.657   100
+#          set/x_4/reactive  757.488  856.0980  970.31309  935.7555 1026.9620 2525.354   100
+#                   get/x_3  128.519  159.9075  317.83118  190.4085  494.2335  803.683   100
+#                   get/x_4    1.185    2.3690    3.19248    2.9610    3.5540   17.768   100
+#                change/x_1   59.225   73.4395  157.60986  134.1455  216.1710  438.265   100
+#                change/x_2   55.671   75.2160  151.91835  130.5915  201.0690 1468.781   100
+#               get/x_3 (2)  120.820  156.6505  317.46407  175.0100  523.2535 1862.626   100
+#               get/x_4 (2)    1.185    2.3700    3.06225    2.9620    3.5540    4.739   100
 
 ## Costs //
 ## 1) Setting: simple `setShinyReactive()` compared to shiny::makeReactiveBinding:
-2185.1070 / (106.6055 + 1506.0920)
-## --> about 35 \% slower, but nominal time is still quite small:
-2185.1070/10^9 ## in seconds
+2197.8400 / (129.4070 + 1705.3845)
+## --> about 20 \% slower, but nominal time is still quite small:
+2197.8400/10^9 ## in seconds
 ##
 ## 2) Setting: one-directional `setShinyReactive()` compared to shiny::reactive:
-7984.7155/852.2480
-## --> about 9 times slower, but nominal time is still quite small:
-7984.7155/10^9 ## in seconds
+1180.3550/935.7555
+## --> about 26 \% slower, but nominal time is still quite small:
+1180.3550/10^9 ## in seconds
 ##
 ## 3) Update: reactive object compared to regular object:
-223.2785/123.1885
-## --> about 80 \% times slower, but nominal time is still quite small:
-223.2785/10^9 ## in seconds
+134.1455/130.5915
+## --> about 3 \% slower, but nominal time is still quite small:
+134.1455/10^9 ## in seconds
 ##
 ## 4) Getting: simple reactive object compared to shiny reactive object:
-94.1680/141.2520
-## --> about 35 \% faster
-94.1680/10^9 ## in seconds
+162.2765/156.0580
+## --> about 4 \% slower
+162.2765/10^9 ## in seconds
 ##
 ## 5) Getting: referencing reactive object compared to shiny reactive object:
-285.4650/2.9620
-## --> about 95 times slower, but nominal time is still quite small:
-285.4650/10^9 ## in seconds
+190.4085/2.9610
+## --> about 64 times slower, but nominal time is still quite small:
+190.4085/10^9 ## in seconds
 
 }
 

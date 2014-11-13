@@ -1,3 +1,20 @@
+# CHANGES IN reactr VERSION 0.1.12
+
+## NEW FEATURES
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+- modified: `README`
+- modified: example for `setShinyReactive()`
+
+## MINOR CHANGES
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.11
 
 ## NEW FEATURES

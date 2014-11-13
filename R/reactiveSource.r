@@ -35,7 +35,9 @@
 #'      \item{\code{1}: } {ignore with Warning}
 #'      \item{\code{2}: } {stop with error}
 #'    }
-#' @template threedots
+#' @param Further arguments to be passed to subsequent functions.
+#'    In particular: 
+#'    \code{\link[typr]{setTyped}} and \code{\link[typr]{validateType}}.
 #' @return \code{ANY}. The value of \code{value}.
 #' @example inst/examples/reactiveSource.r
 #' @seealso \code{
@@ -46,6 +48,7 @@
 #' @template references
 #' @import conditionr
 #' @import shiny
+#' @import typr
 #' @export 
 reactiveSource <- function(
   id, 
@@ -53,11 +56,17 @@ reactiveSource <- function(
   where = parent.frame(),
   overwrite = TRUE,
   typed = FALSE,
-  strict_set = c(0,1,2)
+  strict_set = c(0,1,2),
+  ...
 ) {
   
   strict_set <- as.numeric(match.arg(as.character(strict_set), 
     as.character(c(0, 1, 2))))
+  
+  if (typed) {
+    invis <- typr::setTyped(id = id, value = value, where = where, 
+      return_invis = 1, ...)
+  }
   
   ## Ensure that shiny let's us do our thing //
   shiny_opt <- getOption("shiny.suppressMissingContextError")
@@ -69,71 +78,17 @@ reactiveSource <- function(
     if (!overwrite) {
       value <- get(id, pos = where, inherits = FALSE)
     } 
-    rm(list = id, pos = where, inherits = FALSE)
+#     rm(list = id, pos = where, inherits = FALSE)
   }
   values <- shiny:::reactiveValues(value = value)
 
   ## Add some stuff to the instance of `reactiveValues` the dirty way //
-  ## 1) `.class` field and value:
-  values$.class <- class(value)
-  ## 2) `.class` field and value:
-  values$.checkClass <- function(self = values, v, strict_set = 0) {
-    out <- TRUE
-    if (self$.class != "NULL" && !inherits(v, self$.class)) {
-    ## --> seems like enforcing class consistency for `NULL` situations
-    ## does not make sense as `NULL` will probably only be used for initial
-    ## values. Possible think about what should happen when `NULL` is the 
-    ## **assignment** value instead of the initial value --> issue #22
-## TODO: issue #22
-      
-      num_clss <- c("integer", "numeric")
-      if (all(c(class(v), self$.class) %in% num_clss)) {
-        
-      } else {
-        if (strict_set == 0) {
-          return(FALSE)
-        } else if (strict_set == 1) {
-          conditionr::signalCondition(
-            call = substitute(
-              assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-              list(ID = id, VALUE = v, WHERE = where)
-            ),
-            condition = "AbortedWithClassCheckWarning",
-            msg = c(
-              Reason = "class of assignment value does not inherit from initial class",
-              ID = id,
-              UID = computeObjectUid(id, where),
-              Location = capture.output(where),
-              "Class expected" = values$.class,
-              "Class provided" = class(v)
-            ),
-            ns = "reactr",
-            type = "warning"
-          )    
-          return(FALSE)
-        } else if (strict_set == 2) {
-          conditionr::signalCondition(
-            call = substitute(
-              assign(x= ID, value = VALUE, envir = WHERE, inherits = FALSE),
-              list(ID = id, VALUE = v, WHERE = where)
-            ),
-            condition = "AbortedWithClassCheckError",
-            msg = c(
-              Reason = "class of assignment value does not inherit from initial class",
-              ID = id,
-              UID = computeObjectUid(id, where),
-              Location = capture.output(where),
-              "Class expected" = values$.class,
-              "Class provided" = class(v)
-            ),
-            ns = "reactr",
-            type = "error"
-          )
-        }
-      }
-    }
-    out
-  }
+  ## 1) Transfer stuff from `invis` //
+  values$.id <- invis$.id
+  values$.uid <- invis$.uid
+  values$.where <- invis$.where
+  values$.class <- invis$.class
+  values$.validateType <- typr::validateType
   
   makeActiveBinding(id, env = where, 
 #     local({
@@ -142,7 +97,7 @@ reactiveSource <- function(
           values$value
         } else {
           is_valid <- if (typed) {
-            values$.checkClass(v = v, strict_set = strict_set)
+            values$.validateType(self = values, v = v, strict = strict_set, ...)
           } else {
             TRUE
           }            

@@ -1,3 +1,25 @@
+# CHANGES IN reactr VERSION 0.1.14
+
+## NEW FEATURES
+
+- added: typed sources now use functionality of package [`type`](https://github.com/Rappster/typr)
+- added: `...` in call to `reactiveSource()` in `setShinyReactive()` to pass along additional argument when `typed = TRUE`
+
+## BUG FIXES
+
+## MAJOR CHANGES
+
+- added: [`type`](https://github.com/Rappster/typr) imported
+
+## MINOR CHANGES
+
+- modified: unit tests `test-setShinyReactive.r` and `test-reactiveSource.r`
+- modified: examples `setShinyReactive.r` and `reactiveSource.r`
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.13
 
 ## NEW FEATURES

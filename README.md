@@ -9,6 +9,7 @@ Reactive object bindings with built-in caching and push functionality
 require("devtools")
 devtools::install_github("Rappster/conditionr")
 devtools::install_github("Rappster/yamlr")
+devtools::install_github("Rappster/typr")
 devtools::install_github("Rappster/reactr")
 require("reactr")
 ```
@@ -151,7 +152,40 @@ rmReactive("x_2")
 
 -----
 
-### Feature showcase 1: pushing
+### Feature showcase: typed sources
+
+```
+## Basics //
+## Strict = 0:
+setShinyReactive(id = "x_1", value = 10, typed = TRUE)
+x_1 <- "hello world!"
+x_1
+## --> simply ignored 
+
+## Strict = 1:
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, strict = 1)
+try(x_1 <- "hello world!")
+x_1
+## --> ignored with warning
+
+## Strict = 2:
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, strict = 2)
+try(x_1 <- "hello world!")
+x_1
+## --> ignored with error
+
+## Advanced //
+setShinyReactive(id = "x_1", typed = TRUE, from_null = FALSE, strict = 2)
+try(x_1 <- "hello world!")
+
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, to_null = FALSE, strict = 2)
+try(x_1 <- NULL)
+
+setShinyReactive(id = "x_1", value = 10, typed = TRUE, numint = FALSE, strict = 2)
+try(x_1 <- as.integer(10))
+```
+
+### Feature showcase 2: pushing
 
 Such a construct could be used for logging or ensuring that certain database operations are triggered right away after the system state has changed:
 
@@ -199,7 +233,7 @@ Clean up
 rmReactive("x_1")
 rmReactive("x_2")
 ```
-### Feature showcase 2: getting closer to an actual use case
+### Feature showcase 3: getting closer to an actual use case
 
 Specify reactive objects:
 
@@ -331,7 +365,7 @@ rmReactive("x_3")
 rmReactive("x_4")
 ```
 
-### Feature showcase 3: setReactive() (legacy)
+### Feature showcase 4: setReactive() (legacy)
 
 Note that we set `verbose = TRUE` to enable the display of status messages that help understand what's going on.
 

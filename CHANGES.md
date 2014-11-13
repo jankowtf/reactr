@@ -1,3 +1,9 @@
+# Version 0.1.14
+ - Merge branch 'master' into develop
+ - fixes #27 build v0.1.13
+
+----------
+
 # Version 0.1.13
  - Merge branch 'release-0.1.12'
  - build v0.1.12

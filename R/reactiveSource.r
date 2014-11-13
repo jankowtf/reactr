@@ -63,9 +63,8 @@ reactiveSource <- function(
   strict_set <- as.numeric(match.arg(as.character(strict_set), 
     as.character(c(0, 1, 2))))
   
-  if (typed) {
-    invis <- typr::setTyped(id = id, value = value, where = where, 
-      return_invis = 1, ...)
+  invis <- if (typed) {
+    typr::setTyped(id = id, value = value, where = where, return_invis = 1, ...)
   }
   
   ## Ensure that shiny let's us do our thing //
@@ -78,16 +77,21 @@ reactiveSource <- function(
     if (!overwrite) {
       value <- get(id, pos = where, inherits = FALSE)
     } 
-#     rm(list = id, pos = where, inherits = FALSE)
+    if (is.null(invis)) {
+      rm(list = id, pos = where, inherits = FALSE)
+    }
+    ## --> for typed already handled by `typr::setTyped()`
   }
   values <- shiny:::reactiveValues(value = value)
 
   ## Add some stuff to the instance of `reactiveValues` the dirty way //
   ## 1) Transfer stuff from `invis` //
-  values$.id <- invis$.id
-  values$.uid <- invis$.uid
-  values$.where <- invis$.where
-  values$.class <- invis$.class
+  if (!is.null(invis)) {
+    values$.id <- invis$.id
+    values$.uid <- invis$.uid
+    values$.where <- invis$.where
+    values$.class <- invis$.class
+  }
   values$.validateType <- typr::validateType
   
   makeActiveBinding(id, env = where, 

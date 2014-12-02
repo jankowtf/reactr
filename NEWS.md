@@ -1,3 +1,29 @@
+# CHANGES IN reactr VERSION 0.1.15
+
+## NEW FEATURES
+
+- Support for reactive fields in Reference Classes and R6 Classes
+
+## BUG FIXES
+
+- fixed: #29
+
+## MAJOR CHANGES
+
+- M: `reactiveSource()`
+  Refactored in order to support RC and R6
+- A: `unlockEnvironment()`
+  Required in order to implement reactive fields for R6 classes
+
+## MINOR CHANGES
+
+- M: README
+- M: example for `setShinyReactive()`
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.14
 
 ## NEW FEATURES

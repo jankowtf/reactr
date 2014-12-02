@@ -194,6 +194,40 @@ rmReactive("x_1", where_1)
 rmReactive("x_2", where_1)
 suppressWarnings(rm(where_1))
 
+##------------------------------------------------------------------------------  
+## Set reactive fields in Reference and R6 Classes //
+##------------------------------------------------------------------------------
+
+## Reference Classes //
+Test_1 <- setRefClass("Test", fields = list(x_1 = "numeric", x_2 = "numeric"))
+
+inst <- Test_1$new()
+class(inst)
+
+setShinyReactive(id = "x_1", value = 10, where = inst)
+setShinyReactive(id = "x_2", 
+  value = reactiveExpression(inst$x_1 * 2), where = inst)
+inst$x_1
+inst$x_2
+
+(inst$x_1 <- 20)
+inst$x_2
+
+## R6 Classes //
+Test_2 <- R6Class("Test", public = list(x_1 = "numeric", x_2 = "numeric"))
+
+inst <- Test_2$new()
+class(inst)
+
+setShinyReactive(id = "x_1", value = 10, where = inst)
+setShinyReactive(id = "x_2", 
+  value = reactiveExpression(inst$x_1 * 2), where = inst)
+inst$x_1
+inst$x_2
+
+(inst$x_1 <- 20)
+inst$x_2
+
 ##------------------------------------------------------------------------------
 ## Typed sources //
 ##------------------------------------------------------------------------------

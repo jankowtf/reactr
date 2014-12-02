@@ -124,3 +124,45 @@ a
 (a <- 3)
 b
 
+################################################################################
+
+## R6 issue 
+
+if (FALSE) {
+  Test_1 <- setRefClass("Test",
+    fields = list(
+      .x = "numeric"
+    )
+  )
+  Test_2 <- R6Class(
+    classname = "Test",
+    portable = TRUE,
+    public = list(
+      .x = "numeric"
+    )
+  )
+  
+  setGeneric("foo", signature = c("x", "y"),
+    def = function(x, y) standardGeneric("foo")       
+  )
+  setMethod("foo", c(x = "character", y = "envRefClass"), 
+    definition = function(x, y) {
+      print(x)
+      print(y)
+    }
+  )
+  setMethod("foo", c(x = "character", y = "R6"), 
+    definition = function(x, y) {
+      print(x)
+      print(y)
+    }
+  )
+}
+y <- Test_1$new()
+foo(x = "a", y = y)
+
+y <- Test_2$new()
+class(y)
+foo(x = "a", y = y)
+
+

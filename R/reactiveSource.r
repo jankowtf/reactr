@@ -78,6 +78,9 @@ reactiveSource <- function(
       value <- get(id, pos = where, inherits = FALSE)
     } 
     if (is.null(invis)) {
+#       if (inherits(where, "environment"))
+      unlockEnvironment(as.environment(where))
+## Fixes: #29      
       rm(list = id, pos = where, inherits = FALSE)
     }
     ## --> for typed already handled by `typr::setTyped()`
@@ -94,24 +97,24 @@ reactiveSource <- function(
   }
   values$.validateType <- typr::validateType
   
-  makeActiveBinding(id, env = where, 
-#     local({
-      fun = function(v) {
-        if (missing(v)) {
-          values$value
-        } else {
-          is_valid <- if (typed) {
-            values$.validateType(self = values, v = v, strict = strict_set, ...)
+    makeActiveBinding(id, env = where, 
+  #     local({
+        fun = function(v) {
+          if (missing(v)) {
+            values$value
           } else {
-            TRUE
-          }            
-          if (is_valid) {
-            values$value <- v
+            is_valid <- if (typed) {
+              values$.validateType(self = values, v = v, strict = strict_set, ...)
+            } else {
+              TRUE
+            }            
+            if (is_valid) {
+              values$value <- v
+            }
           }
         }
-      }
-#     })
-  )
+  #     })
+    )
 
   invisible(values$value)
 #   invisible()

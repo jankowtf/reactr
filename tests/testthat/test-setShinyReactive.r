@@ -383,3 +383,29 @@ test_that("setShinyReactive/already regular binding", {
     "reactive"
   )
 })
+
+##------------------------------------------------------------------------------
+context("setShinyReactive/R6")
+##------------------------------------------------------------------------------
+
+test_that("setShinyReactive/R6", {
+  
+  require("R6")
+  Test <- R6Class(
+    classname = "Test",
+    portable = TRUE,
+    public = list(
+      .x = "numeric"
+    )
+  )
+  where <- Test$new()
+  expect_equal(setShinyReactive(id = ".x", value = 10, where = where), 10)
+  expect_is(
+    setShinyReactive(id = "x_1", value = reactiveExpression(where$.x * 2)),
+    "reactive"
+  )
+  expect_identical(x_1, 20)
+  where$.x <- 20
+  expect_identical(x_1, 40)
+  
+})

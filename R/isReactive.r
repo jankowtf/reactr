@@ -21,6 +21,7 @@
 #' }
 #' @template author
 #' @template references
+#' @export
 setGeneric(
   name = "isReactive",
   signature = c(
@@ -37,7 +38,7 @@ setGeneric(
 )
 
 #' @title
-#' Get From Registry (character-missing)
+#' Is Reactive (character-missing)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{isReactive}}
@@ -77,7 +78,7 @@ setMethod(
 )
 
 #' @title
-#' Get From Registry (character-environment)
+#' Is Reactive (character-environment)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{isReactive}}
@@ -124,3 +125,51 @@ setMethod(
   }
 )
 
+#' @title
+#' Is Reactive (char-R6)
+#'
+#' @description 
+#' See generic: \code{\link[reactr]{isReactive}}
+#'      
+#' @inheritParams isReactive
+#' @param id \code{\link{character}}.
+#' @param where \code{\link{R6}}.
+#' @return \code{\link{logical}}. 
+#'    \code{TRUE}: reactive object; 
+#'    \code{FALSE}: regular/non-reactive object.
+#' @example inst/examples/isReactive.r
+#' @seealso \code{
+#'    \link[reactr]{isReactive}
+#' }
+#' @template author
+#' @template references
+#' @export
+#' @aliases isReactive-char-r6-method
+setMethod(
+  f = "isReactive", 
+  signature = signature(
+    id = "character",
+#     where = "envRefClass"
+    where = "R6"
+  ), 
+  definition = function(
+    id,
+    where,
+    ...
+  ) {
+
+  if (length(id)) {
+    has_binding <- try(bindingIsActive(id, where), silent = TRUE)
+    if (inherits(has_binding, "try-error")){
+      has_binding <- FALSE
+    } 
+#     in_registry <- exists(computeObjectUid(id = id, where = where), 
+#       getRegistry(), inherits = FALSE)
+#     has_binding && in_registry
+    has_binding
+  } else {
+    FALSE
+  }
+    
+  }
+)

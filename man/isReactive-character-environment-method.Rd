@@ -3,7 +3,7 @@
 \name{isReactive,character,environment-method}
 \alias{isReactive,character,environment-method}
 \alias{isReactive-character-environment-method}
-\title{Get From Registry (character-environment)}
+\title{Is Reactive (character-environment)}
 \usage{
 \S4method{isReactive}{character,environment}(id, where = parent.frame(), ...)
 }

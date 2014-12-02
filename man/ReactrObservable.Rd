@@ -3,7 +3,7 @@
 \name{ReactrObservable}
 \alias{ReactrObservable}
 \title{Class: ReactrObservable}
-\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x00000000093a7778> 
+\format{\preformatted{Class 'R6ClassGenerator' <environment: 0x000000000932f360> 
  - attr(*, "name")= chr "ReactrObservable_generator"
 }}
 \usage{

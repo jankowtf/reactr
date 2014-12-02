@@ -1,3 +1,15 @@
+# Version 0.1.15
+ - Merge branch 'master' into develop
+ - just to make sure
+ - Merge branch 'develop'
+ - fix invis
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.14'
+ - Merge branch 'feat-useTypr' into develop
+ - feature useTypr
+
+----------
+
 # Version 0.1.14
  - Merge branch 'master' into develop
  - fixes #27 build v0.1.13

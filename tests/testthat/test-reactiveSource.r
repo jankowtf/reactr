@@ -68,3 +68,26 @@ test_that("reactiveSource/typed/advanced", {
   expect_equal(x_1, 10)
   
 })
+
+##------------------------------------------------------------------------------
+context("reactiveSource/R6")
+##------------------------------------------------------------------------------
+
+test_that("reactiveSource/R6", {
+  
+  require("R6")
+  Test <- R6Class(
+    classname = "Test",
+    portable = TRUE,
+    public = list(
+      .x = "numeric"
+    )
+  )
+  where <- Test$new()
+  expect_equal(res <- reactiveSource(id = ".x", value = 10, where = where), 10)
+  expect_equal(where$.x, 10)
+  expect_equal(where$.x <- 20, 20)
+  expect_equal(where$.x, 20)
+  rm(where)
+  
+})

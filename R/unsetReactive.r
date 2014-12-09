@@ -159,3 +159,69 @@ setMethod(
   
   }
 )
+
+#' @title
+#' Unset Reactive Object (character-r6)
+#'
+#' @description 
+#' See generic: \code{\link[reactr]{unsetReactive}}
+#'      
+#' @inheritParams unsetReactive
+#' @param id \code{\link{character}}.
+#' @param where \code{\link{R6}}.
+#' @return \code{\link{logical}}. \code{TRUE}: success; \code{FALSE}: object
+#'    was not a reactive one or failure to unset.
+#' @example inst/examples/unsetReactive.r
+#' @seealso \code{
+#'    Generic: \link[reactr]{unsetReactive},
+#'    \link[reactr]{unsetReactiveByUid}
+#' }
+#' @template author
+#' @template references
+#' @aliases unsetReactive-method_main 
+#' @export
+#' @aliases unsetReactive-character-r6-method
+setMethod(
+  f = "unsetReactive", 
+  signature = signature(
+    id = "character",
+    where = "R6"
+  ), 
+  definition = function(
+    id,
+    where,
+    ...
+  ) {
+
+  out <- FALSE
+  if (!length(id)) {
+    stop(paste0("Provide an ID"))
+  } else {
+    out <- try(
+      unsetReactiveByUid(uid = computeObjectUid(id = id, where = where)), 
+      silent = TRUE
+    )
+    
+    if (inherits(out, "try-error")) {
+      out <- TRUE
+    }
+    
+    ## For reactives set via `setShinyReactive()` //
+    if (exists(id, envir = where, inherits = FALSE)) {
+      has_binding <- try(bindingIsActive(id, where))
+      if (inherits(has_binding, "try-error")) {
+        has_binding <- FALSE
+      } 
+      if (has_binding) {
+        tmp <- get(id, envir = where, inherits = FALSE)
+        rm(list = id, envir = where, inherits = FALSE)
+        assign(id, tmp, where)
+      }
+    }
+  }
+    
+  return(out)
+  
+  }
+)
+

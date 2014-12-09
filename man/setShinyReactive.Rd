@@ -199,9 +199,10 @@ suppressWarnings(rm(where_1))
 ##------------------------------------------------------------------------------
 
 ## Reference Classes //
-Test_1 <- setRefClass("Test", fields = list(x_1 = "numeric", x_2 = "numeric"))
+TestRefClass <- setRefClass("TestRefClass", 
+  fields = list(x_1 = "numeric", x_2 = "numeric"))
 
-inst <- Test_1$new()
+inst <- TestRefClass$new()
 class(inst)
 
 setShinyReactive(id = "x_1", value = 10, where = inst)
@@ -214,9 +215,10 @@ inst$x_2
 inst$x_2
 
 ## R6 Classes //
-Test_2 <- R6Class("Test", public = list(x_1 = "numeric", x_2 = "numeric"))
+TestR6 <- R6Class("TestR6", public = list(x_1 = "numeric", x_2 = "numeric"))
+setOldClass(c("TestR6", "R6"))
 
-inst <- Test_2$new()
+inst <- TestR6$new()
 class(inst)
 
 setShinyReactive(id = "x_1", value = 10, where = inst)

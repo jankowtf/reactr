@@ -1,3 +1,11 @@
+# Version 0.1.16
+ - fixes #29 fixes #30
+ - Merge branch 'master' into develop
+ - Merge branch 'release-0.1.15'
+ - RC and R6 classes fixes #29
+
+----------
+
 # Version 0.1.15
  - Merge branch 'master' into develop
  - just to make sure

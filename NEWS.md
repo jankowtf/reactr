@@ -1,3 +1,20 @@
+# CHANGES IN reactr VERSION 0.1.16
+
+## NEW FEATURES
+
+## BUG FIXES
+
+- fixed: #29
+- fixed: #30
+
+## MAJOR CHANGES
+
+## MINOR CHANGES
+
+## MISC
+
+-----
+
 # CHANGES IN reactr VERSION 0.1.15
 
 ## NEW FEATURES

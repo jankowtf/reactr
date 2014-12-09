@@ -73,15 +73,16 @@ reactiveSource <- function(
     options(shiny.suppressMissingContextError = TRUE)  
   }
   
-  if (exists(id, where = where, inherits = FALSE) && !is.null(value)) {
+  if (exists(id, where = where, inherits = FALSE) && !is.null(value)) { 
     if (!overwrite) {
       value <- get(id, pos = where, inherits = FALSE)
     } 
     if (is.null(invis)) {
 #       if (inherits(where, "environment"))
-      unlockEnvironment(as.environment(where))
+      try(unlockEnvironment(as.environment(where)))
 ## Fixes: #29      
-      rm(list = id, pos = where, inherits = FALSE)
+## Fixes: #30
+      rm(list = id, pos = where, inherits = FALSE) 
     }
     ## --> for typed already handled by `typr::setTyped()`
   }
@@ -95,8 +96,8 @@ reactiveSource <- function(
     values$.where <- invis$.where
     values$.class <- invis$.class
   }
-  values$.validateType <- typr::validateType
-  
+
+  values$.validateType <- typr::validateType   
     makeActiveBinding(id, env = where, 
   #     local({
         fun = function(v) {

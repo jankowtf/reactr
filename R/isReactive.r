@@ -126,7 +126,55 @@ setMethod(
 )
 
 #' @title
-#' Is Reactive (char-R6)
+#' Is Reactive (char-rc)
+#'
+#' @description 
+#' See generic: \code{\link[reactr]{isReactive}}
+#'      
+#' @inheritParams isReactive
+#' @param id \code{\link{character}}.
+#' @param where \code{\link{envRefClass}}.
+#' @return \code{\link{logical}}. 
+#'    \code{TRUE}: reactive object; 
+#'    \code{FALSE}: regular/non-reactive object.
+#' @example inst/examples/isReactive.r
+#' @seealso \code{
+#'    \link[reactr]{isReactive}
+#' }
+#' @template author
+#' @template references
+#' @export
+#' @aliases isReactive-char-rc-method
+setMethod(
+  f = "isReactive", 
+  signature = c(
+    id = "character",
+    where = "envRefClass"
+  ), 
+  definition = function(
+    id,
+    where,
+    ...
+  ) {
+
+  if (length(id)) {
+    has_binding <- try(bindingIsActive(id, where), silent = TRUE)
+    if (inherits(has_binding, "try-error")){
+      has_binding <- FALSE
+    } 
+#     in_registry <- exists(computeObjectUid(id = id, where = where), 
+#       getRegistry(), inherits = FALSE)
+#     has_binding && in_registry
+    has_binding
+  } else {
+    FALSE
+  }
+    
+  }
+)
+
+#' @title
+#' Is Reactive (char-r6)
 #'
 #' @description 
 #' See generic: \code{\link[reactr]{isReactive}}
@@ -147,9 +195,8 @@ setMethod(
 #' @aliases isReactive-char-r6-method
 setMethod(
   f = "isReactive", 
-  signature = signature(
+  signature = c(
     id = "character",
-#     where = "envRefClass"
     where = "R6"
   ), 
   definition = function(

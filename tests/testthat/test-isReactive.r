@@ -40,7 +40,6 @@ context("isReactive/R6")
 
 test_that("isReactive/R6", {
 
-  resetRegistry()
   require("R6")
   Test <- R6Class(
     classname = "Test",
@@ -49,6 +48,7 @@ test_that("isReactive/R6", {
       .x = "numeric"
     )
   )
+  setOldClass(c("Test", "R6"))
 #   Test <- setRefClass("Test",
 #     fields = list(
 #       .x = "numeric"
@@ -59,12 +59,11 @@ test_that("isReactive/R6", {
   
   setShinyReactive(id = ".x", value = 10, where = where)
   expect_true(isReactive(id = ".x", where = where))
-  
+
   unsetReactive(".x", where = where)
   expect_false(isReactive(id = ".x", where = where))
   where$.x <- 20
   expect_false(isReactive(id = ".x", where = where))
-  resetRegistry()
   
 })
 
